@@ -35,7 +35,7 @@ class RefreshExtendCacheMigrationQuery implements MigrationQuery
     {
         $this->commandExecutor->runCommand(
             'oro:entity-extend:cache:clear',
-            [],
+            ['--no-warmup' => true],
             $logger
         );
     }
