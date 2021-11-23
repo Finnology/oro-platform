@@ -93,7 +93,7 @@ class WorkflowDefinition implements DomainObjectInterface
     /**
      * @var boolean
      *
-     * @ORM\Column(name="system", type="boolean")
+     * @ORM\Column(name="`system`", type="boolean")
      */
     protected $system = false;
 
