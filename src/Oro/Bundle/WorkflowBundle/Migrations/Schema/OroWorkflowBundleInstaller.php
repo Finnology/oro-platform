@@ -53,7 +53,7 @@ class OroWorkflowBundleInstaller implements Installation, ExtendExtensionAwareIn
         $this->createOroProcessJobTable($schema);
         $this->createOroProcessTriggerTable($schema);
         $this->createOroWorkflowEntityAclIdentTable($schema);
-        $this->createOroWorkflowDefinitionTable($schema);
+        $this->createOroWorkflowDefinitionTable($queries);
         $this->createOroProcessDefinitionTable($schema);
         $this->createOroWorkflowRestrictionTable($schema);
         $this->createOroWorkflowRestrictionIdentityTable($schema);
@@ -62,20 +62,20 @@ class OroWorkflowBundleInstaller implements Installation, ExtendExtensionAwareIn
         $this->createOroWorkflowScopesTable($schema);
 
         /** Foreign keys generation **/
-        $this->addOroWorkflowItemForeignKeys($schema);
-        $this->addOroWorkflowEntityAclForeignKeys($schema);
+        $this->addOroWorkflowItemForeignKeys($queries);
+        $this->addOroWorkflowEntityAclForeignKeys($queries);
         $this->addOroWorkflowTransitionLogForeignKeys($schema);
         $this->addOroProcessJobForeignKeys($schema);
         $this->addOroProcessTriggerForeignKeys($schema);
         $this->addOroWorkflowEntityAclIdentForeignKeys($schema);
-        $this->addOroWorkflowDefinitionForeignKeys($schema);
-        $this->addOroWorkflowRestrictionForeignKeys($schema);
+        $this->addOroWorkflowDefinitionForeignKeys($queries);
+        $this->addOroWorkflowRestrictionForeignKeys($queries);
         $this->addOroWorkflowRestrictionIdentityForeignKeys($schema);
-        $this->addOroWorkflowStepForeignKeys($schema);
-        $this->addOroWorkflowTransTriggerForeignKeys($schema);
-        $this->addOroWorkflowScopesForeignKeys($schema);
+        $this->addOroWorkflowStepForeignKeys($queries);
+        $this->addOroWorkflowTransTriggerForeignKeys($queries);
+        $this->addOroWorkflowScopesForeignKeys($queries);
 
-        $this->addWorkflowFieldsToEmailNotificationTable($schema);
+        $this->addWorkflowFieldsToEmailNotificationTable($schema, $queries);
     }
 
     /**
@@ -209,34 +209,32 @@ class OroWorkflowBundleInstaller implements Installation, ExtendExtensionAwareIn
     /**
      * Create oro_workflow_definition table
      *
-     * @param Schema $schema
+     * @param QueryBag $queries
      */
-    protected function createOroWorkflowDefinitionTable(Schema $schema)
+    protected function createOroWorkflowDefinitionTable(QueryBag $queries)
     {
-        $table = $schema->createTable('oro_workflow_definition');
-        $table->addColumn('name', 'string', ['length' => 255]);
-        $table->addColumn('start_step_id', 'integer', ['notnull' => false]);
-        $table->addColumn('label', 'string', ['length' => 255]);
-        $table->addColumn('related_entity', 'string', ['length' => 255]);
-        $table->addColumn('entity_attribute_name', 'string', ['length' => 255]);
-        $table->addColumn('steps_display_ordered', 'boolean', []);
-        $table->addColumn('system', 'boolean', []);
-        $table->addColumn('active', 'boolean', ['default' => false]);
-        $table->addColumn('priority', 'integer', ['default' => 0]);
-        $table->addColumn('configuration', 'array', ['comment' => '(DC2Type:array)']);
-        $table->addColumn('exclusive_active_groups', 'simple_array', [
-            'comment' => '(DC2Type:simple_array)',
-            'notnull' => false,
-        ]);
-        $table->addColumn('exclusive_record_groups', 'simple_array', [
-            'comment' => '(DC2Type:simple_array)',
-            'notnull' => false,
-        ]);
-        $table->addColumn('created_at', 'datetime', []);
-        $table->addColumn('updated_at', 'datetime', []);
-        $table->addColumn('applications', 'simple_array', ['comment' => '(DC2Type:simple_array)', 'notnull' => true]);
-        $table->addIndex(['start_step_id'], 'idx_6f737c368377424f', []);
-        $table->setPrimaryKey(['name']);
+        $queries->addPreQuery('
+            CREATE TABLE oro_workflow_definition (
+                name VARCHAR(255) NOT NULL,
+                start_step_id INT,
+                label VARCHAR(255) NOT NULL,
+                related_entity VARCHAR(255) NOT NULL,
+                entity_attribute_name VARCHAR(255) NOT NULL,
+                steps_display_ordered TINYINT(1) NOT NULL,
+                `system` TINYINT(1) NOT NULL,
+                active TINYINT(1) NOT NULL,
+                priority INT NOT NULL,
+                configuration LONGTEXT NOT NULL COMMENT "(DC2Type:array)(DC2Type:array)",
+                exclusive_active_groups LONGTEXT COMMENT "(DC2Type:simple_array)(DC2Type:simple_array)",
+                exclusive_record_groups LONGTEXT COMMENT "(DC2Type:simple_array)(DC2Type:simple_array)",
+                created_at DATETIME NOT NULL COMMENT "(DC2Type:datetime)",
+                updated_at DATETIME NOT NULL COMMENT "(DC2Type:datetime)",
+                applications LONGTEXT NOT NULL COMMENT "(DC2Type:simple_array)(DC2Type:simple_array)",
+                PRIMARY KEY (name)
+            ) DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+            CREATE INDEX idx_6f737c368377424f ON oro_workflow_definition (start_step_id)
+        ');
     }
 
     /**
@@ -372,45 +370,29 @@ class OroWorkflowBundleInstaller implements Installation, ExtendExtensionAwareIn
     /**
      * Add oro_workflow_item foreign keys.
      *
-     * @param Schema $schema
+     * @param QueryBag $queries
      */
-    protected function addOroWorkflowItemForeignKeys(Schema $schema)
+    protected function addOroWorkflowItemForeignKeys(QueryBag $queries)
     {
-        $table = $schema->getTable('oro_workflow_item');
-        $table->addForeignKeyConstraint(
-            $schema->getTable('oro_workflow_step'),
-            ['current_step_id'],
-            ['id'],
-            ['onUpdate' => null, 'onDelete' => 'SET NULL']
-        );
-        $table->addForeignKeyConstraint(
-            $schema->getTable('oro_workflow_definition'),
-            ['workflow_name'],
-            ['name'],
-            ['onUpdate' => null, 'onDelete' => 'CASCADE']
-        );
+        $queries->addQuery('
+            ALTER TABLE oro_workflow_item
+            ADD FOREIGN KEY (current_step_id) REFERENCES oro_workflow_step(id) ON DELETE SET NULL,
+            ADD FOREIGN KEY (workflow_name) REFERENCES oro_workflow_definition(name) ON DELETE CASCADE;
+        ');
     }
 
     /**
      * Add oro_workflow_entity_acl foreign keys.
      *
-     * @param Schema $schema
+     * @param QueryBag $queries
      */
-    protected function addOroWorkflowEntityAclForeignKeys(Schema $schema)
+    protected function addOroWorkflowEntityAclForeignKeys(QueryBag $queries)
     {
-        $table = $schema->getTable('oro_workflow_entity_acl');
-        $table->addForeignKeyConstraint(
-            $schema->getTable('oro_workflow_definition'),
-            ['workflow_name'],
-            ['name'],
-            ['onUpdate' => null, 'onDelete' => 'CASCADE']
-        );
-        $table->addForeignKeyConstraint(
-            $schema->getTable('oro_workflow_step'),
-            ['workflow_step_id'],
-            ['id'],
-            ['onUpdate' => null, 'onDelete' => 'CASCADE']
-        );
+        $queries->addQuery('
+            ALTER TABLE oro_workflow_entity_acl
+            ADD FOREIGN KEY (workflow_name) REFERENCES oro_workflow_definition(name) ON DELETE CASCADE,
+            ADD FOREIGN KEY (workflow_step_id) REFERENCES oro_workflow_step(id) ON DELETE CASCADE;
+        ');
     }
 
     /**
@@ -498,39 +480,28 @@ class OroWorkflowBundleInstaller implements Installation, ExtendExtensionAwareIn
     /**
      * Add oro_workflow_definition foreign keys.
      *
-     * @param Schema $schema
+     * @param QueryBag $queries
      */
-    protected function addOroWorkflowDefinitionForeignKeys(Schema $schema)
+    protected function addOroWorkflowDefinitionForeignKeys(QueryBag $queries)
     {
-        $table = $schema->getTable('oro_workflow_definition');
-        $table->addForeignKeyConstraint(
-            $schema->getTable('oro_workflow_step'),
-            ['start_step_id'],
-            ['id'],
-            ['onUpdate' => null, 'onDelete' => 'SET NULL']
-        );
+        $queries->addQuery('
+            ALTER TABLE oro_workflow_definition
+            ADD FOREIGN KEY (start_step_id) REFERENCES oro_workflow_step(id) ON DELETE SET NULL
+        ');
     }
 
     /**
      * Add oro_workflow_restriction foreign keys.
      *
-     * @param Schema $schema
+     * @param QueryBag $queries
      */
-    protected function addOroWorkflowRestrictionForeignKeys(Schema $schema)
+    protected function addOroWorkflowRestrictionForeignKeys(QueryBag $queries)
     {
-        $table = $schema->getTable('oro_workflow_restriction');
-        $table->addForeignKeyConstraint(
-            $schema->getTable('oro_workflow_step'),
-            ['workflow_step_id'],
-            ['id'],
-            ['onDelete' => 'CASCADE', 'onUpdate' => null]
-        );
-        $table->addForeignKeyConstraint(
-            $schema->getTable('oro_workflow_definition'),
-            ['workflow_name'],
-            ['name'],
-            ['onDelete' => 'CASCADE', 'onUpdate' => null]
-        );
+        $queries->addQuery('
+            ALTER TABLE oro_workflow_restriction
+            ADD FOREIGN KEY (workflow_step_id) REFERENCES oro_workflow_step(id) ON DELETE CASCADE,
+            ADD FOREIGN KEY (workflow_name) REFERENCES oro_workflow_definition(name) ON DELETE CASCADE
+        ');
     }
 
     /**
@@ -558,86 +529,54 @@ class OroWorkflowBundleInstaller implements Installation, ExtendExtensionAwareIn
     /**
      * Add oro_workflow_step foreign keys.
      *
-     * @param Schema $schema
+     * @param QueryBag $queries
      */
-    protected function addOroWorkflowStepForeignKeys(Schema $schema)
+    protected function addOroWorkflowStepForeignKeys(QueryBag $queries)
     {
-        $table = $schema->getTable('oro_workflow_step');
-        $table->addForeignKeyConstraint(
-            $schema->getTable('oro_workflow_definition'),
-            ['workflow_name'],
-            ['name'],
-            ['onUpdate' => null, 'onDelete' => 'CASCADE']
-        );
+        $queries->addQuery('
+            ALTER TABLE oro_workflow_step
+            ADD FOREIGN KEY (workflow_name) REFERENCES oro_workflow_definition(name) ON DELETE CASCADE
+        ');
     }
 
     /**
      * Add oro_workflow_trans_trigger foreign keys.
      *
-     * @param Schema $schema
+     * @param QueryBag $queries
      */
-    protected function addOroWorkflowTransTriggerForeignKeys(Schema $schema)
+    protected function addOroWorkflowTransTriggerForeignKeys(QueryBag $queries)
     {
-        $table = $schema->getTable('oro_workflow_trans_trigger');
-        $table->addForeignKeyConstraint(
-            $schema->getTable('oro_workflow_definition'),
-            ['workflow_name'],
-            ['name'],
-            ['onDelete' => 'CASCADE', 'onUpdate' => null]
-        );
+        $queries->addQuery('
+            ALTER TABLE oro_workflow_trans_trigger
+            ADD FOREIGN KEY (workflow_name) REFERENCES oro_workflow_definition(name) ON DELETE CASCADE
+        ');
     }
 
     /**
      * Add oro_workflow_scopes foreign keys.
      *
-     * @param Schema $schema
+     * @param QueryBag $queries
      */
-    protected function addOroWorkflowScopesForeignKeys(Schema $schema)
+    protected function addOroWorkflowScopesForeignKeys(QueryBag $queries)
     {
-        $table = $schema->getTable('oro_workflow_scopes');
-        $table->addForeignKeyConstraint(
-            $schema->getTable('oro_scope'),
-            ['scope_id'],
-            ['id'],
-            ['onDelete' => 'CASCADE', 'onUpdate' => null]
-        );
-        $table->addForeignKeyConstraint(
-            $schema->getTable('oro_workflow_definition'),
-            ['workflow_name'],
-            ['name'],
-            ['onDelete' => 'CASCADE', 'onUpdate' => null]
-        );
+        $queries->addQuery('
+            ALTER TABLE oro_workflow_scopes
+            ADD FOREIGN KEY (scope_id) REFERENCES oro_scope(id) ON DELETE CASCADE,
+            ADD FOREIGN KEY (workflow_name) REFERENCES oro_workflow_definition(name) ON DELETE CASCADE
+        ');
     }
 
     /**
      * @param Schema $schema
      */
-    protected function addWorkflowFieldsToEmailNotificationTable(Schema $schema)
+    protected function addWorkflowFieldsToEmailNotificationTable(Schema $schema, QueryBag $queries)
     {
-        $this->extendExtension->addManyToOneRelation(
-            $schema,
-            'oro_notification_email_notif',
-            'workflow_definition',
-            'oro_workflow_definition',
-            'name',
-            [
-                'entity' => ['label' => 'oro.workflow.workflowdefinition.entity_label'],
-                'extend' => [
-                    'owner' => ExtendScope::OWNER_CUSTOM,
-                    'is_extend' => true,
-                    'nullable' => true
-                ],
-                'datagrid' => [
-                    'is_visible' => DatagridScope::IS_VISIBLE_TRUE,
-                    'show_filter' => true,
-                    'order' => 30
-                ],
-                'form' => ['is_enabled' => false],
-                'view' => ['is_displayable' => false],
-                'merge' => ['display' => false],
-                'dataaudit' => ['auditable' => false]
-            ]
-        );
+        $queries->addQuery('
+            ALTER TABLE oro_notification_email_notif
+            ADD workflow_definition_name VARCHAR(255),
+            ADD FOREIGN KEY (workflow_definition_name) REFERENCES oro_workflow_definition(name) ON DELETE SET NULL ON UPDATE RESTRICT,
+            ADD INDEX IDX_A3D00FDF93298D04 (workflow_definition_name)
+        ');
 
         $table = $schema->getTable('oro_notification_email_notif');
         $table->addColumn(
