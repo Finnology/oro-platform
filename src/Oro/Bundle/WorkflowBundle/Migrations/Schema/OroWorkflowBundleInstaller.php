@@ -231,7 +231,7 @@ class OroWorkflowBundleInstaller implements Installation, ExtendExtensionAwareIn
                 updated_at DATETIME NOT NULL COMMENT "(DC2Type:datetime)",
                 applications LONGTEXT NOT NULL COMMENT "(DC2Type:simple_array)(DC2Type:simple_array)",
                 PRIMARY KEY (name)
-            ) DEFAULT CHARSET=utf8 COLLATE utf8_general_ci;
+            );
 
             CREATE INDEX idx_6f737c368377424f ON oro_workflow_definition (start_step_id)
         ');
