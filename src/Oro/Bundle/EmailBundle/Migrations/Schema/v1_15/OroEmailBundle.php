@@ -103,7 +103,10 @@ class OroEmailBundle implements Migration
     {
         $table = $schema->getTable('oro_email_recipient');
 
-        $table->removeForeignKey('FK_7DAF9656A832C1C9');
+        if ($table->hasForeignKey('FK_7DAF9656A832C1C9')) {
+            $table->removeForeignKey('FK_7DAF9656A832C1C9');
+        }
+
         $table->addForeignKeyConstraint(
             $schema->getTable('oro_email'),
             ['email_id'],
