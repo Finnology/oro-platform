@@ -118,6 +118,7 @@ class PlatformRequirementsProvider extends AbstractRequirementsProvider
         $this->addOpenSslExtRequirement($collection);
         $this->addIntlExtRequirement($collection);
         $this->addZipExtRequirement($collection);
+        $this->addMbstringExtRequirement($collection);
         $this->addNodeJsInstalledRequirement($collection, $nodeJsExecutable);
         $this->addNodeJsVersionRequirement($collection, $nodeJsExecutable);
         $this->addNpmInstalledRequirement($collection, $nodeJsExecutableFinder->findNpm());
@@ -333,11 +334,13 @@ class PlatformRequirementsProvider extends AbstractRequirementsProvider
 
     protected function addPcntlExtInstalledRequirement(RequirementCollection $collection): void
     {
-        $collection->addRequirement(
-            extension_loaded('pcntl'),
-            'pcntl_signal() must be available',
-            'Install and enable the <strong>pcntl</strong> extension.'
-        );
+        if (!\defined('PHP_WINDOWS_VERSION_BUILD')) {
+            $collection->addRequirement(
+                extension_loaded('pcntl'),
+                'pcntl_signal() must be available',
+                'Install and enable the <strong>pcntl</strong> extension.'
+            );
+        }
     }
 
     protected function addJsonExtInstalledRequirement(RequirementCollection $collection): void
@@ -494,6 +497,15 @@ class PlatformRequirementsProvider extends AbstractRequirementsProvider
             extension_loaded('zip'),
             'zip extension should be installed',
             'Install and enable the <strong>Zip</strong> extension.'
+        );
+    }
+
+    protected function addMbstringExtRequirement(RequirementCollection $collection): void
+    {
+        $collection->addRequirement(
+            extension_loaded('mbstring'),
+            'mbstring extension should be installed',
+            'Install and enable the <strong>mbstring</strong> extension.'
         );
     }
 

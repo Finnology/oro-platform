@@ -95,7 +95,7 @@ class TicketAuthenticationProvider implements AuthenticationProviderInterface
 
         $createdTime = strtotime($created);
         $now = strtotime(date('c'));
-        if ($createdTime > $now) {
+        if ($createdTime > $now && $createdTime - $now > 30) {
             throw new BadCredentialsException(sprintf(
                 'Ticket "%s" for "%s" is not valid, because token creation date "%s" is in future',
                 $token->getCredentials(),
@@ -120,6 +120,7 @@ class TicketAuthenticationProvider implements AuthenticationProviderInterface
         if ($username) {
             try {
                 $user = $this->userProvider->loadUserByUsername($username);
+                $user = $this->userProvider->refreshUser($user);
             } catch (UsernameNotFoundException $e) {
                 throw new BadCredentialsException(sprintf(
                     'Ticket "%s" for "%s" is not valid - user was not found.',

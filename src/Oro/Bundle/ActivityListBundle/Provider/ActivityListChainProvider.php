@@ -303,6 +303,17 @@ class ActivityListChainProvider implements ResetInterface
         );
     }
 
+    /**
+     * Tries to create a new instance of activity list entity for the given activity entity.
+     */
+    public function getNewActivityList(object $entity): ?ActivityList
+    {
+        return $this->getActivityListEntityForEntity(
+            $entity,
+            $this->getProviderForEntity($entity)
+        );
+    }
+
     public function getActivityListOption(Config $config): array
     {
         $templates = [];
@@ -456,6 +467,13 @@ class ActivityListChainProvider implements ResetInterface
             return null;
         }
 
+        $entityId = $this->doctrineHelper->getSingleEntityIdentifier($entity);
+        if (ActivityList::VERB_CREATE === $verb && null === $entityId) {
+            // return null if for some reason the activity entity have no id
+            // to avoid crush during new activity list save
+            return null;
+        }
+
         if (null === $list) {
             $list = new ActivityList();
         }
@@ -482,18 +500,23 @@ class ActivityListChainProvider implements ResetInterface
         } else {
             $className = $this->doctrineHelper->getEntityClass($entity);
             $list->setRelatedActivityClass($className);
-            $list->setRelatedActivityId($this->doctrineHelper->getSingleEntityIdentifier($entity));
+            $list->setRelatedActivityId($entityId);
             $list->setOrganization($provider->getOrganization($entity));
         }
 
+        $this->addActivityListTargets($entity, $provider, $list);
+
+        return $list;
+    }
+
+    private function addActivityListTargets($entity, ActivityListProviderInterface $provider, ActivityList $list): void
+    {
         $targets = $provider->getTargetEntities($entity);
         foreach ($targets as $target) {
             if ($list->supportActivityListTarget($this->doctrineHelper->getEntityClass($target))) {
                 $list->addActivityListTarget($target);
             }
         }
-
-        return $list;
     }
 
     /**
