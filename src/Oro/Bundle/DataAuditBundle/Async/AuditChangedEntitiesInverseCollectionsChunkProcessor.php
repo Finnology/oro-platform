@@ -64,6 +64,10 @@ class AuditChangedEntitiesInverseCollectionsChunkProcessor extends AbstractAudit
                 foreach ($sourceEntityData['fields'] as $fieldData) {
                     $fieldName = $fieldData['field_name'];
                     foreach ($fieldData['entity_ids'] as $id) {
+                        if (empty($id)) {
+                            continue;
+                        }
+
                         $key = $fieldData['entity_class'] . $id;
                         $map[$key] = [
                             'entity_id' => $id,
