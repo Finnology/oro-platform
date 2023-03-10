@@ -33,7 +33,7 @@ class AddTriggerToRowHashColumn implements Migration
             return;
         }
 
-        $queries->addQuery(new AddTriggerToRowHashQuery());
+//        $queries->addQuery(new AddTriggerToRowHashQuery());
         $this->manager->addRowHashComment($schema);
     }
 }
