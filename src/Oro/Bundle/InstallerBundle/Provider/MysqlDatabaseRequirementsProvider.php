@@ -13,7 +13,7 @@ use Oro\Component\DoctrineUtils\DBAL\DbPrivilegesProvider;
  */
 class MysqlDatabaseRequirementsProvider extends AbstractDatabaseRequirementsProvider
 {
-    public const REQUIRED_VERSION = '8.0';
+    public const REQUIRED_VERSION = '5.7';
 
     /**
      * @inheritDoc

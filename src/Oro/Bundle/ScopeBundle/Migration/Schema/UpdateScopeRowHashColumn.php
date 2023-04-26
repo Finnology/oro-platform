@@ -40,7 +40,7 @@ class UpdateScopeRowHashColumn implements Migration
         // For cases when was added new relation or removed old
         if ($comment !== $relations) {
             $queries->addQuery(new AddScopeUniquenessQuery());
-            $queries->addQuery(new AddTriggerToRowHashQuery());
+//            $queries->addQuery(new AddTriggerToRowHashQuery());
             $this->manager->addRowHashComment($schema);
         }
     }

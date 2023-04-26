@@ -27,7 +27,7 @@ class AddRowHashColumn implements Migration, OrderedMigrationInterface
 
         // Fill hash and remove duplicates
         $queries->addQuery(new AddScopeUniquenessQuery());
-        $queries->addQuery(new AddTriggerToRowHashQuery());
+//        $queries->addQuery(new AddTriggerToRowHashQuery());
         $this->addRowHashComment($table);
     }
 
