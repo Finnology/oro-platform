@@ -77,7 +77,7 @@ class OrganizationsSelectType extends AbstractType
                 if (!empty($data['organizations'])) {
                     $organizations = json_decode(reset($data['organizations']), true);
 
-                    if (!$organizations['organizations'] && !empty($data['businessUnits'])) {
+                    if (!isset($organizations['organizations']) && !empty($data['businessUnits'])) {
                         $data['organizations'] = [$this->tokenAccessor->getOrganizationId()];
                     } else {
                         $data['organizations'] = $organizations['organizations'];
