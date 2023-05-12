@@ -10,7 +10,7 @@ class RemoveDuplicateSnapshots implements Migration
 {
     public function up(Schema $schema, QueryBag $queries)
     {
-        $this->removeDuplicateSnapshots($queries);
+//        $this->removeDuplicateSnapshots($queries);
         $this->addUniqueKey($schema);
     }
 
