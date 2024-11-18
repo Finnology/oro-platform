@@ -22,44 +22,38 @@ class EventTriggerCollectorListener implements OptionalListenerInterface, ResetI
     /** @var bool */
     private $forceQueued = false;
 
-    /** @var iterable|EventTriggerExtensionInterface[] */
-    private $extensions;
-
     /** @var EventTriggerExtensionInterface[] */
     private $initializedExtensions;
 
     /**
      * @param iterable|EventTriggerExtensionInterface[] $extensions
      */
-    public function __construct(iterable $extensions)
+    public function __construct(private iterable $extensions)
     {
-        $this->extensions = $extensions;
     }
 
-    public function setForceQueued(bool $forceQueued = false)
+    public function setForceQueued(bool $forceQueued = false): void
     {
         $this->forceQueued = $forceQueued;
         $this->reset();
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function reset()
+    #[\Override]
+    public function reset(): void
     {
         $this->initializedExtensions = null;
     }
 
-    public function prePersist(LifecycleEventArgs $args)
+    public function prePersist(LifecycleEventArgs $args): void
     {
         if (!$this->enabled) {
             return;
         }
 
-        $this->schedule($args->getEntity(), EventTriggerInterface::EVENT_CREATE);
+        $this->schedule($args->getObject(), EventTriggerInterface::EVENT_CREATE);
     }
 
-    public function preUpdate(PreUpdateEventArgs $args)
+    public function preUpdate(PreUpdateEventArgs $args): void
     {
         if (!$this->enabled) {
             return;
@@ -71,19 +65,19 @@ class EventTriggerCollectorListener implements OptionalListenerInterface, ResetI
             $changeSet[$field] = ['old' => $args->getOldValue($field), 'new' => $args->getNewValue($field)];
         }
 
-        $this->schedule($args->getEntity(), EventTriggerInterface::EVENT_UPDATE, $changeSet);
+        $this->schedule($args->getObject(), EventTriggerInterface::EVENT_UPDATE, $changeSet);
     }
 
-    public function preRemove(LifecycleEventArgs $args)
+    public function preRemove(LifecycleEventArgs $args): void
     {
         if (!$this->enabled) {
             return;
         }
 
-        $this->schedule($args->getEntity(), EventTriggerInterface::EVENT_DELETE);
+        $this->schedule($args->getObject(), EventTriggerInterface::EVENT_DELETE);
     }
 
-    public function onClear(OnClearEventArgs $args)
+    public function onClear(OnClearEventArgs $args): void
     {
         $entityClass = $args->clearsAllEntities() ? null : $args->getEntityClass();
         $extensions = $this->getExtensions();
@@ -92,7 +86,7 @@ class EventTriggerCollectorListener implements OptionalListenerInterface, ResetI
         }
     }
 
-    public function postFlush(PostFlushEventArgs $args)
+    public function postFlush(PostFlushEventArgs $args): void
     {
         if (!$this->enabled) {
             return;
@@ -100,7 +94,7 @@ class EventTriggerCollectorListener implements OptionalListenerInterface, ResetI
 
         $extensions = $this->getExtensions();
         foreach ($extensions as $extension) {
-            $extension->process($args->getEntityManager());
+            $extension->process($args->getObjectManager());
         }
     }
 
@@ -109,7 +103,7 @@ class EventTriggerCollectorListener implements OptionalListenerInterface, ResetI
      * @param string $event
      * @param array|null $changeSet
      */
-    private function schedule($entity, $event, array $changeSet = null)
+    private function schedule($entity, $event, array $changeSet = null): void
     {
         $extensions = $this->getExtensions();
         foreach ($extensions as $extension) {

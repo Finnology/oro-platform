@@ -76,12 +76,7 @@ class TwigRenderer extends Renderer implements TwigRendererInterface, LoggerAwar
         $this->setEnvironment($environment);
     }
 
-    /**
-     * {@inheritdoc}
-     *
-     * Switches from the locally cached data and TWIG renderer engine associated with current environment to the
-     * corresponding data and TWIG renderer engine of the new $environment.
-     */
+    #[\Override]
     public function setEnvironment(Environment $environment)
     {
         // Stores current local cache and TWIG renderer engine.
@@ -106,15 +101,13 @@ class TwigRenderer extends Renderer implements TwigRendererInterface, LoggerAwar
         return $this;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function searchAndRenderBlock(
         FormView $view,
         $blockNameSuffix,
         array $variables = [],
         $renderParentBlock = false
-    ) {
+    ): string {
         $context = $this->layoutContextStack->getCurrentContext();
         $metadata = $context ? $this->renderCache->getMetadata($view, $context) : null;
         $blockId = $view->vars['id'];

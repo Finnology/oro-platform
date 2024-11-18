@@ -62,6 +62,7 @@ class ImportStrategyHelperTest extends \PHPUnit\Framework\TestCase
     /** @var ImportStrategyHelper */
     private $helper;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->managerRegistry = $this->createMock(ManagerRegistry::class);
@@ -247,7 +248,7 @@ class ImportStrategyHelperTest extends \PHPUnit\Framework\TestCase
     /**
      * @dataProvider validateDataProvider
      */
-    public function testValidateEntity(?string $path, string $error, string $expectedMessage): void
+    public function testValidateEntity(string $path, string $error, string $expectedMessage): void
     {
         $entity = new \stdClass();
 
@@ -258,7 +259,7 @@ class ImportStrategyHelperTest extends \PHPUnit\Framework\TestCase
         $violation->expects(self::once())
             ->method('getMessage')
             ->willReturn($error);
-        $violations = [$violation];
+        $violations = new ConstraintViolationList([$violation]);
         $this->validator->expects(self::once())
             ->method('validate')
             ->with($entity)
@@ -271,7 +272,7 @@ class ImportStrategyHelperTest extends \PHPUnit\Framework\TestCase
     {
         return [
             'without property path' => [
-                'path' => null,
+                'path' => '',
                 'error' => 'Error',
                 'expectedMessage' => 'Error',
             ],

@@ -74,7 +74,7 @@ class ConfigProvider implements ResetInterface
         }
 
         if (!$identifierFieldsOnly && $this->fullConfigsCacheDisabled) {
-            return $this->loadConfig($className, $version, $requestType, $extras, $identifierFieldsOnly, $cacheKey);
+            return $this->loadConfig($className, $version, $requestType, $extras, false, $cacheKey);
         }
 
         if (\array_key_exists($cacheKey, $this->cache)) {
@@ -87,9 +87,7 @@ class ConfigProvider implements ResetInterface
         return clone $config;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function reset(): void
     {
         $this->cache = [];
@@ -178,8 +176,8 @@ class ConfigProvider implements ResetInterface
         foreach ($extras as $extra) {
             if ($extra instanceof ConfigExtraSectionInterface) {
                 $sectionName = $extra->getName();
-                if ($context->has($sectionName)) {
-                    $config->set($sectionName, $context->get($sectionName));
+                if ($context->hasConfigSection($sectionName)) {
+                    $config->set($sectionName, $context->getConfigSection($sectionName));
                 }
             }
         }

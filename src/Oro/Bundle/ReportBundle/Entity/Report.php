@@ -2,145 +2,90 @@
 
 namespace Oro\Bundle\ReportBundle\Entity;
 
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Oro\Bundle\EntityConfigBundle\Metadata\Annotation\Config;
-use Oro\Bundle\EntityConfigBundle\Metadata\Annotation\ConfigField;
+use Extend\Entity\Autocomplete\OroReportBundle_Entity_Report;
+use Oro\Bundle\EntityConfigBundle\Metadata\Attribute\Config;
+use Oro\Bundle\EntityConfigBundle\Metadata\Attribute\ConfigField;
 use Oro\Bundle\EntityExtendBundle\Entity\ExtendEntityInterface;
 use Oro\Bundle\EntityExtendBundle\Entity\ExtendEntityTrait;
 use Oro\Bundle\OrganizationBundle\Entity\BusinessUnit;
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
+use Oro\Bundle\OrganizationBundle\Entity\OrganizationInterface;
 use Oro\Bundle\QueryDesignerBundle\Model\AbstractQueryDesigner;
 use Oro\Bundle\QueryDesignerBundle\Model\GridQueryDesignerInterface;
+use Oro\Bundle\ReportBundle\Entity\Repository\ReportRepository;
 
 /**
  * Holds report configuration.
  *
- * @ORM\Entity(repositoryClass="Oro\Bundle\ReportBundle\Entity\Repository\ReportRepository")
- * @ORM\Table(name="oro_report")
- * @ORM\HasLifecycleCallbacks()
- * @Config(
- *      defaultValues={
- *          "ownership"={
- *              "owner_type"="BUSINESS_UNIT",
- *              "owner_field_name"="owner",
- *              "owner_column_name"="business_unit_owner_id",
- *              "organization_field_name"="organization",
- *              "organization_column_name"="organization_id"
- *          },
- *          "security"={
- *              "type"="ACL",
- *              "group_name"="",
- *              "category"="account_management"
- *          },
- *          "activity"={
- *              "immutable"=true
- *          },
- *          "attachment"={
- *              "immutable"=true
- *          }
- *      }
- * )
+ * @mixin OroReportBundle_Entity_Report
  */
+#[ORM\Entity(repositoryClass: ReportRepository::class)]
+#[ORM\Table(name: 'oro_report')]
+#[ORM\HasLifecycleCallbacks]
+#[Config(
+    defaultValues: [
+        'ownership' => [
+            'owner_type' => 'BUSINESS_UNIT',
+            'owner_field_name' => 'owner',
+            'owner_column_name' => 'business_unit_owner_id',
+            'organization_field_name' => 'organization',
+            'organization_column_name' => 'organization_id'
+        ],
+        'security' => ['type' => 'ACL', 'group_name' => '', 'category' => 'account_management'],
+        'activity' => ['immutable' => true],
+        'attachment' => ['immutable' => true]
+    ]
+)]
 class Report extends AbstractQueryDesigner implements GridQueryDesignerInterface, ExtendEntityInterface
 {
     use ExtendEntityTrait;
 
     const GRID_PREFIX = 'oro_report_table_';
 
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
-    protected $id;
+    #[ORM\Column(name: 'id', type: Types::INTEGER)]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
+    protected ?int $id = null;
 
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="name", type="string", length=255)
-     */
-    protected $name;
+    #[ORM\Column(name: 'name', type: Types::STRING, length: 255)]
+    protected ?string $name = null;
 
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="description", type="text", nullable=true)
-     */
-    protected $description;
+    #[ORM\Column(name: 'description', type: Types::TEXT, nullable: true)]
+    protected ?string $description = null;
 
-    /**
-     * @var ReportType
-     *
-     * @ORM\ManyToOne(targetEntity="ReportType")
-     * @ORM\JoinColumn(name="type", referencedColumnName="name")
-     **/
-    protected $type;
+    #[ORM\ManyToOne(targetEntity: ReportType::class)]
+    #[ORM\JoinColumn(name: 'type', referencedColumnName: 'name')]
+    protected ?ReportType $type = null;
 
-    /**
-     * @var string $entity
-     *
-     * @ORM\Column(name="entity", type="string", length=255)
-     */
-    protected $entity;
+    #[ORM\Column(name: 'entity', type: Types::STRING, length: 255)]
+    protected ?string $entity = null;
 
-    /**
-     * @var BusinessUnit
-     * @ORM\ManyToOne(targetEntity="Oro\Bundle\OrganizationBundle\Entity\BusinessUnit")
-     * @ORM\JoinColumn(name="business_unit_owner_id", referencedColumnName="id", onDelete="SET NULL")
-     */
-    protected $owner;
+    #[ORM\ManyToOne(targetEntity: BusinessUnit::class)]
+    #[ORM\JoinColumn(name: 'business_unit_owner_id', referencedColumnName: 'id', onDelete: 'SET NULL')]
+    protected ?BusinessUnit $owner = null;
 
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="definition", type="text")
-     */
-    protected $definition;
+    #[ORM\Column(name: 'definition', type: Types::TEXT)]
+    protected ?string $definition = null;
 
     /**
      * @var array
-     *
-     * @ORM\Column(name="chart_options", type="json_array", nullable=true)
      */
+    #[ORM\Column(name: 'chart_options', type: 'json_array', nullable: true)]
     protected $chartOptions;
 
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(type="datetime")
-     * @ConfigField(
-     *      defaultValues={
-     *          "entity"={
-     *              "label"="oro.ui.created_at"
-     *          }
-     *      }
-     * )
-     */
-    protected $createdAt;
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[ConfigField(defaultValues: ['entity' => ['label' => 'oro.ui.created_at']])]
+    protected ?\DateTimeInterface $createdAt = null;
 
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(type="datetime")
-     * @ConfigField(
-     *      defaultValues={
-     *          "entity"={
-     *              "label"="oro.ui.updated_at"
-     *          }
-     *      }
-     * )
-     */
-    protected $updatedAt;
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[ConfigField(defaultValues: ['entity' => ['label' => 'oro.ui.updated_at']])]
+    protected ?\DateTimeInterface $updatedAt = null;
 
-    /**
-     * @var Organization
-     *
-     * @ORM\ManyToOne(targetEntity="Oro\Bundle\OrganizationBundle\Entity\Organization")
-     * @ORM\JoinColumn(name="organization_id", referencedColumnName="id", onDelete="SET NULL")
-     */
-    protected $organization;
+    #[ORM\ManyToOne(targetEntity: Organization::class)]
+    #[ORM\JoinColumn(name: 'organization_id', referencedColumnName: 'id', onDelete: 'SET NULL')]
+    protected ?OrganizationInterface $organization = null;
 
     public function __clone()
     {
@@ -150,9 +95,7 @@ class Report extends AbstractQueryDesigner implements GridQueryDesignerInterface
         $this->cloneExtendEntityStorage();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getGridPrefix(): string
     {
         return self::GRID_PREFIX;
@@ -242,6 +185,7 @@ class Report extends AbstractQueryDesigner implements GridQueryDesignerInterface
      *
      * @return string
      */
+    #[\Override]
     public function getEntity()
     {
         return $this->entity;
@@ -253,6 +197,7 @@ class Report extends AbstractQueryDesigner implements GridQueryDesignerInterface
      * @param string $entity
      * @return Report
      */
+    #[\Override]
     public function setEntity($entity)
     {
         $this->entity = $entity;
@@ -283,17 +228,13 @@ class Report extends AbstractQueryDesigner implements GridQueryDesignerInterface
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getDefinition()
     {
         return $this->definition;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function setDefinition($definition)
     {
         $this->definition = $definition;
@@ -354,20 +295,18 @@ class Report extends AbstractQueryDesigner implements GridQueryDesignerInterface
 
     /**
      * Pre persist event listener
-     *
-     * @ORM\PrePersist
      */
+    #[ORM\PrePersist]
     public function beforeSave()
     {
         $this->createdAt = new \DateTime('now', new \DateTimeZone('UTC'));
-        $this->updatedAt = $this->createdAt;
+        $this->updatedAt = clone $this->createdAt;
     }
 
     /**
      * Pre update event listener
-     *
-     * @ORM\PreUpdate
      */
+    #[ORM\PreUpdate]
     public function beforeUpdate()
     {
         $this->updatedAt = new \DateTime('now', new \DateTimeZone('UTC'));
@@ -376,7 +315,7 @@ class Report extends AbstractQueryDesigner implements GridQueryDesignerInterface
     /**
      * Set organization
      *
-     * @param Organization $organization
+     * @param Organization|null $organization
      * @return Report
      */
     public function setOrganization(Organization $organization = null)

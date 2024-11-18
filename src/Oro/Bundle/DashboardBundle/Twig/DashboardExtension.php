@@ -50,9 +50,7 @@ class DashboardExtension extends AbstractExtension implements ServiceSubscriberI
         return $this->container->get('oro_report.entity_provider');
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getFunctions()
     {
         return [
@@ -88,10 +86,8 @@ class DashboardExtension extends AbstractExtension implements ServiceSubscriberI
         return $this->getEntityProvider()->getEntities();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedServices()
+    #[\Override]
+    public static function getSubscribedServices(): array
     {
         return [
             'oro_dashboard.widget_config_value.date_range.converter' => FilterDateRangeConverter::class,

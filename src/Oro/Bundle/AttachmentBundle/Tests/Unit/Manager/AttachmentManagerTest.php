@@ -2,7 +2,7 @@
 
 namespace Oro\Bundle\AttachmentBundle\Tests\Unit\Manager;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Oro\Bundle\AttachmentBundle\Entity\File;
@@ -35,6 +35,7 @@ class AttachmentManagerTest extends \PHPUnit\Framework\TestCase
 
     private AttachmentManager $attachmentManager;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->fileUrlProvider = $this->createMock(FileUrlProviderInterface::class);
@@ -92,15 +93,18 @@ class AttachmentManagerTest extends \PHPUnit\Framework\TestCase
 
     public function testGetFilteredImageUrlByIdAndFilename(): void
     {
+        $em = $this->createMock(EntityManagerInterface::class);
+        $repo = $this->createMock(EntityRepository::class);
+
         $this->managerRegistry->expects(self::once())
             ->method('getManagerForClass')
             ->with(File::class)
-            ->willReturn($entityManager = $this->createMock(EntityManager::class));
+            ->willReturn($em);
 
-        $entityManager->expects(self::once())
+        $em->expects(self::once())
             ->method('getRepository')
             ->with(File::class)
-            ->willReturn($repo = $this->createMock(EntityRepository::class));
+            ->willReturn($repo);
 
         $repo->expects(self::once())
             ->method('find')
@@ -126,15 +130,18 @@ class AttachmentManagerTest extends \PHPUnit\Framework\TestCase
 
     public function testGetFilteredImageUrlByIdAndFilenameWhenNoFile(): void
     {
+        $em = $this->createMock(EntityManagerInterface::class);
+        $repo = $this->createMock(EntityRepository::class);
+
         $this->managerRegistry->expects(self::once())
             ->method('getManagerForClass')
             ->with(File::class)
-            ->willReturn($entityManager = $this->createMock(EntityManager::class));
+            ->willReturn($em);
 
-        $entityManager->expects(self::once())
+        $em->expects(self::once())
             ->method('getRepository')
             ->with(File::class)
-            ->willReturn($repo = $this->createMock(EntityRepository::class));
+            ->willReturn($repo);
 
         $repo->expects(self::once())
             ->method('find')

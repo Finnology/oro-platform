@@ -4,7 +4,7 @@ namespace Oro\Bundle\SyncBundle\Tests\Unit\Authentication\Ticket;
 
 use Oro\Bundle\SyncBundle\Authentication\Ticket\TicketDigestGenerator\TicketDigestGeneratorInterface;
 use Oro\Bundle\SyncBundle\Authentication\Ticket\TicketProvider;
-use Symfony\Component\Security\Core\User\UserInterface;
+use Oro\Bundle\UserBundle\Entity\AbstractUser;
 
 class TicketProviderTest extends \PHPUnit\Framework\TestCase
 {
@@ -19,6 +19,7 @@ class TicketProviderTest extends \PHPUnit\Framework\TestCase
     /** @var TicketProvider */
     private $ticketProvider;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->ticketDigestGenerator = $this->createMock(TicketDigestGeneratorInterface::class);
@@ -51,11 +52,11 @@ class TicketProviderTest extends \PHPUnit\Framework\TestCase
 
     public function testGenerateTicket(): void
     {
-        $user = $this->createMock(UserInterface::class);
+        $user = $this->createMock(AbstractUser::class);
 
         $username = 'sampleUsername';
         $user->expects(self::once())
-            ->method('getUsername')
+            ->method('getUserIdentifier')
             ->willReturn($username);
 
         $password = 'samplePassword';

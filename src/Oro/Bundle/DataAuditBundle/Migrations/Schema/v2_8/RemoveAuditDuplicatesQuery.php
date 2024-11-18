@@ -15,6 +15,7 @@ class RemoveAuditDuplicatesQuery extends ParametrizedMigrationQuery
     /**
      * @return string|string[]
      */
+    #[\Override]
     public function getDescription()
     {
         $logger = new ArrayLogger();
@@ -23,6 +24,7 @@ class RemoveAuditDuplicatesQuery extends ParametrizedMigrationQuery
         return $logger->getMessages();
     }
 
+    #[\Override]
     public function execute(LoggerInterface $logger)
     {
         $this->doExecute($logger);
@@ -37,7 +39,7 @@ class RemoveAuditDuplicatesQuery extends ParametrizedMigrationQuery
         $sql = 'SELECT object_id, object_class, transaction_id FROM oro_audit '.
             'GROUP BY object_id, object_class, transaction_id HAVING COUNT(*) > 1';
         $this->logQuery($logger, $sql);
-        $duplicatedGroups = $this->connection->fetchAll($sql);
+        $duplicatedGroups = $this->connection->fetchAllAssociative($sql);
         if (!$duplicatedGroups) {
             return;
         }
@@ -46,7 +48,7 @@ class RemoveAuditDuplicatesQuery extends ParametrizedMigrationQuery
         foreach ($duplicatedGroups as $group) {
             $sql = 'SELECT id FROM oro_audit WHERE object_id = ? AND object_class = ? AND transaction_id = ?';
             $this->logQuery($logger, $sql);
-            $duplicatedPair = $this->connection->fetchAll(
+            $duplicatedPair = $this->connection->fetchAllAssociative(
                 $sql,
                 [$group['object_id'], $group['object_class'], $group['transaction_id']]
             );

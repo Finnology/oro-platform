@@ -25,9 +25,9 @@ use Symfony\Component\Finder\Finder;
  */
 class ExtendConfigDumper
 {
-    public const ACTION_PRE_UPDATE  = 'preUpdate';
+    public const ACTION_PRE_UPDATE = 'preUpdate';
     public const ACTION_POST_UPDATE = 'postUpdate';
-    public const DEFAULT_PREFIX     = 'default_';
+    public const DEFAULT_PREFIX = 'default_';
 
     /** @var string */
     private $cacheDir;
@@ -114,7 +114,6 @@ class ExtendConfigDumper
      */
     public function updateConfig($filter = null, $updateCustom = false)
     {
-        $aliases = ExtendClassLoadingUtils::getAliases($this->cacheDir);
         $this->clear(true);
 
         if ($updateCustom) {
@@ -132,7 +131,7 @@ class ExtendConfigDumper
 
         foreach ($extendConfigs as $extendConfig) {
             if ($extendConfig->is('upgradeable')) {
-                $this->checkSchema($extendConfig, $configProvider, $aliases, $filter);
+                $this->checkSchema($extendConfig, $configProvider, $filter);
                 $this->updateStateValues($extendConfig, $configProvider);
             }
         }
@@ -150,17 +149,17 @@ class ExtendConfigDumper
 
     public function dump()
     {
-        $schemas       = [];
+        $schemas = [];
         $extendConfigs = $this->configManager->getProvider('extend')->getConfigs(null, true);
         foreach ($extendConfigs as $extendConfig) {
-            $schema    = $extendConfig->get('schema');
+            $schema = $extendConfig->get('schema');
             $className = $extendConfig->getId()->getClassName();
             if (!str_contains($className, ExtendClassLoadingUtils::getEntityNamespace())) {
                 continue;
             }
 
             if ($schema) {
-                $schemas[$className]                 = $schema;
+                $schemas[$className] = $schema;
                 $schemas[$className]['relationData'] = $this->getRelationDataForEntity($extendConfigs, $extendConfig);
             }
         }
@@ -218,12 +217,12 @@ class ExtendConfigDumper
      */
     public function checkConfig()
     {
-        $hasAliases = ExtendClassLoadingUtils::aliasesExist($this->cacheDir);
-        if ($hasAliases) {
+        $hasClasses = ExtendClassLoadingUtils::classesExist($this->cacheDir);
+        if ($hasClasses) {
             return;
         }
 
-        $hasChanges    = false;
+        $hasChanges = false;
         $extendConfigs = $this->configManager->getProvider('extend')->getConfigs(null, true);
         foreach ($extendConfigs as $extendConfig) {
             $schema = $extendConfig->get('schema', false, []);
@@ -233,6 +232,9 @@ class ExtendConfigDumper
             // in case if a parent class is changed in a new version of a code
             if (isset($schema['type'], $schema['class'], $schema['entity']) && $schema['type'] === 'Extend') {
                 $entityClassName = $schema['entity'];
+                if (!class_exists($schema['class'])) {
+                    throw new \InvalidArgumentException(sprintf('Unknown class "%s".', $schema['class']));
+                }
                 $parentClassName = get_parent_class($schema['class']);
                 if (false !== $parentClassName && $parentClassName !== $entityClassName) {
                     $inheritClassName = get_parent_class($parentClassName);
@@ -243,7 +245,7 @@ class ExtendConfigDumper
                         $schema['parent'] = $parentClassName;
                     }
                     if (!isset($schema['inherit']) || $schema['inherit'] !== $inheritClassName) {
-                        $hasSchemaChanges  = true;
+                        $hasSchemaChanges = true;
                         $schema['inherit'] = $inheritClassName;
                     }
 
@@ -270,12 +272,7 @@ class ExtendConfigDumper
     {
         $filesystem = new Filesystem();
 
-        if ($keepEntityProxies) {
-            $aliasesPath = ExtendClassLoadingUtils::getAliasesPath($this->cacheDir);
-            if ($filesystem->exists($aliasesPath)) {
-                $filesystem->remove($aliasesPath);
-            }
-        } else {
+        if (!$keepEntityProxies) {
             $baseCacheDir = ExtendClassLoadingUtils::getEntityCacheDir($this->cacheDir);
             if ($filesystem->exists($baseCacheDir)) {
                 $finder = new Finder();
@@ -296,12 +293,12 @@ class ExtendConfigDumper
     /**
      * Check fields parameters and update field config
      *
-     * @param string          $entityName
+     * @param string $entityName
      * @param ConfigInterface $fieldConfig
-     * @param array           $relationProperties
-     * @param array           $defaultProperties
-     * @param array           $properties
-     * @param array           $doctrine
+     * @param array $relationProperties
+     * @param array $defaultProperties
+     * @param array $properties
+     * @param array $doctrine
      * @param \ReflectionClass|null $reflectionEntityClass
      * @throws \ReflectionException
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
@@ -323,12 +320,12 @@ class ExtendConfigDumper
                 !$reflectionEntityClass->hasProperty($fieldConfigId->getFieldName())) {
                 return;
             }
-            $fieldName     = $fieldConfigId->getFieldName();
-            $fieldType     = $fieldConfigId->getFieldType();
-            $isDeleted     = $fieldConfig->is('is_deleted');
-            $columnName    = $fieldConfig->get('column_name', false, $fieldName);
+            $fieldName = $fieldConfigId->getFieldName();
+            $fieldType = $fieldConfigId->getFieldType();
+            $isDeleted = $fieldConfig->is('is_deleted');
+            $columnName = $fieldConfig->get('column_name', false, $fieldName);
 
-            $underlyingFieldType = $this->fieldTypeHelper->getUnderlyingType($fieldType);
+            $underlyingFieldType = $this->fieldTypeHelper->getUnderlyingType($fieldType, $fieldConfig);
             if (in_array($underlyingFieldType, RelationType::$anyToAnyRelations, true)) {
                 $relationProperties[$fieldName] = [];
                 if ($isDeleted) {
@@ -349,13 +346,13 @@ class ExtendConfigDumper
                 }
 
                 $doctrine[$entityName]['fields'][$fieldName] = [
-                    'column'    => $columnName,
-                    'type'      => $fieldType,
-                    'nullable'  => $fieldConfig->get('nullable', false, true),
-                    'length'    => $fieldConfig->get('length'),
+                    'column' => $columnName,
+                    'type' => $fieldType,
+                    'nullable' => $fieldConfig->get('nullable', false, true),
+                    'length' => $fieldConfig->get('length'),
                     'precision' => $fieldConfig->get('precision'),
-                    'scale'     => $fieldConfig->get('scale'),
-                    'default'   => $fieldConfig->get('default'),
+                    'scale' => $fieldConfig->get('scale'),
+                    'default' => $fieldConfig->get('default'),
                 ];
             }
         }
@@ -367,29 +364,27 @@ class ExtendConfigDumper
      * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      *
      * @param ConfigInterface $extendConfig
-     * @param ConfigProvider  $configProvider
-     * @param array|null      $aliases
-     * @param callable|null   $filter function (ConfigInterface $config) : bool
+     * @param ConfigProvider $configProvider
+     * @param callable|null $filter function (ConfigInterface $config) : bool
      * @throws \ReflectionException
      */
     private function checkSchema(
         ConfigInterface $extendConfig,
         ConfigProvider $configProvider,
-        $aliases,
         $filter = null
     ) {
-        $className  = $extendConfig->getId()->getClassName();
-        $doctrine   = [];
+        $className = $extendConfig->getId()->getClassName();
+        $doctrine = [];
         $entityName = $className;
 
         if (ExtendHelper::isCustomEntity($className)) {
-            $type      = 'Custom';
+            $type = 'Custom';
             $tableName = $extendConfig->get('table');
             if (!$tableName) {
                 $tableName = $this->nameGenerator->generateCustomEntityTableName($className);
             }
             $doctrine[$entityName] = [
-                'type'  => 'entity',
+                'type' => 'entity',
                 'table' => $tableName
             ];
             // add 'id' field only for Custom entity without inheritance
@@ -402,16 +397,16 @@ class ExtendConfigDumper
             $type = 'Extend';
             $entityName = $className;
             $doctrine[$entityName] = [
-                'type'   => 'entity',
+                'type' => 'entity',
                 'fields' => [],
             ];
         }
 
-        $schema             = $extendConfig->get('schema', false, []);
-        $properties         = isset($schema['property']) && null !== $filter ? $schema['property'] : [];
+        $schema = $extendConfig->get('schema', false, []);
+        $properties = isset($schema['property']) && null !== $filter ? $schema['property'] : [];
         $relationProperties = isset($schema['relation']) && null !== $filter ? $schema['relation'] : [];
-        $defaultProperties  = isset($schema['default']) && null !== $filter ? $schema['default'] : [];
-        $addRemoveMethods   = isset($schema['addremove']) && null !== $filter ? $schema['addremove'] : [];
+        $defaultProperties = isset($schema['default']) && null !== $filter ? $schema['default'] : [];
+        $addRemoveMethods = isset($schema['addremove']) && null !== $filter ? $schema['addremove'] : [];
 
         $fieldConfigs = null === $filter
             ? $configProvider->getConfigs($className, true)
@@ -464,30 +459,27 @@ class ExtendConfigDumper
                 if ($targetFieldId) {
                     $fieldType = $fieldId->getFieldType();
 
-                    $addRemoveMethods[$fieldName]['target']              = $targetFieldId->getFieldName();
+                    $addRemoveMethods[$fieldName]['target'] = $targetFieldId->getFieldName();
                     $addRemoveMethods[$fieldName]['is_target_addremove'] = $fieldType === RelationType::MANY_TO_MANY;
                 }
             }
         }
 
         $schema = [
-            'class'     => $className,
-            'entity'    => $entityName,
-            'type'      => $type,
-            'property'  => $properties,
-            'relation'  => $relationProperties,
-            'default'   => $defaultProperties,
+            'class' => $className,
+            'entity' => $entityName,
+            'type' => $type,
+            'property' => $properties,
+            'relation' => $relationProperties,
+            'default' => $defaultProperties,
             'addremove' => $addRemoveMethods,
-            'doctrine'  => $doctrine,
+            'doctrine' => $doctrine,
         ];
 
         if ($type === 'Extend') {
             $parentClassName = class_exists($className) ? get_parent_class($className) : false;
-            if ($parentClassName === $entityName) {
-                $parentClassName = $aliases[$entityName];
-            }
-            $schema['parent']  = $parentClassName;
-            $schema['inherit'] = class_exists($parentClassName) ? get_parent_class($parentClassName): false;
+            $schema['parent'] = $parentClassName;
+            $schema['inherit'] = class_exists($parentClassName) ? get_parent_class($parentClassName) : false;
         } elseif ($extendConfig->has('inherit')) {
             $schema['inherit'] = $extendConfig->get('inherit');
         }

@@ -23,16 +23,14 @@ class MigrateActivityListFilterQuery extends ParametrizedSqlMigrationQuery
         parent::__construct();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function processQueries(LoggerInterface $logger, $dryRun = false)
     {
         $reports = $this->connection->createQueryBuilder()
             ->select('r.id, r.definition')
             ->from($this->tableName, 'r')
             ->execute()
-            ->fetchAll(\PDO::FETCH_ASSOC);
+            ->fetchAllAssociative();
         $reportsToUpdate = [];
         foreach ($reports as $report) {
             $definition = $report['definition'];

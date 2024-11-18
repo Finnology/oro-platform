@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\LocaleBundle\Tests\Unit\Action;
@@ -20,6 +21,7 @@ class CheckIfDefaultLanguageActionTest extends \PHPUnit\Framework\TestCase
     private CheckIfDefaultLanguageAction $action1;
     private CheckIfDefaultLanguageAction $action2;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->otherCode = 'fr_FR';

@@ -7,18 +7,14 @@ use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 
 class ScheduleIntervalsCollectionTypeStub extends ScheduleIntervalsCollectionType
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getName()
     {
         return ScheduleIntervalsCollectionType::NAME;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getParent()
+    #[\Override]
+    public function getParent(): ?string
     {
         return CollectionType::class;
     }

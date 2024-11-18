@@ -15,9 +15,7 @@ use Twig\Extension\ExtensionInterface;
  */
 class TwigServiceLocatorPass implements CompilerPassInterface
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function process(ContainerBuilder $container)
     {
         if (!$container->hasDefinition('oro_platform.twig.service_locator')) {
@@ -51,7 +49,12 @@ class TwigServiceLocatorPass implements CompilerPassInterface
     private function getSubscribedServices(ContainerBuilder $container, Definition $definition, array &$ids): void
     {
         $class = $definition->getClass();
-        if (!is_a($class, ExtensionInterface::class, true)) {
+        try {
+            if (!is_a($class, ExtensionInterface::class, true)) {
+                return;
+            }
+        } catch (\Error $e) {
+            // Catch class loading errors and do nothing as there are services in vendors for non-existent classes.
             return;
         }
 

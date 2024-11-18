@@ -9,6 +9,7 @@ use Oro\Bundle\ActionBundle\Model\Assembler\FormOptionsAssembler;
 use Oro\Bundle\ActionBundle\Model\Assembler\OperationAssembler;
 use Oro\Bundle\ActionBundle\Model\Operation;
 use Oro\Bundle\ActionBundle\Model\OperationDefinition;
+use Oro\Bundle\ActionBundle\Resolver\OptionsResolver;
 use Oro\Bundle\ActionBundle\Tests\Unit\Stub\TestEntity1;
 use Oro\Bundle\ActionBundle\Tests\Unit\Stub\TestEntity2;
 use Oro\Component\Action\Action\ActionFactoryInterface;
@@ -19,13 +20,15 @@ class OperationAssemblerTest extends \PHPUnit\Framework\TestCase
     /** @var OperationAssembler */
     private $assembler;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->assembler = new OperationAssembler(
             $this->createMock(ActionFactoryInterface::class),
             $this->createMock(ConditionFactory::class),
             $this->createMock(AttributeAssembler::class),
-            $this->createMock(FormOptionsAssembler::class)
+            $this->createMock(FormOptionsAssembler::class),
+            $this->createMock(OptionsResolver::class)
         );
     }
 
@@ -147,6 +150,7 @@ class OperationAssemblerTest extends \PHPUnit\Framework\TestCase
                         $this->createMock(ConditionFactory::class),
                         $this->createMock(AttributeAssembler::class),
                         $this->createMock(FormOptionsAssembler::class),
+                        $this->createMock(OptionsResolver::class),
                         $definition1
                     )
                 ],
@@ -178,6 +182,7 @@ class OperationAssemblerTest extends \PHPUnit\Framework\TestCase
                         $this->createMock(ConditionFactory::class),
                         $this->createMock(AttributeAssembler::class),
                         $this->createMock(FormOptionsAssembler::class),
+                        $this->createMock(OptionsResolver::class),
                         $definition2
                     )
                 ],
@@ -213,6 +218,7 @@ class OperationAssemblerTest extends \PHPUnit\Framework\TestCase
                         $this->createMock(ConditionFactory::class),
                         $this->createMock(AttributeAssembler::class),
                         $this->createMock(FormOptionsAssembler::class),
+                        $this->createMock(OptionsResolver::class),
                         $definition3
                     )
                 ],

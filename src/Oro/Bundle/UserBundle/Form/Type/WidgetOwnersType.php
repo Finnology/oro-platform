@@ -10,9 +10,7 @@ class WidgetOwnersType extends AbstractType
 {
     const NAME = 'oro_type_widget_owners';
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder->add(
@@ -41,18 +39,13 @@ class WidgetOwnersType extends AbstractType
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getName()
     {
         return $this->getBlockPrefix();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return self::NAME;
     }

@@ -10,9 +10,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class TaxonomyType extends AbstractType
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder->add(
@@ -37,9 +35,7 @@ class TaxonomyType extends AbstractType
             );
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults(
@@ -51,10 +47,8 @@ class TaxonomyType extends AbstractType
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return 'oro_tag_taxonomy';
     }

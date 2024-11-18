@@ -17,6 +17,7 @@ class ExpressionLanguageTest extends \PHPUnit\Framework\TestCase
 {
     private ExpressionLanguage $expressionLanguage;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->expressionLanguage = new ExpressionLanguage();
@@ -41,10 +42,10 @@ class ExpressionLanguageTest extends \PHPUnit\Framework\TestCase
         $cacheItem->expects(self::once())
             ->method('set')
             ->with(self::isInstanceOf(ParsedExpression::class))
-            ->willReturnCallback(static function ($expression) use (&$savedParsedExpression) {
+            ->willReturnCallback(static function ($expression) use (&$savedParsedExpression, $cacheItem) {
                 $savedParsedExpression = $expression;
 
-                return true;
+                return $cacheItem;
             });
         $cache->expects(self::once())
             ->method('save')
@@ -159,8 +160,10 @@ class ExpressionLanguageTest extends \PHPUnit\Framework\TestCase
         $cacheItem->expects(self::once())
             ->method('set')
             ->with(self::isInstanceOf(ParsedExpression::class))
-            ->willReturnCallback(static function ($expression) use (&$savedParsedExpressions, $key) {
+            ->willReturnCallback(static function ($expression) use (&$savedParsedExpressions, $key, $cacheItem) {
                 $savedParsedExpressions[$key] = $expression;
+
+                return $cacheItem;
             });
         $cache->expects(self::once())
             ->method('save')
@@ -173,8 +176,6 @@ class ExpressionLanguageTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @dataProvider lintDataProvider
-     *
-     * @param string $expression
      */
     public function testLint(string $expression): void
     {
@@ -185,8 +186,6 @@ class ExpressionLanguageTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @dataProvider lintDataProvider
-     *
-     * @param string $expression
      */
     public function testLintWhenExpressionObject(string $expression): void
     {
@@ -220,10 +219,6 @@ class ExpressionLanguageTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @dataProvider evaluateDataProvider
-     *
-     * @param string $expression
-     * @param array $values
-     * @param mixed $expected
      */
     public function testEvaluate(string $expression, array $values, mixed $expected): void
     {
@@ -234,10 +229,6 @@ class ExpressionLanguageTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @dataProvider evaluateDataProvider
-     *
-     * @param string $expression
-     * @param array $values
-     * @param mixed $expected
      */
     public function testEvaluateWhenExpressionObject(string $expression, array $values, mixed $expected): void
     {

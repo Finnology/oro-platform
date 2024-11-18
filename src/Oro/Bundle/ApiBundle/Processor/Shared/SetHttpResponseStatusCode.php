@@ -23,9 +23,7 @@ class SetHttpResponseStatusCode implements ProcessorInterface
         $this->defaultSuccessStatusCode = $defaultSuccessStatusCode;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function process(ContextInterface $context): void
     {
         /** @var Context $context */
@@ -67,6 +65,7 @@ class SetHttpResponseStatusCode implements ProcessorInterface
         $groupedCodes = [];
         foreach ($errors as $error) {
             $code = $error->getStatusCode() ?: Response::HTTP_INTERNAL_SERVER_ERROR;
+            /** @var int $groupCode */
             $groupCode = (int)floor($code / 100) * 100;
 
             if (!\array_key_exists($groupCode, $groupedCodes)

@@ -15,6 +15,7 @@ class LocalizationManagerTest extends WebTestCase
 {
     use ConfigManagerAwareTestTrait;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->initClient();
@@ -103,8 +104,6 @@ class LocalizationManagerTest extends WebTestCase
     {
         //Clear cache
         $this->getContainer()->get('oro_locale.manager.localization')->clearCache();
-        // Store localizations in cache
-        $this->getContainer()->get('oro_locale.manager.localization')->warmUpCache();
 
         return $this->getContainer()->get('oro_locale.manager.localization');
     }

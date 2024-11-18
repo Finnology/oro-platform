@@ -2,26 +2,21 @@
 
 namespace Oro\Bundle\IntegrationBundle\ActionHandler\Error;
 
-use Symfony\Component\HttpFoundation\Session\Session;
+use Symfony\Component\HttpFoundation\RequestStack;
 
+/**
+ * Handle flash bag channel actions.
+ */
 class FlashBagChannelActionErrorHandler implements ChannelActionErrorHandlerInterface
 {
-    /**
-     * @var Session
-     */
-    private $session;
-
-    public function __construct(Session $session)
+    public function __construct(protected RequestStack $requestStack)
     {
-        $this->session = $session;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function handleErrors($errors)
     {
-        $flashBag = $this->session->getFlashBag();
+        $flashBag = $this->requestStack->getSession()->getFlashBag();
 
         foreach ($errors as $error) {
             $flashBag->add('error', $error);

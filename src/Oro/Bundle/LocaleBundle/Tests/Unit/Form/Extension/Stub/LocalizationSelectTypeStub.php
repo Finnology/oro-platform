@@ -9,17 +9,13 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class LocalizationSelectTypeStub extends AbstractType
 {
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return LocalizationSelectType::NAME;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults(
@@ -33,10 +29,8 @@ class LocalizationSelectTypeStub extends AbstractType
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getParent()
+    #[\Override]
+    public function getParent(): ?string
     {
         return ChoiceType::class;
     }

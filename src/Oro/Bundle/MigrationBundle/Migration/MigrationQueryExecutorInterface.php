@@ -6,11 +6,11 @@ use Doctrine\DBAL\Connection;
 use Psr\Log\LoggerInterface;
 
 /**
- * Provides interface for MigrationQueryExecutor
+ * Represents an executor of migrations queries.
  */
 interface MigrationQueryExecutorInterface
 {
-    public function getConnection():Connection;
+    public function getConnection(): Connection;
 
     public function execute($query, $dryRun): void;
 

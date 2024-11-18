@@ -4,7 +4,7 @@ namespace Oro\Bundle\BatchBundle\Tests\Functional\ORM;
 
 use Doctrine\DBAL\Platforms\MySQL80Platform;
 use Doctrine\DBAL\Platforms\PostgreSqlPlatform;
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use Oro\Bundle\BatchBundle\ORM\Query\AbstractBufferedQueryResultIterator;
 use Oro\Bundle\TestFrameworkBundle\Entity\Item;
@@ -18,6 +18,7 @@ use Oro\Component\Testing\Assert\ArrayContainsConstraint;
  */
 abstract class AbstractBufferedIdentityQueryResultIteratorTest extends WebTestCase
 {
+    #[\Override]
     public function setUp(): void
     {
         $this->initClient();
@@ -29,20 +30,14 @@ abstract class AbstractBufferedIdentityQueryResultIteratorTest extends WebTestCa
 
     public function testSimpleQuery()
     {
-        $em = $this->getContainer()->get('doctrine');
-
-        /** @var QueryBuilder $queryBuilder */
-        $queryBuilder = $em->getRepository(Item::class)->createQueryBuilder('item');
+        $queryBuilder = $this->getEntityManager()->getRepository(Item::class)->createQueryBuilder('item');
 
         $this->assertSameResult($queryBuilder);
     }
 
     public function testJoinAndGroup()
     {
-        $em = $this->getContainer()->get('doctrine');
-
-        /** @var QueryBuilder $queryBuilder */
-        $queryBuilder = $em->getRepository(Item::class)->createQueryBuilder('item');
+        $queryBuilder = $this->getEntityManager()->getRepository(Item::class)->createQueryBuilder('item');
         $queryBuilder
             ->select('item.id, item.stringValue, SUM(value.id)')
             ->leftJoin('item.values', 'value')
@@ -55,10 +50,7 @@ abstract class AbstractBufferedIdentityQueryResultIteratorTest extends WebTestCa
     {
         $this->expectException(\LogicException::class);
 
-        $em = $this->getContainer()->get('doctrine');
-
-        /** @var QueryBuilder $queryBuilder */
-        $queryBuilder = $em->getRepository(Item::class)->createQueryBuilder('item');
+        $queryBuilder = $this->getEntityManager()->getRepository(Item::class)->createQueryBuilder('item');
         $queryBuilder
             ->select('item.id, item.stringValue, value.id')
             ->leftJoin('item.values', 'value')
@@ -73,10 +65,7 @@ abstract class AbstractBufferedIdentityQueryResultIteratorTest extends WebTestCa
      */
     public function testLeftJoinScalar()
     {
-        $em = $this->getContainer()->get('doctrine');
-
-        /** @var QueryBuilder $queryBuilder */
-        $queryBuilder = $em->getRepository(Item::class)->createQueryBuilder('item');
+        $queryBuilder = $this->getEntityManager()->getRepository(Item::class)->createQueryBuilder('item');
         $queryBuilder
             ->select('item.id, item.stringValue, value.id as vid')
             ->leftJoin('item.values', 'value');
@@ -86,10 +75,7 @@ abstract class AbstractBufferedIdentityQueryResultIteratorTest extends WebTestCa
 
     public function testLeftJoinObject()
     {
-        $em = $this->getContainer()->get('doctrine');
-
-        /** @var QueryBuilder $queryBuilder */
-        $queryBuilder = $em->getRepository(Item::class)->createQueryBuilder('item');
+        $queryBuilder = $this->getEntityManager()->getRepository(Item::class)->createQueryBuilder('item');
         $queryBuilder
             ->select('item, value')
             ->leftJoin('item.values', 'value');
@@ -99,10 +85,7 @@ abstract class AbstractBufferedIdentityQueryResultIteratorTest extends WebTestCa
 
     public function testWhereScalar()
     {
-        $em = $this->getContainer()->get('doctrine');
-
-        /** @var QueryBuilder $queryBuilder */
-        $queryBuilder = $em->getRepository(Item::class)->createQueryBuilder('item');
+        $queryBuilder = $this->getEntityManager()->getRepository(Item::class)->createQueryBuilder('item');
         $queryBuilder
             ->select('item.id, item.stringValue, value.id as vid')
             ->leftJoin('item.values', 'value')
@@ -114,10 +97,7 @@ abstract class AbstractBufferedIdentityQueryResultIteratorTest extends WebTestCa
 
     public function testWhereObject()
     {
-        $em = $this->getContainer()->get('doctrine');
-
-        /** @var QueryBuilder $queryBuilder */
-        $queryBuilder = $em->getRepository(Item::class)->createQueryBuilder('item');
+        $queryBuilder = $this->getEntityManager()->getRepository(Item::class)->createQueryBuilder('item');
         $queryBuilder
             ->select('item, value')
             ->leftJoin('item.values', 'value')
@@ -132,10 +112,7 @@ abstract class AbstractBufferedIdentityQueryResultIteratorTest extends WebTestCa
      */
     public function testLimitOffset(int $offset, int $limit)
     {
-        $em = $this->getContainer()->get('doctrine');
-
-        /** @var QueryBuilder $queryBuilder */
-        $queryBuilder = $em->getRepository(Item::class)->createQueryBuilder('item');
+        $queryBuilder = $this->getEntityManager()->getRepository(Item::class)->createQueryBuilder('item');
         $queryBuilder->setFirstResult($offset);
         $queryBuilder->setMaxResults($limit);
 
@@ -157,9 +134,8 @@ abstract class AbstractBufferedIdentityQueryResultIteratorTest extends WebTestCa
 
     public function testChangingDataset()
     {
-        $em = $this->getContainer()->get('doctrine');
+        $em = $this->getEntityManager();
 
-        /** @var QueryBuilder $queryBuilder */
         $queryBuilder = $em->getRepository(Item::class)->createQueryBuilder('item');
         $queryBuilder->where('item.stringValue != :v');
         $queryBuilder->setParameter('v', 'processed');
@@ -175,7 +151,7 @@ abstract class AbstractBufferedIdentityQueryResultIteratorTest extends WebTestCa
             if ($i % 3 == 0) {
                 $id = $item->getId();
                 $em->getConnection()
-                    ->exec("update test_search_item set stringValue = 'processed' where id = {$id}");
+                    ->executeStatement("update test_search_item set stringValue = 'processed' where id = {$id}");
             }
             $iteratorResult[] = $item;
         }
@@ -190,9 +166,8 @@ abstract class AbstractBufferedIdentityQueryResultIteratorTest extends WebTestCa
 
     public function testDelete()
     {
-        $em = $this->getContainer()->get('doctrine');
+        $em = $this->getEntityManager();
 
-        /** @var QueryBuilder $queryBuilder */
         $queryBuilder = $em->getRepository(ItemValue::class)->createQueryBuilder('value');
         $all = count($queryBuilder->getQuery()->execute());
 
@@ -206,7 +181,7 @@ abstract class AbstractBufferedIdentityQueryResultIteratorTest extends WebTestCa
         foreach ($iterator as $item) {
             $id = $item->getId();
             $em->getConnection()
-                ->exec("delete from test_search_item_value where id = {$id}");
+                ->executeStatement("delete from test_search_item_value where id = {$id}");
         }
 
         $queryBuilder = $em->getRepository(ItemValue::class)->createQueryBuilder('value');
@@ -226,10 +201,7 @@ abstract class AbstractBufferedIdentityQueryResultIteratorTest extends WebTestCa
      */
     public function testOrderByJoinedFieldScalar()
     {
-        $em = $this->getContainer()->get('doctrine');
-
-        /** @var QueryBuilder $queryBuilder */
-        $queryBuilder = $em->getRepository(Item::class)->createQueryBuilder('item');
+        $queryBuilder = $this->getEntityManager()->getRepository(Item::class)->createQueryBuilder('item');
         $queryBuilder
             ->select('item.id, item.stringValue, item.integerValue')
             ->leftJoin('item.values', 'value')
@@ -249,10 +221,7 @@ abstract class AbstractBufferedIdentityQueryResultIteratorTest extends WebTestCa
      */
     public function testOrderByJoinedFieldObjectHydration()
     {
-        $em = $this->getContainer()->get('doctrine');
-
-        /** @var QueryBuilder $queryBuilder */
-        $queryBuilder = $em->getRepository(Item::class)->createQueryBuilder('item');
+        $queryBuilder = $this->getEntityManager()->getRepository(Item::class)->createQueryBuilder('item');
         $queryBuilder
             ->select('item, value')
             ->leftJoin('item.values', 'value')
@@ -350,7 +319,7 @@ abstract class AbstractBufferedIdentityQueryResultIteratorTest extends WebTestCa
     /**
      * Asserts 2 datasets are equal by comparing only result IDs without taking into account results order.
      */
-    private function assertSameByIdWithoutOrder(QueryBuilder $queryBuilder)
+    private function assertSameByIdWithoutOrder(QueryBuilder $queryBuilder): void
     {
         [$expected, $actual] = $this->getResultsWithForeachLoop($queryBuilder);
         $this->compareQueryResultWithIteratorResult($expected, $actual);
@@ -384,10 +353,7 @@ abstract class AbstractBufferedIdentityQueryResultIteratorTest extends WebTestCa
      */
     private function isPostgreSql(): bool
     {
-        /** @var EntityManager $em */
-        $em = $this->getContainer()->get('doctrine')->getManager();
-
-        return $em->getConnection()->getDatabasePlatform() instanceof PostgreSqlPlatform;
+        return $this->getEntityManager()->getConnection()->getDatabasePlatform() instanceof PostgreSqlPlatform;
     }
 
     /**
@@ -395,10 +361,12 @@ abstract class AbstractBufferedIdentityQueryResultIteratorTest extends WebTestCa
      */
     private function isMySql8(): bool
     {
-        /** @var EntityManager $em */
-        $em = $this->getContainer()->get('doctrine')->getManager();
+        return $this->getEntityManager()->getConnection()->getDatabasePlatform() instanceof MySQL80Platform;
+    }
 
-        return $em->getConnection()->getDatabasePlatform() instanceof MySQL80Platform;
+    private function getEntityManager(): EntityManagerInterface
+    {
+        return self::getContainer()->get('doctrine')->getManager();
     }
 
     abstract public function getIterator(QueryBuilder $queryBuilder): AbstractBufferedQueryResultIterator;

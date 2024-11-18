@@ -9,10 +9,11 @@ use Doctrine\Persistence\Mapping\MappingException;
 use Doctrine\Persistence\Mapping\ReflectionService;
 use Oro\Bundle\EntityBundle\DataCollector\OrmLogger;
 use Oro\Bundle\EntityExtendBundle\Tools\ExtendReflectionErrorHandler;
+use Psr\Cache\CacheItemPoolInterface;
 
 /**
  * Adds the following features to the Doctrine's ClassMetadataFactory:
- * * a possibility to mark the factory disconnected to be able to to memory usage optimization
+ * * a possibility to mark the factory disconnected to be able to memory usage optimization
  *   of the message queue consumer
  * * a memory cache for the result value of isTransient() method
  * * a possibility to profile ORM metadata related methods
@@ -67,9 +68,7 @@ class OroClassMetadataFactory extends ClassMetadataFactory
         return $this->entityManager;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function setEntityManager(EntityManagerInterface $em)
     {
         if (!$this->disconnected) {
@@ -78,9 +77,7 @@ class OroClassMetadataFactory extends ClassMetadataFactory
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getAllMetadata()
     {
         $logger = $this->getProfilingLogger();
@@ -113,9 +110,12 @@ class OroClassMetadataFactory extends ClassMetadataFactory
         return $result;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    public function getCacheItemPool(): ?CacheItemPoolInterface
+    {
+        return $this->getCache();
+    }
+
+    #[\Override]
     public function getMetadataFor($className)
     {
         $logger = $this->getProfilingLogger();
@@ -141,6 +141,7 @@ class OroClassMetadataFactory extends ClassMetadataFactory
         return $result;
     }
 
+    #[\Override]
     protected function initializeReflection(ClassMetadataInterface $class, ReflectionService $reflService)
     {
         $className = $class->getName();
@@ -150,9 +151,7 @@ class OroClassMetadataFactory extends ClassMetadataFactory
         parent::initializeReflection($class, $reflService);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function isTransient($class)
     {
         $logger = $this->getProfilingLogger();

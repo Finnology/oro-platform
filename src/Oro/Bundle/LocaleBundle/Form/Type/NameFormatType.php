@@ -19,9 +19,7 @@ class NameFormatType extends AbstractType
         $this->nameFormatter = $nameFormatter;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults(
@@ -31,26 +29,19 @@ class NameFormatType extends AbstractType
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getParent()
+    #[\Override]
+    public function getParent(): ?string
     {
         return TextType::class;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getName()
     {
         return $this->getBlockPrefix();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return 'oro_name_format';
     }

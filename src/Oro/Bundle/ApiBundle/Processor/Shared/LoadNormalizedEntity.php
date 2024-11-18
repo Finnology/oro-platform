@@ -3,8 +3,10 @@
 namespace Oro\Bundle\ApiBundle\Processor\Shared;
 
 use Oro\Bundle\ApiBundle\Processor\ActionProcessorBagInterface;
+use Oro\Bundle\ApiBundle\Processor\Create\CreateContext;
 use Oro\Bundle\ApiBundle\Processor\Get\GetContext;
 use Oro\Bundle\ApiBundle\Processor\SingleItemContext;
+use Oro\Bundle\ApiBundle\Processor\Update\UpdateContext;
 use Oro\Bundle\ApiBundle\Request\ApiAction;
 use Oro\Bundle\ApiBundle\Request\ApiActionGroup;
 use Oro\Component\ChainProcessor\ActionProcessorInterface;
@@ -18,10 +20,7 @@ use Oro\Component\ChainProcessor\ProcessorInterface;
  */
 class LoadNormalizedEntity implements ProcessorInterface
 {
-    public const OPERATION_NAME = 'normalized_entity_loaded';
-
-    private ActionProcessorBagInterface $processorBag;
-    private bool $reuseExistingEntity;
+    public const string OPERATION_NAME = 'normalized_entity_loaded';
 
     /**
      * @param ActionProcessorBagInterface $processorBag
@@ -29,18 +28,16 @@ class LoadNormalizedEntity implements ProcessorInterface
      *                                                         by the "get" action and use the entity
      *                                                         from the current context
      */
-    public function __construct(ActionProcessorBagInterface $processorBag, bool $reuseExistingEntity = false)
-    {
-        $this->processorBag = $processorBag;
-        $this->reuseExistingEntity = $reuseExistingEntity;
+    public function __construct(
+        private ActionProcessorBagInterface $processorBag,
+        private bool $reuseExistingEntity = false
+    ) {
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function process(ContextInterface $context): void
     {
-        /** @var SingleItemContext $context */
+        /** @var CreateContext|UpdateContext $context */
 
         if ($context->isProcessed(self::OPERATION_NAME)) {
             // the normalized entity was already loaded
@@ -63,8 +60,10 @@ class LoadNormalizedEntity implements ProcessorInterface
         }
     }
 
-    protected function createGetContext(SingleItemContext $context, ActionProcessorInterface $processor): GetContext
-    {
+    private function createGetContext(
+        CreateContext|UpdateContext $context,
+        ActionProcessorInterface $processor
+    ): GetContext {
         /** @var GetContext $getContext */
         $getContext = $processor->createContext();
         $getContext->setVersion($context->getVersion());
@@ -72,20 +71,26 @@ class LoadNormalizedEntity implements ProcessorInterface
         $getContext->setRequestHeaders($context->getRequestHeaders());
         $getContext->setSharedData($context->getSharedData());
         $getContext->setHateoas($context->isHateoasEnabled());
+        $getContext->setParentAction($context->getAction());
         $getContext->setClassName($context->getClassName());
         $getContext->setId($context->getId());
-        if ($this->reuseExistingEntity && $context->hasResult()) {
+        if ($context->hasResult()
+            && ($this->reuseExistingEntity || $context->getConfig()?->isValidationEnabled())
+        ) {
             $getContext->setResult($context->getResult());
         }
         $getContext->skipGroup(ApiActionGroup::SECURITY_CHECK);
         $getContext->skipGroup(ApiActionGroup::DATA_SECURITY_CHECK);
         $getContext->skipGroup(ApiActionGroup::NORMALIZE_RESULT);
         $getContext->setSoftErrorsHandling(true);
+        foreach ($context->getNormalizedEntityConfigExtras() as $extra) {
+            $getContext->addConfigExtra($extra);
+        }
 
         return $getContext;
     }
 
-    protected function processGetResult(GetContext $getContext, SingleItemContext $context): void
+    private function processGetResult(GetContext $getContext, SingleItemContext $context): void
     {
         if ($getContext->hasErrors()) {
             $errors = $getContext->getErrors();

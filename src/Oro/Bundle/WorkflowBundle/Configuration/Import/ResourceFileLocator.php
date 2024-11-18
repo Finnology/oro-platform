@@ -18,10 +18,8 @@ class ResourceFileLocator implements FileLocatorInterface
         $this->fileLocator = $fileLocator;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function locate($name, $currentPath = null, $first = true)
+    #[\Override]
+    public function locate($name, $currentPath = null, $first = true): string|array
     {
         $name = str_replace(':', '/Resources/config/oro/', $name);
 

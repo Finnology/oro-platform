@@ -11,10 +11,8 @@ class Configuration implements ConfigurationInterface
     const CSRF_TOKEN_LIFETIME         = 'csrf_token_lifetime';
     const CSRF_TOKEN_CACHE_SERVICE_ID = 'csrf_token_cache_service_id';
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getConfigTreeBuilder()
+    #[\Override]
+    public function getConfigTreeBuilder(): TreeBuilder
     {
         $treeBuilder = new TreeBuilder('oro_embedded_form');
         $rootNode = $treeBuilder->getRootNode();

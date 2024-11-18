@@ -1,9 +1,22 @@
 # Configuration for https://github.com/oroinc/phpstan-rules/
 trusted_data:
     variables:
+        Oro\Bundle\TranslationBundle\Entity\Repository\AbstractTranslationRepository:
+            doUpdateTranslations:
+                valuesPlaceholder: true
+            doGetAllIdentities:
+                className: true
+            doUpdateDefaultTranslations:
+                className: true
         Oro\Bundle\TranslationBundle\Translation\DatabasePersister:
             executeBatchTranslationInsert:
                 sqlData: true
+        Oro\Bundle\TranslationBundle\Api\Repository\TranslationLanguageJoinOptimizer:
+            removeOrderByLanguageCode:
+                orderBy: true
+        Oro\Bundle\TranslationBundle\Api\Repository\TranslationQueryModifier:
+            addComputedFields:
+                languageCode: true
     safe_static_methods:
         Oro\Bundle\TranslationBundle\EventListener\UpdateTranslatableDictionariesListener:
             getTranslationEntityTable: true

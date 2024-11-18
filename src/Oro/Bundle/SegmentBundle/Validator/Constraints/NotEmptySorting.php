@@ -13,10 +13,8 @@ class NotEmptySorting extends Constraint
     /** @var string */
     public $message = 'oro.segment.validation.sorting';
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getTargets()
+    #[\Override]
+    public function getTargets(): string|array
     {
         return self::CLASS_CONSTRAINT;
     }

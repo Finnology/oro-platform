@@ -12,17 +12,13 @@ use Psr\Log\LoggerInterface;
  */
 class AddScopeUniquenessQuery extends AbstractScopeQuery
 {
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     protected function getInfo(): string
     {
         return 'Add unique index to oro_scope row_hash';
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function doExecute(LoggerInterface $logger, bool $dryRun = false): void
     {
         $this->fillScopeHashesForExistingRows($logger, $dryRun);
@@ -85,7 +81,7 @@ class AddScopeUniquenessQuery extends AbstractScopeQuery
         $duplicateSql = 'SELECT MIN(id) FROM oro_scope GROUP BY row_hash HAVING COUNT(id) > 1';
         $this->logQuery($logger, $duplicateSql);
 
-        $minimumIds = $this->connection->executeQuery($duplicateSql)->fetchAll(\PDO::FETCH_COLUMN);
+        $minimumIds = $this->connection->executeQuery($duplicateSql)->fetchFirstColumn();
         if (!$minimumIds) {
             return [];
         }
@@ -101,7 +97,7 @@ class AddScopeUniquenessQuery extends AbstractScopeQuery
         $params = ['minimumIds' => $minimumIds];
         $this->logQuery($logger, $duplicateGroupSql, $params, $types);
 
-        $scopes = $this->connection->fetchAll($duplicateGroupSql, $params, $types);
+        $scopes = $this->connection->fetchAllAssociative($duplicateGroupSql, $params, $types);
 
         $newToOldScopeIdMap = [];
         foreach ($scopes as $scope) {

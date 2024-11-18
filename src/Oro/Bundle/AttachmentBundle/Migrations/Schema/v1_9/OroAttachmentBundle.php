@@ -2,30 +2,18 @@
 
 namespace Oro\Bundle\AttachmentBundle\Migrations\Schema\v1_9;
 
-use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\FetchMode;
 use Doctrine\DBAL\Schema\Schema;
 use Oro\Bundle\EntityConfigBundle\Migration\UpdateEntityConfigFieldValueQuery;
 use Oro\Bundle\MigrationBundle\Migration\ConnectionAwareInterface;
+use Oro\Bundle\MigrationBundle\Migration\ConnectionAwareTrait;
 use Oro\Bundle\MigrationBundle\Migration\Migration;
 use Oro\Bundle\MigrationBundle\Migration\QueryBag;
 
 class OroAttachmentBundle implements Migration, ConnectionAwareInterface
 {
-    /** @var Connection */
-    private $connection;
+    use ConnectionAwareTrait;
 
-    /**
-     * {@inheritdoc}
-     */
-    public function setConnection(Connection $connection): void
-    {
-        $this->connection = $connection;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function up(Schema $schema, QueryBag $queries): void
     {
         $sql = 'select field_name, class_name'
@@ -34,7 +22,7 @@ class OroAttachmentBundle implements Migration, ConnectionAwareInterface
             . ' where oecf.type IN (?, ?)';
 
         $fileFieldsQueryResult = $this->connection->executeQuery($sql, ['file', 'image']);
-        while ($row = $fileFieldsQueryResult->fetch(FetchMode::ASSOCIATIVE)) {
+        while ($row = $fileFieldsQueryResult->fetchAssociative()) {
             $queries->addQuery(
                 new UpdateEntityConfigFieldValueQuery(
                     $row['class_name'],
@@ -47,7 +35,7 @@ class OroAttachmentBundle implements Migration, ConnectionAwareInterface
         }
 
         $fileFieldsQueryResult = $this->connection->executeQuery($sql, ['multiFile', 'multiImage']);
-        while ($row = $fileFieldsQueryResult->fetch(FetchMode::ASSOCIATIVE)) {
+        while ($row = $fileFieldsQueryResult->fetchAssociative()) {
             $queries->addQuery(
                 new UpdateEntityConfigFieldValueQuery(
                     $row['class_name'],

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\MigrationBundle\Command;
@@ -63,6 +64,7 @@ class LoadDataFixturesCommand extends Command
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     protected function configure()
     {
         $this
@@ -129,7 +131,8 @@ HELP
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    #[\Override]
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->inputOptionProvider = new InputOptionProvider($output, $input, $this->getHelperSet()->get('question'));
 
@@ -151,7 +154,7 @@ HELP
             }
         }
 
-        return 0;
+        return Command::SUCCESS;
     }
 
     /**
@@ -233,28 +236,48 @@ HELP
         array $fixtures,
         string $fixturesType
     ): void {
-        $cursor = new Cursor($output);
-        $this->dataFixturesExecutor->setLogger(
-            function ($message) use ($output, $cursor) {
-                $output->write(\sprintf('  <comment>></comment> <info>%s</info>', $message));
-                // Saves the cursor position to make it possible to return to the end of previous line in the progress
-                // callback to append the progress info.
-                $cursor->savePosition();
-                $output->writeln('');
-            }
-        );
+        if ($output->isDecorated()) {
+            $cursor = new Cursor($output);
+            $this->dataFixturesExecutor->setLogger(
+                function ($message) use ($output, $cursor) {
+                    $output->write(\sprintf('  <comment>></comment> <info>%s</info>', $message));
+                    // Saves the cursor position to make it possible to return to the end of previous line in the
+                    // progress callback to append the progress info.
+                    $cursor->savePosition();
+                    $output->writeln('');
+                }
+            );
 
-        $progressCallback = static function (int $memoryBytes, float $durationMilli) use ($output, $cursor) {
-            // Returns cursor to the end of the previous line so the progress info will be appended after it.
-            $cursor->restorePosition();
-            $cursor->moveUp();
+            $progressCallback = static function (int $memoryBytes, float $durationMilli) use ($output, $cursor) {
+                // Returns cursor to the end of the previous line so the progress info will be appended after it.
+                $cursor->restorePosition();
+                $cursor->moveUp();
 
-            $output->writeln(\sprintf(
-                ' <comment>%.2F MiB - %d ms</comment>',
-                $memoryBytes / 1024 / 1024,
-                $durationMilli
-            ));
-        };
+                $output->writeln(\sprintf(
+                    ' <comment>%.2F MiB - %d ms</comment>',
+                    $memoryBytes / 1024 / 1024,
+                    $durationMilli
+                ));
+            };
+        } else {
+            $this->dataFixturesExecutor->setLogger(
+                function ($message, bool $useProgressCallback = false) use ($output) {
+                    if ($useProgressCallback) {
+                        $output->write(\sprintf('  <comment>></comment> <info>%s</info>', $message));
+                    } else {
+                        $output->writeln(\sprintf('  <comment>></comment> <info>%s</info>', $message));
+                    }
+                }
+            );
+
+            $progressCallback = static function (int $memoryBytes, float $durationMilli) use ($output) {
+                $output->writeln(\sprintf(
+                    ' <comment>%.2F MiB - %d ms</comment>',
+                    $memoryBytes / 1024 / 1024,
+                    $durationMilli
+                ));
+            };
+        }
 
         $this->dataFixturesExecutor->setFormattingCode($this->getFormattingCode($input));
         $this->dataFixturesExecutor->setLanguage($this->getLanguage($input));

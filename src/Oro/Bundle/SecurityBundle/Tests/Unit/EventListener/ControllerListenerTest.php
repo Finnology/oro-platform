@@ -28,6 +28,7 @@ class ControllerListenerTest extends \PHPUnit\Framework\TestCase
     /** @var ControllerListener */
     private $listener;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->classAuthorizationChecker = $this->createMock(ClassAuthorizationChecker::class);
@@ -48,12 +49,12 @@ class ControllerListenerTest extends \PHPUnit\Framework\TestCase
             $this->createMock(HttpKernelInterface::class),
             [new TestDomainObject(), self::METHOD_NAME],
             $this->request,
-            HttpKernelInterface::MASTER_REQUEST
+            HttpKernelInterface::MAIN_REQUEST
         );
 
         $this->logger->expects(self::once())
             ->method('debug')
-            ->with(sprintf('Invoked controller "%s::%s". (MASTER_REQUEST)', self::CLASS_NAME, self::METHOD_NAME));
+            ->with(sprintf('Invoked controller "%s::%s". (MAIN_REQUEST)', self::CLASS_NAME, self::METHOD_NAME));
 
         $this->classAuthorizationChecker->expects(self::once())
             ->method('isClassMethodGranted')
@@ -70,12 +71,12 @@ class ControllerListenerTest extends \PHPUnit\Framework\TestCase
             $this->createMock(HttpKernelInterface::class),
             [new TestDomainObject(), self::METHOD_NAME],
             $this->request,
-            HttpKernelInterface::MASTER_REQUEST
+            HttpKernelInterface::MAIN_REQUEST
         );
 
         $this->logger->expects(self::once())
             ->method('debug')
-            ->with(sprintf('Invoked controller "%s::%s". (MASTER_REQUEST)', self::CLASS_NAME, self::METHOD_NAME));
+            ->with(sprintf('Invoked controller "%s::%s". (MAIN_REQUEST)', self::CLASS_NAME, self::METHOD_NAME));
 
         $this->classAuthorizationChecker->expects(self::once())
             ->method('isClassMethodGranted')
@@ -112,7 +113,7 @@ class ControllerListenerTest extends \PHPUnit\Framework\TestCase
             $this->createMock(HttpKernelInterface::class),
             static fn () => null,
             $this->request,
-            HttpKernelInterface::MASTER_REQUEST
+            HttpKernelInterface::MAIN_REQUEST
         );
 
         $this->logger->expects(self::never())
@@ -131,7 +132,7 @@ class ControllerListenerTest extends \PHPUnit\Framework\TestCase
             $this->createMock(HttpKernelInterface::class),
             [new TestDomainObject(), self::METHOD_NAME],
             $this->request,
-            HttpKernelInterface::MASTER_REQUEST
+            HttpKernelInterface::MAIN_REQUEST
         );
 
         $this->logger->expects(self::never())

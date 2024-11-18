@@ -9,26 +9,19 @@ class MailboxGridType extends AbstractType
 {
     const NAME = 'oro_email_mailbox_grid';
 
-    /**
-     * {@inheritdoc}
-     */
     public function getName()
     {
         return $this->getBlockPrefix();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return self::NAME;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getParent()
+    #[\Override]
+    public function getParent(): ?string
     {
         return HiddenType::class;
     }

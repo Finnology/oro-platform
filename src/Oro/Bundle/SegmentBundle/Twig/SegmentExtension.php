@@ -24,9 +24,7 @@ class SegmentExtension extends AbstractExtension implements ServiceSubscriberInt
         $this->container = $container;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getFunctions()
     {
         return [
@@ -77,10 +75,8 @@ class SegmentExtension extends AbstractExtension implements ServiceSubscriberInt
         return $event->getOptions();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedServices()
+    #[\Override]
+    public static function getSubscribedServices(): array
     {
         return [
             EventDispatcherInterface::class,

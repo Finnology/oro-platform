@@ -23,12 +23,11 @@ class TagHandlerTest extends \PHPUnit\Framework\TestCase
     /** @var ObjectManager|\PHPUnit\Framework\MockObject\MockObject */
     private $manager;
 
-    /** @var TagHandler */
     private TagHandler $handler;
 
-    /** @var Tag */
     private Tag $entity;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->form = $this->createMock(Form::class);

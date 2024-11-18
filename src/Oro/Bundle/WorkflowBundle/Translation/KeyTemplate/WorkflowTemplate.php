@@ -15,14 +15,13 @@ class WorkflowTemplate implements TranslationKeyTemplateInterface
     /**
      * @return string
      */
+    #[\Override]
     public function getName()
     {
         return static::NAME;
     }
 
-    /**
-     * @return string
-     */
+    #[\Override]
     public function getTemplate(): string
     {
         return self::KEY_PREFIX . '.{{ workflow_name }}';
@@ -31,6 +30,7 @@ class WorkflowTemplate implements TranslationKeyTemplateInterface
     /**
      * @return array
      */
+    #[\Override]
     public function getRequiredKeys()
     {
         return ['workflow_name'];
@@ -39,6 +39,7 @@ class WorkflowTemplate implements TranslationKeyTemplateInterface
     /**
      * @return array
      */
+    #[\Override]
     public function getKeyTemplates()
     {
         $result = [];
@@ -53,6 +54,7 @@ class WorkflowTemplate implements TranslationKeyTemplateInterface
      * @param string $attributeName
      * @return string
      */
+    #[\Override]
     public function getKeyTemplate($attributeName)
     {
         return sprintf('{{ %s }}', $attributeName);

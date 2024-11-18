@@ -47,13 +47,6 @@ abstract class AbstractOAuthAwareConfigurationType extends AbstractType
     /** @var OAuthManagerRegistry */
     protected $oauthManagerRegistry;
 
-    /**
-     * @param TranslatorInterface    $translator
-     * @param ConfigManager          $userConfigManager
-     * @param TokenAccessorInterface $tokenAccessor
-     * @param RequestStack           $requestStack
-     * @param OAuthManagerRegistry   $oauthManagerRegistry
-     */
     public function __construct(
         TranslatorInterface $translator,
         ConfigManager $userConfigManager,
@@ -68,9 +61,7 @@ abstract class AbstractOAuthAwareConfigurationType extends AbstractType
         $this->oauthManagerRegistry = $oauthManagerRegistry;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function finishView(FormView $view, FormInterface $form, array $options)
     {
         $request = $this->requestStack->getCurrentRequest();
@@ -78,9 +69,7 @@ abstract class AbstractOAuthAwareConfigurationType extends AbstractType
             && (bool)$request->get('formParentName', false);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder->addEventSubscriber(new DecodeFolderSubscriber());
@@ -128,9 +117,7 @@ abstract class AbstractOAuthAwareConfigurationType extends AbstractType
             ));
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults([
@@ -141,7 +128,7 @@ abstract class AbstractOAuthAwareConfigurationType extends AbstractType
     protected function addOwnerOrganizationEventListener(FormBuilderInterface $builder)
     {
         $builder->addEventListener(
-            FormEvents::POST_SUBMIT,
+            FormEvents::SUBMIT,
             function (FormEvent $event) {
                 /** @var UserEmailOrigin $data */
                 $data = $event->getData();

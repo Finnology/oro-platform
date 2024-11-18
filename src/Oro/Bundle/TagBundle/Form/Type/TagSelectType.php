@@ -1,4 +1,5 @@
 <?php
+
 namespace Oro\Bundle\TagBundle\Form\Type;
 
 use Oro\Bundle\FormBundle\Form\Type\OroJquerySelect2HiddenType;
@@ -35,9 +36,7 @@ class TagSelectType extends AbstractType
         $this->subscriber = $subscriber;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder->resetViewTransformers();
@@ -45,18 +44,14 @@ class TagSelectType extends AbstractType
         $builder->addEventSubscriber($this->subscriber);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function finishView(FormView $view, FormInterface $form, array $options)
     {
         $view->vars['component_options']['oro_tag_create_granted'] =
             $this->authorizationChecker->isGranted('oro_tag_create');
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults(
@@ -76,26 +71,19 @@ class TagSelectType extends AbstractType
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getName()
     {
         return $this->getBlockPrefix();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return 'oro_tag_select';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getParent()
+    #[\Override]
+    public function getParent(): ?string
     {
         return OroJquerySelect2HiddenType::class;
     }

@@ -22,6 +22,7 @@ class UserTypeTest extends WebTestCase
     private const FIRST_NAME = 'John';
     private const LAST_NAME = 'Doe';
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->initClient(
@@ -130,9 +131,9 @@ class UserTypeTest extends WebTestCase
 
         /** @var User $expectedUser */
         $expectedUser = $this->getReference(LoadUserData::SIMPLE_USER);
-        $actualUsername = self::getContainer()->get('security.token_storage')->getToken()->getUsername();
+        $actualUsername = self::getContainer()->get('security.token_storage')->getToken()->getUserIdentifier();
 
-        self::assertEquals($expectedUser->getUsername(), $actualUsername);
+        self::assertEquals($expectedUser->getUserIdentifier(), $actualUsername);
     }
 
     private function assertMessage(RawMessage $symfonyEmail, string $email, string $plainPassword): void

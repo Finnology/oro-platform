@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Component\MessageQueue\Client\Meta;
@@ -39,6 +40,7 @@ class TopicsCommand extends Command
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     protected function configure()
     {
         $this
@@ -58,7 +60,8 @@ HELP
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      * @noinspection PhpMissingParentCallCommonInspection
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    #[\Override]
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $table = new Table($output);
         $table->setHeaders(['Topic', 'Description', 'Default Priority', 'Subscribers']);

@@ -15,10 +15,8 @@ class UniqueExtendEntityMethodName extends Constraint
     /** @var string */
     public $unexpectedNameMessage = 'The field name must be \'{{ field }}\'.';
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getTargets()
+    #[\Override]
+    public function getTargets(): string|array
     {
         return self::CLASS_CONSTRAINT;
     }

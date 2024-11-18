@@ -2,11 +2,15 @@
 
 namespace Oro\Bundle\EntityExtendBundle\Validator\Constraints;
 
+use Attribute;
 use Symfony\Component\Validator\Constraint;
 
 /**
+ * UniqueEnumName constraint
+ *
  * @Annotation
  */
+#[Attribute]
 class UniqueEnumName extends Constraint
 {
     public $message = 'An enum with this name already exist.';
@@ -17,18 +21,14 @@ class UniqueEnumName extends Constraint
     /** @var string */
     public $fieldName;
 
-    /**
-     * {@inheritdoc}
-     */
-    public function validatedBy()
+    #[\Override]
+    public function validatedBy(): string
     {
         return UniqueEnumNameValidator::ALIAS;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getRequiredOptions()
+    #[\Override]
+    public function getRequiredOptions(): array
     {
         return ['entityClassName', 'fieldName'];
     }

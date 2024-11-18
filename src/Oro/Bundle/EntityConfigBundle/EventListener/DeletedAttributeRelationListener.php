@@ -1,7 +1,7 @@
 <?php
+
 namespace Oro\Bundle\EntityConfigBundle\EventListener;
 
-use Doctrine\Inflector\Inflector;
 use Doctrine\ORM\Event\OnFlushEventArgs;
 use Oro\Bundle\EntityConfigBundle\Attribute\Entity\AttributeFamily;
 use Oro\Bundle\EntityConfigBundle\Attribute\Entity\AttributeGroupRelation;
@@ -17,48 +17,27 @@ use Oro\Component\MessageQueue\Client\MessageProducerInterface;
  */
 class DeletedAttributeRelationListener
 {
-    /**
-     * @var MessageProducerInterface
-     */
-    protected $messageProducer;
-
-    /**
-     * @var DeletedAttributeProviderInterface
-     */
-    protected $deletedAttributeProvider;
-
-    /**
-     * @var string
-     */
-    protected $topic = '';
-
-    /**
-     * @var array
-     */
-    protected $deletedAttributes = [];
-    private Inflector $inflector;
+    protected MessageProducerInterface $messageProducer;
+    protected DeletedAttributeProviderInterface $deletedAttributeProvider;
+    protected string $topic = '';
+    protected array $deletedAttributes = [];
 
     public function __construct(
         MessageProducerInterface $messageProducer,
-        DeletedAttributeProviderInterface $deletedAttributeProvider,
-        Inflector $inflector
+        DeletedAttributeProviderInterface $deletedAttributeProvider
     ) {
         $this->messageProducer = $messageProducer;
         $this->deletedAttributeProvider = $deletedAttributeProvider;
-        $this->inflector = $inflector;
     }
 
-    /**
-     * @param string $topic
-     */
-    public function setTopic($topic)
+    public function setTopic(string $topic): void
     {
-        $this->topic = (string) $topic;
+        $this->topic = $topic;
     }
 
-    public function onFlush(OnFlushEventArgs $eventArgs)
+    public function onFlush(OnFlushEventArgs $eventArgs): void
     {
-        $uow = $eventArgs->getEntityManager()->getUnitOfWork();
+        $uow = $eventArgs->getObjectManager()->getUnitOfWork();
 
         foreach ($uow->getScheduledEntityDeletions() as $attributeRelation) {
             if (!$attributeRelation instanceof AttributeGroupRelation) {
@@ -76,12 +55,13 @@ class DeletedAttributeRelationListener
             foreach ($attributes as &$attribute) {
                 $attribute = $this->getAttributeName($attribute);
             }
+            unset($attribute);
 
             $this->deletedAttributes[$attributeFamilyId] = $attributes;
         }
     }
 
-    public function postFlush()
+    public function postFlush(): void
     {
         foreach ($this->deletedAttributes as $attributeFamilyId => $attributeNames) {
             if (!$attributeNames) {
@@ -100,12 +80,7 @@ class DeletedAttributeRelationListener
         $this->deletedAttributes = [];
     }
 
-    /**
-     * @param AttributeFamily $attributeFamily
-     * @param int $attributeId
-     * @return bool
-     */
-    protected function checkIsDeleted(AttributeFamily $attributeFamily, $attributeId)
+    protected function checkIsDeleted(AttributeFamily $attributeFamily, int $attributeId): bool
     {
         foreach ($attributeFamily->getAttributeGroups() as $attributeGroup) {
             foreach ($attributeGroup->getAttributeRelations() as $attributeGroupRelation) {
@@ -118,10 +93,6 @@ class DeletedAttributeRelationListener
         return true;
     }
 
-    /**
-     * @param FieldConfigModel $attribute
-     * @return string
-     */
     protected function getAttributeName(FieldConfigModel $attribute): string
     {
         return $attribute->getFieldName();

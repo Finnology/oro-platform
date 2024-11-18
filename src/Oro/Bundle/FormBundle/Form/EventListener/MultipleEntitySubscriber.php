@@ -27,10 +27,8 @@ class MultipleEntitySubscriber implements EventSubscriberInterface
         $this->doctrineHelper = $doctrineHelper;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedEvents()
+    #[\Override]
+    public static function getSubscribedEvents(): array
     {
         return [
             FormEvents::POST_SET_DATA => 'postSet',

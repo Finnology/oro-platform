@@ -24,9 +24,7 @@ class RoleMultiSelectType extends AbstractType
         $this->entityManager = $entityManager;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder->addModelTransformer(
@@ -34,9 +32,7 @@ class RoleMultiSelectType extends AbstractType
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults(
@@ -51,26 +47,19 @@ class RoleMultiSelectType extends AbstractType
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getParent()
+    #[\Override]
+    public function getParent(): ?string
     {
         return OroJquerySelect2HiddenType::class;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getName()
     {
         return $this->getBlockPrefix();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return 'oro_role_multiselect';
     }

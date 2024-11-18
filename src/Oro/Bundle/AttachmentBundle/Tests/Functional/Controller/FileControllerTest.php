@@ -13,6 +13,7 @@ use Oro\Bundle\TestFrameworkBundle\Test\WebTestCase;
  */
 class FileControllerTest extends WebTestCase
 {
+    #[\Override]
     protected function setUp(): void
     {
         $this->initClient([], self::generateBasicAuthHeader());
@@ -20,6 +21,7 @@ class FileControllerTest extends WebTestCase
         $this->loadFixtures([LoadFileData::class, LoadImageData::class]);
     }
 
+    #[\Override]
     protected function tearDown(): void
     {
         $this->client->enableReboot();
@@ -242,6 +244,8 @@ class FileControllerTest extends WebTestCase
         $this->client->request('GET', $url);
         $result = $this->client->getResponse();
 
+        self::assertTrue($result->headers->getCacheControlDirective('public'));
+        self::assertTrue($result->headers->hasCacheControlDirective('max-age'));
         self::assertResponseContentTypeEquals($result, $file->getMimeType());
         self::assertResponseStatusCodeEquals($result, 200);
     }
@@ -255,6 +259,8 @@ class FileControllerTest extends WebTestCase
         $this->client->request('GET', $url);
         $result = $this->client->getResponse();
 
+        self::assertTrue($result->headers->getCacheControlDirective('public'));
+        self::assertTrue($result->headers->hasCacheControlDirective('max-age'));
         self::assertResponseContentTypeEquals($result, 'image/webp');
         self::assertResponseStatusCodeEquals($result, 200);
     }
@@ -275,6 +281,8 @@ class FileControllerTest extends WebTestCase
         $this->client->request('GET', $url);
         $result = $this->client->getResponse();
 
+        self::assertTrue($result->headers->getCacheControlDirective('public'));
+        self::assertTrue($result->headers->hasCacheControlDirective('max-age'));
         self::assertResponseContentTypeEquals($result, 'image/png');
         self::assertResponseStatusCodeEquals($result, 200);
     }
@@ -295,6 +303,8 @@ class FileControllerTest extends WebTestCase
         $this->client->request('GET', $url);
         $result = $this->client->getResponse();
 
+        self::assertTrue($result->headers->getCacheControlDirective('public'));
+        self::assertTrue($result->headers->hasCacheControlDirective('max-age'));
         self::assertResponseContentTypeEquals($result, 'image/webp');
         self::assertResponseStatusCodeEquals($result, 200);
     }

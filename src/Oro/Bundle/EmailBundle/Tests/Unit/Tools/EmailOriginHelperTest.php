@@ -18,21 +18,24 @@ use Oro\Bundle\OrganizationBundle\Entity\Organization;
 use Oro\Bundle\OrganizationBundle\Entity\OrganizationInterface;
 use Oro\Bundle\SecurityBundle\Authentication\TokenAccessorInterface;
 use Oro\Bundle\UserBundle\Entity\User;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 
-class EmailOriginHelperTest extends \PHPUnit\Framework\TestCase
+class EmailOriginHelperTest extends TestCase
 {
-    /** @var EntityManager|\PHPUnit\Framework\MockObject\MockObject */
+    /** @var EntityManager|MockObject */
     private $em;
 
-    /** @var Email|\PHPUnit\Framework\MockObject\MockObject */
+    /** @var Email|MockObject */
     private $emailModel;
 
-    /** @var EmailOwnerProvider|\PHPUnit\Framework\MockObject\MockObject */
+    /** @var EmailOwnerProvider|MockObject */
     private $emailOwnerProvider;
 
     /** @var EmailOriginHelper */
     private $emailOriginHelper;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->em = $this->createMock(EntityManager::class);
@@ -42,7 +45,7 @@ class EmailOriginHelperTest extends \PHPUnit\Framework\TestCase
         $doctrineHelper = $this->createMock(DoctrineHelper::class);
         $doctrineHelper->expects(self::any())
             ->method('getEntityManager')
-            ->with('OroEmailBundle:Email')
+            ->with(\Oro\Bundle\EmailBundle\Entity\Email::class)
             ->willReturn($this->em);
 
         $organization = new Organization();

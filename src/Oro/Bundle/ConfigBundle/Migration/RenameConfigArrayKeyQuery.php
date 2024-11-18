@@ -50,9 +50,7 @@ class RenameConfigArrayKeyQuery extends ParametrizedMigrationQuery
         $this->newKeyName = $newKeyName;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getDescription()
     {
         $logger = new ArrayLogger();
@@ -61,9 +59,7 @@ class RenameConfigArrayKeyQuery extends ParametrizedMigrationQuery
         return $logger->getMessages();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function execute(LoggerInterface $logger)
     {
         $this->doExecute($logger);
@@ -88,8 +84,7 @@ class RenameConfigArrayKeyQuery extends ParametrizedMigrationQuery
         $updateQueryTypes = ['array_value' => Types::ARRAY, 'id' => Types::INTEGER];
 
         $selectStatement = $this->connection->prepare($selectQuery);
-        $selectStatement->execute($selectQueryParameters);
-        while ($row = $selectStatement->fetch()) {
+        while ($row = $selectStatement->executeQuery($selectQueryParameters)->fetchAssociative()) {
             $originalValue = $this->deserialize($row['array_value']);
             $convertedValue = $this->convert($originalValue);
             if ($originalValue !== $convertedValue) {

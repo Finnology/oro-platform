@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Component\Layout\Tests\Unit\Loader\Generator;
@@ -12,6 +13,7 @@ class PhpLayoutUpdateGeneratorTest extends \PHPUnit\Framework\TestCase
 {
     private PhpLayoutUpdateGenerator $generator;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->generator = new PhpLayoutUpdateGenerator();

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\TranslationBundle\Action;
@@ -20,6 +21,7 @@ abstract class AbstractLanguageResultAction extends AbstractAction
     /**
      * @throws InvalidParameterException if the provided options are not correct
      */
+    #[\Override]
     public function initialize(array $options): self
     {
         if (2 !== \count($options)) {

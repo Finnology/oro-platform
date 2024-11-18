@@ -34,6 +34,7 @@ class BuilderTest extends \PHPUnit\Framework\TestCase
     /** @var MemoryCacheProviderInterface|\PHPUnit\Framework\MockObject\MockObject */
     private $memoryCacheProvider;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->memoryCacheProvider = $this->createMock(MemoryCacheProviderInterface::class);
@@ -224,16 +225,14 @@ class BuilderTest extends \PHPUnit\Framework\TestCase
             $dataSourceContainerBuilder->add($name, $dataSource);
         }
 
-        $builder = new Builder(
+        return new Builder(
             self::DEFAULT_DATAGRID_CLASS,
             self::DEFAULT_ACCEPTOR_CLASS,
             $this->eventDispatcher,
             $dataSourceContainerBuilder->getContainer($this),
-            $extensions
+            $extensions,
+            $this->memoryCacheProvider
         );
-        $builder->setMemoryCacheProvider($this->memoryCacheProvider);
-
-        return $builder;
     }
 
     private function getExtensionVisitor(bool $isApplicable = true): ExtensionVisitorInterface

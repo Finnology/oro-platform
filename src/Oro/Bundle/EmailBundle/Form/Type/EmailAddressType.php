@@ -10,9 +10,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class EmailAddressType extends AbstractType
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder->addModelTransformer(
@@ -20,9 +18,7 @@ class EmailAddressType extends AbstractType
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults(
@@ -32,26 +28,19 @@ class EmailAddressType extends AbstractType
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getName()
     {
         return $this->getBlockPrefix();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return 'oro_email_email_address';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getParent()
+    #[\Override]
+    public function getParent(): ?string
     {
         return TextType::class;
     }

@@ -15,6 +15,7 @@ class WorkflowEntityAclIdentityTest extends \PHPUnit\Framework\TestCase
     /** @var WorkflowEntityAclIdentity */
     private $aclIdentity;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->aclIdentity = new WorkflowEntityAclIdentity();
@@ -45,7 +46,7 @@ class WorkflowEntityAclIdentityTest extends \PHPUnit\Framework\TestCase
     {
         return [
             ['acl', new WorkflowEntityAcl()],
-            ['entityClass', new \DateTime()],
+            ['entityClass', \DateTime::class],
             ['entityId', 123],
             ['workflowItem', new WorkflowItem()],
         ];

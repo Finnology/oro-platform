@@ -39,9 +39,7 @@ class DateTimeExtension extends AbstractExtension implements ServiceSubscriberIn
         return $date;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getFilters()
     {
         return [
@@ -168,10 +166,8 @@ class DateTimeExtension extends AbstractExtension implements ServiceSubscriberIn
         );
     }
 
-    /**
-     * {@inheritdoc]
-     */
-    public static function getSubscribedServices()
+    #[\Override]
+    public static function getSubscribedServices(): array
     {
         return [
             'oro_locale.formatter.date_time' => DateTimeFormatterInterface::class,

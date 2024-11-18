@@ -202,7 +202,8 @@ define(function(require, exports, module) {
                 update: this._onFilterUpdated,
                 change: this._onFilterChanged,
                 disable: this._onFilterDisabled,
-                showCriteria: this._onFilterShowCriteria
+                showCriteria: this._onFilterShowCriteria,
+                update_criteria_label: this._resetHintContainer
             };
 
             if (tools.isMobile()) {
@@ -303,7 +304,7 @@ define(function(require, exports, module) {
                 const option = filterSelector.find(`option[value="${filter.name}"]`);
 
                 if (filter.visible && option.hasClass('hidden')) {
-                    option.removeClass('hidden').removeAttr('disabled');
+                    option.removeClass('hidden').prop('disabled', false);
                 } else if (!filter.visible && !option.hasClass('hidden')) {
                     option.addClass('hidden').attr('disabled', true);
                 }
@@ -830,7 +831,7 @@ define(function(require, exports, module) {
          * @protected
          */
         _processFilterStatus: function(activeFilters) {
-            if (!_.isArray(activeFilters)) {
+            if (!Array.isArray(activeFilters)) {
                 activeFilters = this.$(this.filterSelector).val();
             }
 

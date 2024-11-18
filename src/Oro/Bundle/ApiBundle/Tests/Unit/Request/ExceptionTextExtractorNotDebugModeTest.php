@@ -16,13 +16,14 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Core\Exception\DisabledException;
 use Symfony\Component\Security\Core\Exception\LockedException;
-use Symfony\Component\Security\Core\Exception\UsernameNotFoundException;
+use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 class ExceptionTextExtractorNotDebugModeTest extends \PHPUnit\Framework\TestCase
 {
     private ExceptionTextExtractor $exceptionTextExtractor;
 
+    #[\Override]
     protected function setUp(): void
     {
         $translator = $this->createMock(TranslatorInterface::class);
@@ -83,7 +84,7 @@ class ExceptionTextExtractorNotDebugModeTest extends \PHPUnit\Framework\TestCase
             [new ActionNotAllowedException(), 405],
             [new LockedException('Reason.'), 403],
             [new DisabledException('Reason.'), 403],
-            [new UsernameNotFoundException('Reason.'), 403],
+            [new UserNotFoundException('Reason.'), 403],
             [new ResourceNotAccessibleException(), 404],
             [new ServiceNotFoundException('test'), 500],
             [new NotSupportedConfigOperationException('Test\Class', 'test_operation'), 400]
@@ -123,7 +124,7 @@ class ExceptionTextExtractorNotDebugModeTest extends \PHPUnit\Framework\TestCase
             [new AccessDeniedHttpException('Reason.'), 'access denied exception'],
             [new LockedException('Reason.'), 'authentication exception'],
             [new DisabledException('Reason.'), 'authentication exception'],
-            [new UsernameNotFoundException('Reason.'), 'authentication exception'],
+            [new UserNotFoundException('Reason.'), 'authentication exception'],
             [new ResourceNotAccessibleException(), 'resource not accessible exception'],
             [new ServiceNotFoundException('test'), 'service not found exception'],
             [
@@ -217,7 +218,7 @@ class ExceptionTextExtractorNotDebugModeTest extends \PHPUnit\Framework\TestCase
                 'translated: Account is disabled.'
             ],
             [
-                new UsernameNotFoundException('Reason.'),
+                new UserNotFoundException('Reason.'),
                 'translated: Username could not be found. ({{ username }},{{ user_identifier }}).'
             ],
             [

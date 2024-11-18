@@ -21,19 +21,13 @@ class EnableConfigCheckboxType extends ConfigCheckbox
         $this->configManager = $configManager;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return self::NAME;
     }
 
-    /**
-     * @param FormView      $view
-     * @param FormInterface $form
-     * @param array         $options
-     */
+    #[\Override]
     public function finishView(FormView $view, FormInterface $form, array $options)
     {
         parent::finishView($view, $form, $options);

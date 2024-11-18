@@ -9,9 +9,7 @@ class WorkflowAttributeLabelTemplate extends WorkflowAttributeTemplate
 {
     const NAME = 'workflow_attribute_label';
 
-    /**
-     * @return string
-     */
+    #[\Override]
     public function getTemplate(): string
     {
         return parent::getTemplate() . '.label';

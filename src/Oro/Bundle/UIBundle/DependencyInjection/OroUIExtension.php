@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\UIBundle\DependencyInjection;
@@ -11,9 +12,7 @@ use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 
 class OroUIExtension extends Extension
 {
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function load(array $configs, ContainerBuilder $container): void
     {
         $config = $this->processConfiguration($this->getConfiguration($configs, $container), $configs);

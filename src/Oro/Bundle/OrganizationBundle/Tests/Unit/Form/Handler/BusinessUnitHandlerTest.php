@@ -1,4 +1,5 @@
 <?php
+
 namespace Oro\Bundle\OrganizationBundle\Tests\Unit\Form\Handler;
 
 use Doctrine\Persistence\ObjectManager;
@@ -33,6 +34,7 @@ class BusinessUnitHandlerTest extends \PHPUnit\Framework\TestCase
     /** @var BusinessUnitHandler */
     private $handler;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->request = new Request();

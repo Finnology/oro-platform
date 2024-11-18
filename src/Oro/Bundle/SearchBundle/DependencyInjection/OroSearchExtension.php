@@ -9,9 +9,7 @@ use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 
 class OroSearchExtension extends Extension
 {
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function load(array $configs, ContainerBuilder $container): void
     {
         $config = $this->processConfiguration($this->getConfiguration($configs, $container), $configs);
@@ -32,5 +30,9 @@ class OroSearchExtension extends Extension
         $loader->load('controllers_api.yml');
         $loader->load('search.yml');
         $loader->load('mq_topics.yml');
+
+        if ('test' === $container->getParameter('kernel.environment')) {
+            $loader->load('services_test.yml');
+        }
     }
 }

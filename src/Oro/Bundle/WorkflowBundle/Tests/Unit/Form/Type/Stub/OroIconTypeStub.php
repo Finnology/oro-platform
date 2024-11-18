@@ -9,9 +9,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class OroIconTypeStub extends AbstractType
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults(
@@ -21,26 +19,19 @@ class OroIconTypeStub extends AbstractType
         );
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function getName()
     {
         return $this->getBlockPrefix();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return OroIconType::NAME;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getParent()
+    #[\Override]
+    public function getParent(): ?string
     {
         return ChoiceType::class;
     }

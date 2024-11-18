@@ -8,9 +8,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class ReminderType extends AbstractType
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder->add(
@@ -29,9 +27,7 @@ class ReminderType extends AbstractType
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults(
@@ -43,18 +39,13 @@ class ReminderType extends AbstractType
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getName()
     {
         return $this->getBlockPrefix();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return 'oro_reminder';
     }

@@ -2,74 +2,56 @@
 
 namespace Oro\Bundle\SecurityBundle\DependencyInjection\Security\Factory;
 
-use Symfony\Bundle\SecurityBundle\DependencyInjection\Security\Factory\SecurityFactoryInterface;
+use Symfony\Bundle\SecurityBundle\DependencyInjection\Security\Factory\AuthenticatorFactoryInterface;
 use Symfony\Component\Config\Definition\Builder\NodeDefinition;
 use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Reference;
 
 /**
- * Creates services for HTTP basic authentication with organization
+ * Creates services for HTTP basic authentication with organization.
  */
-class OrganizationHttpBasicFactory implements SecurityFactoryInterface
+class OrganizationHttpBasicFactory implements AuthenticatorFactoryInterface
 {
-    public function create(ContainerBuilder $container, $id, $config, $userProvider, $defaultEntryPoint): array
-    {
-        $provider = 'oro_security.authentication.provider.username_password_organization.' . $id;
+    #[\Override]
+    public function createAuthenticator(
+        ContainerBuilder $container,
+        string $firewallName,
+        array $config,
+        string $userProviderId
+    ): string {
+        // authenticator
+        $authenticatorId = 'oro_security.authentication.authenticator.basic.' . $firewallName;
         $container
             ->setDefinition(
-                $provider,
-                new ChildDefinition('oro_security.authentication.provider.username_password_organization')
+                $authenticatorId,
+                new ChildDefinition('oro_security.authentication.authenticator.basic')
             )
-            ->replaceArgument(0, new Reference($userProvider))
-            ->replaceArgument(1, new Reference('security.user_checker.' . $id))
-            ->replaceArgument(2, $id);
+            ->replaceArgument(1, $config['realm'])
+            ->replaceArgument(2, new Reference($userProviderId));
 
-        // entry point
-        $entryPointId = $this->createEntryPoint($container, $id, $config, $defaultEntryPoint);
-
-        // listener
-        $listenerId = 'oro_security.authentication.listener.basic.' . $id;
-        $listener = $container->setDefinition(
-            $listenerId,
-            new ChildDefinition('oro_security.authentication.listener.basic')
-        );
-        $listener->replaceArgument(2, $id);
-        $listener->replaceArgument(3, new Reference($entryPointId));
-
-        return [$provider, $listenerId, $entryPointId];
+        return $authenticatorId;
     }
 
+    #[\Override]
     public function getKey(): string
     {
         return 'organization-http-basic';
     }
 
-    public function getPosition(): string
+    #[\Override]
+    public function addConfiguration(NodeDefinition $builder)
     {
-        return 'http';
-    }
-
-    public function addConfiguration(NodeDefinition $node): void
-    {
-        $node
+        $builder
             ->children()
             ->scalarNode('provider')->end()
             ->scalarNode('realm')->defaultValue('Secured Area')->end()
             ->end();
     }
 
-    protected function createEntryPoint($container, $id, $config, $defaultEntryPoint): string
+    #[\Override]
+    public function getPriority(): int
     {
-        if (null !== $defaultEntryPoint) {
-            return $defaultEntryPoint;
-        }
-
-        $entryPointId = 'security.authentication.basic_entry_point.' . $id;
-        $container
-            ->setDefinition($entryPointId, new ChildDefinition('security.authentication.basic_entry_point'))
-            ->addArgument($config['realm']);
-
-        return $entryPointId;
+        return -50;
     }
 }

@@ -8,21 +8,10 @@ use Oro\Bundle\MigrationBundle\Migration\QueryBag;
 
 class AddImpersonationColumn implements Migration
 {
-    /**
-     * {@inheritdoc}
-     */
-    public function up(Schema $schema, QueryBag $queries)
-    {
-        self::addImpersonationColumn($schema);
-    }
-
-    /**
-     * Adds impersonation_id column
-     */
-    public static function addImpersonationColumn(Schema $schema)
+    #[\Override]
+    public function up(Schema $schema, QueryBag $queries): void
     {
         $table = $schema->getTable('oro_audit');
-
         $table->addColumn('impersonation_id', 'integer', ['notnull' => false]);
         $table->addForeignKeyConstraint(
             $schema->getTable('oro_user_impersonation'),

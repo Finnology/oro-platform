@@ -22,14 +22,12 @@ class RemoveTableQuery extends ParametrizedMigrationQuery
         $this->entityClass = $entityClass;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function execute(LoggerInterface $logger)
     {
         $sql = 'SELECT id FROM oro_entity_config WHERE class_name = ? LIMIT 1';
 
-        $fieldRow = $this->connection->fetchAssoc($sql, [$this->entityClass], [Types::STRING]);
+        $fieldRow = $this->connection->fetchAssociative($sql, [$this->entityClass], [Types::STRING]);
         if ($fieldRow) {
             $this->executeQuery($logger, 'DELETE FROM oro_entity_config_field WHERE entity_id = ?', [$fieldRow['id']]);
             $this->executeQuery($logger, 'DELETE FROM oro_entity_config WHERE id = ?', [$fieldRow['id']]);
@@ -44,13 +42,11 @@ class RemoveTableQuery extends ParametrizedMigrationQuery
     protected function executeQuery(LoggerInterface $logger, $sql, array $parameters = [])
     {
         $statement = $this->connection->prepare($sql);
-        $statement->execute($parameters);
+        $statement->executeQuery($parameters);
         $this->logQuery($logger, $sql, $parameters);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getDescription()
     {
         return 'Remove config of entity' . $this->entityClass;

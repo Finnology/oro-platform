@@ -57,6 +57,9 @@ class OwnerFormExtension extends AbstractTypeExtension implements ServiceSubscri
     /** @var AuthorizationCheckerInterface */
     protected $authorizationChecker;
 
+    /** @var OwnershipMetadataProviderInterface */
+    protected $ownershipMetadataProvider;
+
     /** @var ContainerInterface */
     protected $container;
 
@@ -82,22 +85,21 @@ class OwnerFormExtension extends AbstractTypeExtension implements ServiceSubscri
         DoctrineHelper $doctrineHelper,
         TokenAccessorInterface $tokenAccessor,
         AuthorizationCheckerInterface $authorizationChecker,
+        OwnershipMetadataProviderInterface $ownershipMetadataProvider,
         ContainerInterface $container
     ) {
         $this->doctrineHelper = $doctrineHelper;
         $this->tokenAccessor = $tokenAccessor;
         $this->authorizationChecker = $authorizationChecker;
+        $this->ownershipMetadataProvider = $ownershipMetadataProvider;
         $this->container = $container;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public static function getSubscribedServices()
+    #[\Override]
+    public static function getSubscribedServices(): array
     {
         return [
             'security.acl.voter.basic_permissions' => AclVoterInterface::class,
-            'oro_security.owner.ownership_metadata_provider' => OwnershipMetadataProviderInterface::class,
             'oro_security.owner.entity_owner_accessor' => EntityOwnerAccessor::class,
             'oro_security.ownership_tree_provider' => OwnerTreeProvider::class,
             'oro_organization.business_unit_manager' => BusinessUnitManager::class
@@ -110,6 +112,7 @@ class OwnerFormExtension extends AbstractTypeExtension implements ServiceSubscri
      * @SuppressWarnings(PHPMD.NPathComplexity)
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
+    #[\Override]
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         if ($options['ownership_disabled']) {
@@ -172,9 +175,7 @@ class OwnerFormExtension extends AbstractTypeExtension implements ServiceSubscri
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefault('ownership_disabled', false);
@@ -339,7 +340,7 @@ class OwnerFormExtension extends AbstractTypeExtension implements ServiceSubscri
      */
     protected function checkIsBusinessUnitEntity($className)
     {
-        $businessUnitClass = $this->getOwnershipMetadataProvider()->getBusinessUnitClass();
+        $businessUnitClass = $this->ownershipMetadataProvider->getBusinessUnitClass();
         if ($className != $businessUnitClass && !is_subclass_of($className, $businessUnitClass)) {
             return false;
         }
@@ -514,7 +515,7 @@ class OwnerFormExtension extends AbstractTypeExtension implements ServiceSubscri
             return false;
         }
 
-        $metadata = $this->getOwnershipMetadataProvider()->getMetadata($entity);
+        $metadata = $this->ownershipMetadataProvider->getMetadata($entity);
 
         return $metadata->hasOwner()
             ? $metadata
@@ -578,11 +579,6 @@ class OwnerFormExtension extends AbstractTypeExtension implements ServiceSubscri
     protected function getAclVoter(): AclVoterInterface
     {
         return $this->container->get('security.acl.voter.basic_permissions');
-    }
-
-    protected function getOwnershipMetadataProvider(): OwnershipMetadataProviderInterface
-    {
-        return $this->container->get('oro_security.owner.ownership_metadata_provider');
     }
 
     protected function getEntityOwnerAccessor(): EntityOwnerAccessor

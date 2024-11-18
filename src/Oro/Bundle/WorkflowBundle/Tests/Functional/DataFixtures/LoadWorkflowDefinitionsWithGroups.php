@@ -6,11 +6,9 @@ use Symfony\Component\Yaml\Yaml;
 
 class LoadWorkflowDefinitionsWithGroups extends LoadWorkflowDefinitions
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function getWorkflowConfiguration()
     {
-        return Yaml::parse(file_get_contents(__DIR__ . '/config/oro/workflows_with_groups.yml')) ? : [];
+        return Yaml::parse(file_get_contents(__DIR__ . '/config/oro/workflows_with_groups.yml')) ?: [];
     }
 }

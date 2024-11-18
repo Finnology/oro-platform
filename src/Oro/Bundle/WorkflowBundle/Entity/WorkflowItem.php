@@ -4,181 +4,130 @@ namespace Oro\Bundle\WorkflowBundle\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\Criteria;
 use Doctrine\Common\Util\ClassUtils;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Oro\Bundle\EntityConfigBundle\Metadata\Annotation\Config;
-use Oro\Bundle\EntityConfigBundle\Metadata\Annotation\ConfigField;
+use Extend\Entity\Autocomplete\OroWorkflowBundle_Entity_WorkflowItem;
+use Oro\Bundle\EntityConfigBundle\Metadata\Attribute\Config;
+use Oro\Bundle\EntityConfigBundle\Metadata\Attribute\ConfigField;
 use Oro\Bundle\EntityExtendBundle\Entity\ExtendEntityInterface;
 use Oro\Bundle\EntityExtendBundle\Entity\ExtendEntityTrait;
+use Oro\Bundle\WorkflowBundle\Entity\Repository\WorkflowItemRepository;
 use Oro\Bundle\WorkflowBundle\Exception\WorkflowException;
 use Oro\Bundle\WorkflowBundle\Model\EntityAwareInterface;
 use Oro\Bundle\WorkflowBundle\Model\WorkflowData;
 use Oro\Bundle\WorkflowBundle\Model\WorkflowResult;
 use Oro\Bundle\WorkflowBundle\Serializer\WorkflowAwareSerializer;
+use Oro\Component\Action\Model\AbstractStorage;
+use Oro\Component\Action\Model\ActionDataStorageAwareInterface;
 
 /**
  * Workflow item
  *
- * @ORM\Table(
- *      name="oro_workflow_item",
- *      uniqueConstraints={
- *          @ORM\UniqueConstraint(name="oro_workflow_item_entity_definition_unq",columns={"entity_id", "workflow_name"})
- *      },
- *      indexes={
- *          @ORM\Index(name="oro_workflow_item_workflow_name_idx", columns={"workflow_name"}),
- *          @ORM\Index(name="oro_workflow_item_entity_idx", columns={"entity_class", "entity_id"})
- *      }
- *  )
- * @ORM\Entity(repositoryClass="Oro\Bundle\WorkflowBundle\Entity\Repository\WorkflowItemRepository")
- * @Config(
- *      defaultValues={
- *          "comment"={
- *              "immutable"=true
- *          },
- *          "activity"={
- *              "immutable"=true
- *          },
- *          "attachment"={
- *              "immutable"=true
- *          }
- *      }
- * )
- * @ORM\HasLifecycleCallbacks()
  *
  * @SuppressWarnings(PHPMD.TooManyFields)
+ * @SuppressWarnings(PHPMD.TooManyPublicMethods)
+ * @SuppressWarnings(PHPMD.ExcessivePublicCount)
  * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
+ * @mixin OroWorkflowBundle_Entity_WorkflowItem
  */
-class WorkflowItem implements EntityAwareInterface, ExtendEntityInterface
+#[ORM\Entity(repositoryClass: WorkflowItemRepository::class)]
+#[ORM\Table(name: 'oro_workflow_item')]
+#[ORM\Index(columns: ['workflow_name'], name: 'oro_workflow_item_workflow_name_idx')]
+#[ORM\Index(columns: ['entity_class', 'entity_id'], name: 'oro_workflow_item_entity_idx')]
+#[ORM\UniqueConstraint(name: 'oro_workflow_item_entity_definition_unq', columns: ['entity_id', 'workflow_name'])]
+#[ORM\HasLifecycleCallbacks]
+#[Config(
+    defaultValues: [
+        'comment' => ['immutable' => true],
+        'activity' => ['immutable' => true],
+        'attachment' => ['immutable' => true]
+    ]
+)]
+class WorkflowItem implements EntityAwareInterface, ExtendEntityInterface, ActionDataStorageAwareInterface
 {
     use ExtendEntityTrait;
 
-    /**
-     * @var integer
-     *
-     * @ORM\Column(type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
-    protected $id;
+    #[ORM\Column(type: Types::INTEGER)]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
+    protected ?int $id = null;
 
     /**
      * Name of WorkflowDefinition
-     *
-     * @var string
-     *
-     * @ORM\Column(name="workflow_name", type="string", length=255)
      */
-    protected $workflowName;
+    #[ORM\Column(name: 'workflow_name', type: Types::STRING, length: 255)]
+    protected ?string $workflowName = null;
 
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="entity_id", type="string", length=255, nullable=true)
-     */
-    protected $entityId;
+    #[ORM\Column(name: 'entity_id', type: Types::STRING, length: 255, nullable: true)]
+    protected ?string $entityId = null;
 
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="entity_class", type="string", nullable=true)
-     */
-    protected $entityClass;
+    #[ORM\Column(name: 'entity_class', type: Types::STRING, nullable: true)]
+    protected ?string $entityClass = null;
 
-    /**
-     * @var WorkflowStep
-     *
-     * @ORM\ManyToOne(targetEntity="WorkflowStep")
-     * @ORM\JoinColumn(name="current_step_id", referencedColumnName="id", onDelete="SET NULL")
-     */
-    protected $currentStep;
+    #[ORM\ManyToOne(targetEntity: WorkflowStep::class)]
+    #[ORM\JoinColumn(name: 'current_step_id', referencedColumnName: 'id', onDelete: 'SET NULL')]
+    protected ?WorkflowStep $currentStep = null;
 
     /**
      * Corresponding Workflow Definition
-     *
-     * @var WorkflowDefinition
-     *
-     * @ORM\ManyToOne(targetEntity="WorkflowDefinition")
-     * @ORM\JoinColumn(name="workflow_name", referencedColumnName="name", onDelete="CASCADE")
      */
-    protected $definition;
+    #[ORM\ManyToOne(targetEntity: WorkflowDefinition::class)]
+    #[ORM\JoinColumn(name: 'workflow_name', referencedColumnName: 'name', onDelete: 'CASCADE')]
+    protected ?WorkflowDefinition $definition = null;
 
     /**
      * Related transition records
      *
-     * @var Collection|WorkflowTransitionRecord[]
-     *
-     * @ORM\OneToMany(
-     *  targetEntity="WorkflowTransitionRecord",
-     *  mappedBy="workflowItem",
-     *  cascade={"persist", "remove"},
-     *  orphanRemoval=true
-     * )
-     * @ORM\OrderBy({"transitionDate" = "ASC"})
+     * @var Collection<int, WorkflowTransitionRecord>
      */
-    protected $transitionRecords;
+    #[ORM\OneToMany(
+        mappedBy: 'workflowItem',
+        targetEntity: WorkflowTransitionRecord::class,
+        cascade: ['persist', 'remove'],
+        orphanRemoval: true
+    )]
+    #[ORM\OrderBy(['transitionDate' => Criteria::ASC])]
+    protected ?Collection $transitionRecords = null;
 
     /**
      * ACL identities of related entities
      *
-     * @var Collection|WorkflowEntityAclIdentity[]
-     *
-     * @ORM\OneToMany(
-     *  targetEntity="WorkflowEntityAclIdentity",
-     *  mappedBy="workflowItem",
-     *  cascade={"all"},
-     *  orphanRemoval=true
-     * )
+     * @var Collection<int, WorkflowEntityAclIdentity>
      */
-    protected $aclIdentities;
+    #[ORM\OneToMany(
+        mappedBy: 'workflowItem',
+        targetEntity: WorkflowEntityAclIdentity::class,
+        cascade: ['all'],
+        orphanRemoval: true
+    )]
+    protected ?Collection $aclIdentities = null;
 
     /**
-     * @var Collection|WorkflowRestrictionIdentity[]
-     *
-     * @ORM\OneToMany(
-     *  targetEntity="WorkflowRestrictionIdentity",
-     *  mappedBy="workflowItem",
-     *  cascade={"all"},
-     *  orphanRemoval=true
-     * )
+     * @var Collection<int, WorkflowRestrictionIdentity>
      */
-    protected $restrictionIdentities;
+    #[ORM\OneToMany(
+        mappedBy: 'workflowItem',
+        targetEntity: WorkflowRestrictionIdentity::class,
+        cascade: ['all'],
+        orphanRemoval: true
+    )]
+    protected ?Collection $restrictionIdentities = null;
 
-    /**
-     * @var \Datetime $created
-     *
-     * @ORM\Column(type="datetime")
-     * @ConfigField(
-     *      defaultValues={
-     *          "entity"={
-     *              "label"="oro.ui.created_at"
-     *          }
-     *      }
-     * )
-     */
-    protected $created;
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[ConfigField(defaultValues: ['entity' => ['label' => 'oro.ui.created_at']])]
+    protected ?\DateTimeInterface $created = null;
 
-    /**
-     * @var \Datetime $updated
-     *
-     * @ORM\Column(type="datetime", nullable=true)
-     * @ConfigField(
-     *      defaultValues={
-     *          "entity"={
-     *              "label"="oro.ui.updated_at"
-     *          }
-     *      }
-     * )
-     */
-    protected $updated;
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    #[ConfigField(defaultValues: ['entity' => ['label' => 'oro.ui.updated_at']])]
+    protected ?\DateTimeInterface $updated = null;
 
     /**
      * Serialized data of WorkflowItem
-     *
-     * @var string
-     *
-     * @ORM\Column(name="data", type="text", nullable=true)
      */
-    protected $serializedData;
+    #[ORM\Column(name: 'data', type: Types::TEXT, nullable: true)]
+    protected ?string $serializedData = null;
 
     /**
      * @var object
@@ -205,9 +154,8 @@ class WorkflowItem implements EntityAwareInterface, ExtendEntityInterface
      */
     protected $serializeFormat;
 
-    /**
-     * {@inheritdoc}
-     */
+    protected bool $locked = false;
+
     public function __construct()
     {
         $this->transitionRecords = new ArrayCollection();
@@ -215,6 +163,21 @@ class WorkflowItem implements EntityAwareInterface, ExtendEntityInterface
         $this->restrictionIdentities = new ArrayCollection();
         $this->data = new WorkflowData();
         $this->result = new WorkflowResult();
+    }
+
+    public function lock(): void
+    {
+        $this->locked = true;
+    }
+
+    public function unlock(): void
+    {
+        $this->locked = false;
+    }
+
+    public function isLocked(): bool
+    {
+        return $this->locked;
     }
 
     /**
@@ -225,6 +188,16 @@ class WorkflowItem implements EntityAwareInterface, ExtendEntityInterface
     {
         $this->getData()->add($source->getData()->toArray());
         $this->getResult()->add($source->getResult()->toArray());
+
+        // Fill stub workflow item with actual data
+        if (!$this->id && !$this->getEntityId()) {
+            $this->id = $source->getId();
+            $this->entity = $source->getEntity();
+            $this->entityId = $source->getEntityId();
+            $this->currentStep = $source->getCurrentStep();
+            $this->updated = $source->getUpdated();
+            $this->created = $source->getCreated();
+        }
 
         return $this;
     }
@@ -281,6 +254,10 @@ class WorkflowItem implements EntityAwareInterface, ExtendEntityInterface
      */
     public function setCurrentStep($currentStep)
     {
+        if ($this->isLocked()) {
+            throw new WorkflowException('Changing the step of a locked workflow item is prohibited.');
+        }
+
         $this->currentStep = $currentStep;
 
         return $this;
@@ -297,7 +274,7 @@ class WorkflowItem implements EntityAwareInterface, ExtendEntityInterface
     /**
      * This method should be called only from WorkflowItemListener.
      *
-     * @param string $entityId
+     * @param string|null $entityId
      * @return WorkflowItem
      * @throws WorkflowException
      */
@@ -433,9 +410,7 @@ class WorkflowItem implements EntityAwareInterface, ExtendEntityInterface
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getEntity()
     {
         return $this->entity;
@@ -458,7 +433,7 @@ class WorkflowItem implements EntityAwareInterface, ExtendEntityInterface
                 $this->serializer->setWorkflowName($this->workflowName);
                 $this->data = $this->serializer->deserialize(
                     $this->serializedData,
-                    'Oro\Bundle\WorkflowBundle\Model\WorkflowData',
+                    WorkflowData::class,
                     $this->serializeFormat
                 );
                 $this->data->set($this->getDefinition()->getEntityAttributeName(), $this->getEntity(), false);
@@ -673,9 +648,8 @@ class WorkflowItem implements EntityAwareInterface, ExtendEntityInterface
 
     /**
      * Pre persist event listener
-     *
-     * @ORM\PrePersist
      */
+    #[ORM\PrePersist]
     public function prePersist()
     {
         $this->created = new \DateTime('now', new \DateTimeZone('UTC'));
@@ -684,9 +658,8 @@ class WorkflowItem implements EntityAwareInterface, ExtendEntityInterface
 
     /**
      * Invoked before the entity is updated.
-     *
-     * @ORM\PreUpdate
      */
+    #[ORM\PreUpdate]
     public function preUpdate()
     {
         $this->setUpdated();
@@ -713,9 +686,16 @@ class WorkflowItem implements EntityAwareInterface, ExtendEntityInterface
         return $this;
     }
 
+    #[\Override]
+    public function getActionDataStorage(): AbstractStorage
+    {
+        return $this->getData();
+    }
+
     /**
      * @return string
      */
+    #[\Override]
     public function __toString()
     {
         return sprintf(

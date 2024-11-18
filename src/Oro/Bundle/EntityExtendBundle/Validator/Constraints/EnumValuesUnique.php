@@ -11,10 +11,8 @@ class EnumValuesUnique extends Constraint
 {
     public $message = 'oro.entity_extend.enum.options_duplicates.message';
 
-    /**
-     * {@inheritdoc}
-     */
-    public function validatedBy()
+    #[\Override]
+    public function validatedBy(): string
     {
         return EnumValuesUniqueValidator::ALIAS;
     }

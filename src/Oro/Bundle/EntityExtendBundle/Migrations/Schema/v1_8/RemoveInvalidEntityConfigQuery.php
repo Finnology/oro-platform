@@ -2,20 +2,19 @@
 
 namespace Oro\Bundle\EntityExtendBundle\Migrations\Schema\v1_8;
 
-use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Query\QueryBuilder;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\DBAL\Types\Types;
 use Oro\Bundle\MigrationBundle\Migration\ConnectionAwareInterface;
+use Oro\Bundle\MigrationBundle\Migration\ConnectionAwareTrait;
 use Oro\Bundle\MigrationBundle\Migration\MigrationQuery;
 use Psr\Log\LoggerInterface;
 
 class RemoveInvalidEntityConfigQuery implements MigrationQuery, ConnectionAwareInterface
 {
-    const LIMIT = 100;
+    use ConnectionAwareTrait;
 
-    /** @var Connection */
-    protected $connection;
+    const LIMIT = 100;
 
     /** @var array */
     protected $invalidExtendConfigs = [
@@ -24,25 +23,13 @@ class RemoveInvalidEntityConfigQuery implements MigrationQuery, ConnectionAwareI
         'precision' => null,
     ];
 
-    /**
-     * {@inheritdoc}
-     */
-    public function setConnection(Connection $connection)
-    {
-        $this->connection = $connection;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getDescription()
     {
         return 'Removes invalid configs from entity configs';
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function execute(LoggerInterface $logger)
     {
         $steps = ceil($this->getEntityConfigsCount() / static::LIMIT);
@@ -54,7 +41,7 @@ class RemoveInvalidEntityConfigQuery implements MigrationQuery, ConnectionAwareI
             $rows = $entityConfigQb
                 ->setFirstResult($i * static::LIMIT)
                 ->execute()
-                ->fetchAll(\PDO::FETCH_ASSOC);
+                ->fetchAllAssociative();
 
             foreach ($rows as $row) {
                 $this->processRow($row);
@@ -137,7 +124,7 @@ class RemoveInvalidEntityConfigQuery implements MigrationQuery, ConnectionAwareI
         return $this->createEntityConfigQb()
             ->select('COUNT(1)')
             ->execute()
-            ->fetchColumn();
+            ->fetchOne();
     }
 
     /**

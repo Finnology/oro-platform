@@ -28,6 +28,7 @@ class LoadDisabledLocalizationData extends AbstractFixture implements ContainerA
         ]
     ];
 
+    #[\Override]
     public function load(ObjectManager $manager): void
     {
         /* @var LocalizationRepository $repository */
@@ -67,17 +68,11 @@ class LoadDisabledLocalizationData extends AbstractFixture implements ContainerA
         $manager->clear();
     }
 
-    /**
-     * @return array
-     */
     public static function getLocalizations(): array
     {
         return self::$localizations;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getDependencies(): array
     {
         return [LoadLocalizationData::class];

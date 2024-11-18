@@ -8,6 +8,7 @@ use Oro\Bundle\UserBundle\Entity\User;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
@@ -35,10 +36,8 @@ class UserImapConfigSubscriber implements EventSubscriberInterface
         $this->tokenAccessor = $tokenAccessor;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedEvents()
+    #[\Override]
+    public static function getSubscribedEvents(): array
     {
         return [
             FormEvents::PRE_SET_DATA => 'preSetData',
@@ -83,7 +82,7 @@ class UserImapConfigSubscriber implements EventSubscriberInterface
             $currentRoute = $request->attributes->get('_route');
             if ($currentRoute === 'oro_user_config') {
                 $id = $request->attributes->getInt('id');
-                $user = $this->entityManager->find('OroUserBundle:User', $id);
+                $user = $this->entityManager->find(User::class, $id);
             } elseif ($currentRoute === 'oro_user_profile_configuration') {
                 $user = $this->tokenAccessor->getUser();
             }
@@ -96,7 +95,7 @@ class UserImapConfigSubscriber implements EventSubscriberInterface
     }
 
     /**
-     * @return null|\Symfony\Component\HttpFoundation\Request
+     * @return null|Request
      */
     protected function getRequest()
     {

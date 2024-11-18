@@ -3,7 +3,7 @@
 namespace Oro\Bundle\SearchBundle\Tests\Unit\EventListener\ORM;
 
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Driver;
+use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\ORM\Event\LoadClassMetadataEventArgs;
 use Doctrine\ORM\Mapping\ClassMetadataInfo;
 use Oro\Bundle\EntityBundle\ORM\DatabaseDriverInterface;
@@ -22,6 +22,7 @@ class FulltextIndexListenerTest extends \PHPUnit\Framework\TestCase
     /** @var FulltextIndexListener */
     private $listener;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->event = $this->createMock(LoadClassMetadataEventArgs::class);
@@ -33,16 +34,18 @@ class FulltextIndexListenerTest extends \PHPUnit\Framework\TestCase
         string $textIndexTableName,
         string $returnMysqlVersion = '5.5'
     ): void {
-        $driver = $this->createMock(Driver::class);
-        $driver->expects($this->any())
+        $connection = $this->createMock(Connection::class);
+        $abstractPlatform = $this->createMock(AbstractPlatform::class);
+        $connection->expects($this->any())
+            ->method('getDatabasePlatform')
+            ->willReturn($abstractPlatform);
+
+        $abstractPlatform->expects($this->any())
             ->method('getName')
             ->willReturn($databaseDriver);
-        $connection = $this->createMock(Connection::class);
+
         $connection->expects($this->any())
-            ->method('getDriver')
-            ->willReturn($driver);
-        $connection->expects($this->any())
-            ->method('fetchColumn')
+            ->method('fetchOne')
             ->with('select version()')
             ->willReturn($returnMysqlVersion);
 

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\EntityConfigBundle\Migration;
@@ -41,6 +42,7 @@ abstract class RemoveAssociationQuery extends ParametrizedMigrationQuery impleme
 
     private bool $isSchemaUpdateRequired = false;
 
+    #[\Override]
     public function getDescription(): string
     {
         return \sprintf(
@@ -60,9 +62,10 @@ abstract class RemoveAssociationQuery extends ParametrizedMigrationQuery impleme
      * @throws \Doctrine\DBAL\DBALException on any database errors
      * @throws \LogicException if the source entity is not a configurable entity
      */
+    #[\Override]
     public function execute(LoggerInterface $logger): void
     {
-        $sourceEntityRow = $this->connection->fetchAssoc(
+        $sourceEntityRow = $this->connection->fetchAssociative(
             'SELECT e.id, e.data FROM oro_entity_config as e WHERE e.class_name = ? LIMIT 1',
             [$this->sourceEntityClass]
         );
@@ -111,6 +114,7 @@ abstract class RemoveAssociationQuery extends ParametrizedMigrationQuery impleme
         }
     }
 
+    #[\Override]
     public function isUpdateRequired(): bool
     {
         return $this->isSchemaUpdateRequired;

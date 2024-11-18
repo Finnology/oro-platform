@@ -25,17 +25,15 @@ class RestDocumentBuilderTest extends DocumentBuilderTestCase
     /** @var RestDocumentBuilder */
     private $documentBuilder;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->requestType = new RequestType([RequestType::REST]);
-        $valueNormalizer = $this->getValueNormalizer();
-        $entityIdTransformer = $this->getEntityIdTransformer();
-        $entityIdTransformerRegistry = $this->getEntityIdTransformerRegistry($entityIdTransformer);
         $this->logger = $this->createMock(LoggerInterface::class);
 
         $this->documentBuilder = new RestDocumentBuilder(
-            $valueNormalizer,
-            $entityIdTransformerRegistry,
+            $this->getValueNormalizer(),
+            $this->getEntityIdTransformerRegistry($this->getEntityIdTransformer()),
             $this->logger
         );
     }
@@ -43,14 +41,14 @@ class RestDocumentBuilderTest extends DocumentBuilderTestCase
     public function testSetDataObjectWithoutMetadata()
     {
         $object = [
-            'id'   => 123,
+            'id' => 123,
             'name' => 'Name'
         ];
 
         $this->documentBuilder->setDataObject($object, $this->requestType, null);
         self::assertEquals(
             [
-                'id'   => 123,
+                'id' => 123,
                 'name' => 'Name'
             ],
             $this->documentBuilder->getDocument()
@@ -60,16 +58,16 @@ class RestDocumentBuilderTest extends DocumentBuilderTestCase
     public function testSetDataObjectWithoutMetadataAndWithObjectType()
     {
         $object = [
-            'id'        => 123,
-            'name'      => 'Name',
+            'id' => 123,
+            'name' => 'Name',
             '__class__' => 'Test\Class'
         ];
 
         $this->documentBuilder->setDataObject($object, $this->requestType, null);
         self::assertEquals(
             [
-                'id'     => 123,
-                'name'   => 'Name',
+                'id' => 123,
+                'name' => 'Name',
                 'entity' => 'Test\Class'
             ],
             $this->documentBuilder->getDocument()
@@ -79,7 +77,7 @@ class RestDocumentBuilderTest extends DocumentBuilderTestCase
     public function testSetDataCollectionWithoutMetadata()
     {
         $object = [
-            'id'   => 123,
+            'id' => 123,
             'name' => 'Name'
         ];
 
@@ -87,7 +85,7 @@ class RestDocumentBuilderTest extends DocumentBuilderTestCase
         self::assertEquals(
             [
                 [
-                    'id'   => 123,
+                    'id' => 123,
                     'name' => 'Name'
                 ]
             ],
@@ -98,8 +96,8 @@ class RestDocumentBuilderTest extends DocumentBuilderTestCase
     public function testSetDataCollectionWithoutMetadataAndWithObjectType()
     {
         $object = [
-            'id'        => 123,
-            'name'      => 'Name',
+            'id' => 123,
+            'name' => 'Name',
             '__class__' => 'Test\Class'
         ];
 
@@ -107,8 +105,8 @@ class RestDocumentBuilderTest extends DocumentBuilderTestCase
         self::assertEquals(
             [
                 [
-                    'id'     => 123,
-                    'name'   => 'Name',
+                    'id' => 123,
+                    'name' => 'Name',
                     'entity' => 'Test\Class'
                 ]
             ],
@@ -128,19 +126,19 @@ class RestDocumentBuilderTest extends DocumentBuilderTestCase
     public function testSetDataObjectWithMetadata()
     {
         $object = [
-            'id'         => 123,
-            'name'       => 'Name',
-            'meta1'      => 'Meta1',
-            'category'   => 456,
-            'group'      => null,
-            'role'       => ['id' => 789],
+            'id' => 123,
+            'name' => 'Name',
+            'meta1' => 'Meta1',
+            'category' => 456,
+            'group' => null,
+            'role' => ['id' => 789],
             'categories' => [
                 ['id' => 456],
                 ['id' => 457]
             ],
-            'groups'     => null,
-            'products'   => [],
-            'roles'      => [
+            'groups' => null,
+            'products' => [],
+            'roles' => [
                 ['id' => 789, 'name' => 'Role1'],
                 ['id' => 780, 'name' => 'Role2']
             ]
@@ -162,18 +160,18 @@ class RestDocumentBuilderTest extends DocumentBuilderTestCase
         $this->documentBuilder->setDataObject($object, $this->requestType, $metadata);
         self::assertEquals(
             [
-                'id'         => 123,
-                'name'       => 'Name',
-                'meta1'      => 'Meta1',
-                'category'   => 456,
-                'group'      => null,
-                'role'       => 789,
+                'id' => 'Test\Entity::123',
+                'name' => 'Name',
+                'meta1' => 'Meta1',
+                'category' => 'Test\Category::456',
+                'group' => null,
+                'role' => 789,
                 'categories' => [456, 457],
-                'groups'     => [],
-                'products'   => [],
-                'roles'      => [
-                    ['id' => 789, 'name' => 'Role1'],
-                    ['id' => 780, 'name' => 'Role2']
+                'groups' => [],
+                'products' => [],
+                'roles' => [
+                    ['id' => 'Test\Role::789', 'name' => 'Role1'],
+                    ['id' => 'Test\Role::780', 'name' => 'Role2']
                 ]
             ],
             $this->documentBuilder->getDocument()
@@ -183,19 +181,19 @@ class RestDocumentBuilderTest extends DocumentBuilderTestCase
     public function testSetDataCollectionWithMetadata()
     {
         $object = [
-            'id'         => 123,
-            'name'       => 'Name',
-            'meta1'      => 'Meta1',
-            'category'   => 456,
-            'group'      => null,
-            'role'       => 789,
+            'id' => 123,
+            'name' => 'Name',
+            'meta1' => 'Meta1',
+            'category' => 456,
+            'group' => null,
+            'role' => 789,
             'categories' => [
                 ['id' => 456],
                 ['id' => 457]
             ],
-            'groups'     => [],
-            'products'   => [],
-            'roles'      => [
+            'groups' => [],
+            'products' => [],
+            'roles' => [
                 ['id' => 789, 'name' => 'Role1'],
                 ['id' => 780, 'name' => 'Role2']
             ]
@@ -218,18 +216,18 @@ class RestDocumentBuilderTest extends DocumentBuilderTestCase
         self::assertEquals(
             [
                 [
-                    'id'         => 123,
-                    'name'       => 'Name',
-                    'meta1'      => 'Meta1',
-                    'category'   => 456,
-                    'group'      => null,
-                    'role'       => 789,
+                    'id' => 'Test\Entity::123',
+                    'name' => 'Name',
+                    'meta1' => 'Meta1',
+                    'category' => 'Test\Category::456',
+                    'group' => null,
+                    'role' => 'Test\Role::789',
                     'categories' => [456, 457],
-                    'groups'     => [],
-                    'products'   => [],
-                    'roles'      => [
-                        ['id' => 789, 'name' => 'Role1'],
-                        ['id' => 780, 'name' => 'Role2']
+                    'groups' => [],
+                    'products' => [],
+                    'roles' => [
+                        ['id' => 'Test\Role::789', 'name' => 'Role1'],
+                        ['id' => 'Test\Role::780', 'name' => 'Role2']
                     ]
                 ]
             ],
@@ -270,12 +268,12 @@ class RestDocumentBuilderTest extends DocumentBuilderTestCase
         $this->documentBuilder->setDataObject($object, $this->requestType, $metadata);
         self::assertEquals(
             [
-                'code'  => 123,
-                'name'  => 'Name',
+                'code' => 'Test\Entity::123',
+                'name' => 'Name',
                 'links' => [
-                    'self'      => '/api/test_entity/Test\Entity::123',
+                    'self' => '/api/test_entity/Test\Entity::123',
                     'with_meta' => [
-                        'href'  => '/api/test_entity/Test\Entity::123/meta',
+                        'href' => '/api/test_entity/Test\Entity::123/meta',
                         'meta1' => 'Name',
                         'meta3' => 'Test\Entity'
                     ]
@@ -319,12 +317,12 @@ class RestDocumentBuilderTest extends DocumentBuilderTestCase
         self::assertEquals(
             [
                 [
-                    'code'  => 123,
-                    'name'  => 'Name',
+                    'code' => 'Test\Entity::123',
+                    'name' => 'Name',
                     'links' => [
-                        'self'      => '/api/test_entity/Test\Entity::123',
+                        'self' => '/api/test_entity/Test\Entity::123',
                         'with_meta' => [
-                            'href'  => '/api/test_entity/Test\Entity::123/meta',
+                            'href' => '/api/test_entity/Test\Entity::123/meta',
                             'meta1' => 'Name',
                             'meta3' => 'Test\Entity'
                         ]
@@ -351,7 +349,7 @@ class RestDocumentBuilderTest extends DocumentBuilderTestCase
     public function testAssociationWithInheritance()
     {
         $object = [
-            'id'         => 123,
+            'id' => 123,
             'categories' => [
                 ['id' => 456, '__class__' => 'Test\Category1', 'name' => 'Category1'],
                 ['id' => 457, '__class__' => 'Test\Category2', 'name' => 'Category2']
@@ -373,17 +371,17 @@ class RestDocumentBuilderTest extends DocumentBuilderTestCase
         $this->documentBuilder->setDataObject($object, $this->requestType, $metadata);
         self::assertEquals(
             [
-                'id'         => 123,
+                'id' => 'Test\Entity::123',
                 'categories' => [
                     [
                         'entity' => 'Test\Category1',
-                        'id'     => 456,
-                        'name'   => 'Category1'
+                        'id' => 'Test\CategoryWithoutAlias::456',
+                        'name' => 'Category1'
                     ],
                     [
                         'entity' => 'Test\Category2',
-                        'id'     => 457,
-                        'name'   => 'Category2'
+                        'id' => 'Test\CategoryWithoutAlias::457',
+                        'name' => 'Category2'
                     ]
                 ]
             ],
@@ -394,7 +392,7 @@ class RestDocumentBuilderTest extends DocumentBuilderTestCase
     public function testAssociationWithInheritanceAndSomeInheritedEntitiesDoNotHaveAlias()
     {
         $object = [
-            'id'         => 123,
+            'id' => 123,
             'categories' => [
                 ['id' => 456, '__class__' => 'Test\Category1', 'name' => 'Category1'],
                 ['id' => 457, '__class__' => 'Test\Category2WithoutAlias', 'name' => 'Category2']
@@ -416,17 +414,17 @@ class RestDocumentBuilderTest extends DocumentBuilderTestCase
         $this->documentBuilder->setDataObject($object, $this->requestType, $metadata);
         self::assertEquals(
             [
-                'id'         => 123,
+                'id' => 'Test\Entity::123',
                 'categories' => [
                     [
                         'entity' => 'Test\Category1',
-                        'id'     => 456,
-                        'name'   => 'Category1'
+                        'id' => 'Test\Category::456',
+                        'name' => 'Category1'
                     ],
                     [
                         'entity' => 'Test\Category2WithoutAlias',
-                        'id'     => 457,
-                        'name'   => 'Category2'
+                        'id' => 'Test\Category::457',
+                        'name' => 'Category2'
                     ]
                 ]
             ],
@@ -451,8 +449,8 @@ class RestDocumentBuilderTest extends DocumentBuilderTestCase
         $this->documentBuilder->setDataObject($object, $this->requestType, $metadata);
         self::assertEquals(
             [
-                'id'            => 123,
-                'missingToOne'  => null,
+                'id' => 'Test\Entity::123',
+                'missingToOne' => null,
                 'missingToMany' => []
             ],
             $this->documentBuilder->getDocument()
@@ -465,7 +463,7 @@ class RestDocumentBuilderTest extends DocumentBuilderTestCase
     public function testToOneAssociationAsField(array|int|null $value, array|int|null $expected)
     {
         $object = [
-            'id'       => 123,
+            'id' => 123,
             'category' => $value
         ];
 
@@ -480,7 +478,7 @@ class RestDocumentBuilderTest extends DocumentBuilderTestCase
         $this->documentBuilder->setDataObject($object, $this->requestType, $metadata);
         self::assertEquals(
             [
-                'id'       => 123,
+                'id' => 'Test\Entity::123',
                 'category' => $expected
             ],
             $this->documentBuilder->getDocument()
@@ -513,7 +511,7 @@ class RestDocumentBuilderTest extends DocumentBuilderTestCase
     public function testToManyAssociationAsField(?array $value, array $expected)
     {
         $object = [
-            'id'         => 123,
+            'id' => 123,
             'categories' => $value
         ];
 
@@ -528,7 +526,7 @@ class RestDocumentBuilderTest extends DocumentBuilderTestCase
         $this->documentBuilder->setDataObject($object, $this->requestType, $metadata);
         self::assertEquals(
             [
-                'id'         => 123,
+                'id' => 'Test\Entity::123',
                 'categories' => $expected
             ],
             $this->documentBuilder->getDocument()
@@ -565,7 +563,7 @@ class RestDocumentBuilderTest extends DocumentBuilderTestCase
     public function testToOneAssociationAsFieldForIdFieldsOnly(array|int|null $value, array|int|null $expected)
     {
         $object = [
-            'id'       => 123,
+            'id' => 123,
             'category' => $value
         ];
 
@@ -579,7 +577,7 @@ class RestDocumentBuilderTest extends DocumentBuilderTestCase
         $this->documentBuilder->setDataObject($object, $this->requestType, $metadata);
         self::assertEquals(
             [
-                'id'       => 123,
+                'id' => 'Test\Entity::123',
                 'category' => $expected
             ],
             $this->documentBuilder->getDocument()
@@ -602,7 +600,7 @@ class RestDocumentBuilderTest extends DocumentBuilderTestCase
     public function testToManyAssociationAsFieldForIdFieldsOnly(?array $value, array $expected)
     {
         $object = [
-            'id'         => 123,
+            'id' => 123,
             'categories' => $value
         ];
 
@@ -616,7 +614,7 @@ class RestDocumentBuilderTest extends DocumentBuilderTestCase
         $this->documentBuilder->setDataObject($object, $this->requestType, $metadata);
         self::assertEquals(
             [
-                'id'         => 123,
+                'id' => 'Test\Entity::123',
                 'categories' => $expected
             ],
             $this->documentBuilder->getDocument()
@@ -646,7 +644,7 @@ class RestDocumentBuilderTest extends DocumentBuilderTestCase
     public function testToOneCollapsedAssociationAsField(array|string|null $value, ?string $expected)
     {
         $object = [
-            'id'       => 123,
+            'id' => 123,
             'category' => $value
         ];
 
@@ -663,7 +661,7 @@ class RestDocumentBuilderTest extends DocumentBuilderTestCase
         $this->documentBuilder->setDataObject($object, $this->requestType, $metadata);
         self::assertEquals(
             [
-                'id'       => 123,
+                'id' => 'Test\Entity::123',
                 'category' => $expected
             ],
             $this->documentBuilder->getDocument()
@@ -692,7 +690,7 @@ class RestDocumentBuilderTest extends DocumentBuilderTestCase
     public function testToManyCollapsedAssociationAsField(?array $value, array $expected)
     {
         $object = [
-            'id'         => 123,
+            'id' => 123,
             'categories' => $value
         ];
 
@@ -709,7 +707,7 @@ class RestDocumentBuilderTest extends DocumentBuilderTestCase
         $this->documentBuilder->setDataObject($object, $this->requestType, $metadata);
         self::assertEquals(
             [
-                'id'         => 123,
+                'id' => 'Test\Entity::123',
                 'categories' => $expected
             ],
             $this->documentBuilder->getDocument()
@@ -739,21 +737,21 @@ class RestDocumentBuilderTest extends DocumentBuilderTestCase
     public function testNestedAssociationAsArrayAttribute()
     {
         $object = [
-            'id'          => 1,
+            'id' => 1,
             'association' => [
-                'id'         => 123,
-                'name'       => 'Name',
-                'meta1'      => 'Meta1',
-                'category'   => 456,
-                'group'      => null,
-                'role'       => ['id' => 789],
+                'id' => 123,
+                'name' => 'Name',
+                'meta1' => 'Meta1',
+                'category' => 456,
+                'group' => null,
+                'role' => ['id' => 789],
                 'categories' => [
                     ['id' => 456],
                     ['id' => 457]
                 ],
-                'groups'     => null,
-                'products'   => [],
-                'roles'      => [
+                'groups' => null,
+                'products' => [],
+                'roles' => [
                     ['id' => 789, 'name' => 'Role1'],
                     ['id' => 780, 'name' => 'Role2']
                 ]
@@ -785,21 +783,22 @@ class RestDocumentBuilderTest extends DocumentBuilderTestCase
         $this->documentBuilder->setDataObject($object, $this->requestType, $metadata);
         self::assertEquals(
             [
+                'id' => 'Test\Entity::1',
                 'association' => [
-                    'id'            => 123,
-                    'name'          => 'Name',
-                    'meta1'         => 'Meta1',
-                    'category'      => 456,
-                    'group'         => null,
-                    'role'          => 789,
-                    'categories'    => [456, 457],
-                    'groups'        => [],
-                    'products'      => [],
-                    'roles'         => [
+                    'id' => 123,
+                    'name' => 'Name',
+                    'meta1' => 'Meta1',
+                    'category' => 456,
+                    'group' => null,
+                    'role' => 789,
+                    'categories' => [456, 457],
+                    'groups' => [],
+                    'products' => [],
+                    'roles' => [
                         ['id' => 789, 'name' => 'Role1'],
                         ['id' => 780, 'name' => 'Role2']
                     ],
-                    'missingToOne'  => null,
+                    'missingToOne' => null,
                     'missingToMany' => []
                 ]
             ],
@@ -810,7 +809,7 @@ class RestDocumentBuilderTest extends DocumentBuilderTestCase
     public function testNestedObject()
     {
         $object = [
-            'id'     => 1,
+            'id' => 1,
             'nested' => [
                 'name' => 'Name'
             ]
@@ -828,7 +827,7 @@ class RestDocumentBuilderTest extends DocumentBuilderTestCase
         $this->documentBuilder->setDataObject($object, $this->requestType, $metadata);
         self::assertEquals(
             [
-                'id'     => 1,
+                'id' => 'Test\Entity::1',
                 'nested' => [
                     'name' => 'Name'
                 ]
@@ -849,8 +848,8 @@ class RestDocumentBuilderTest extends DocumentBuilderTestCase
         self::assertEquals(
             [
                 [
-                    'code'   => 'errCode',
-                    'title'  => 'some error',
+                    'code' => 'errCode',
+                    'title' => 'some error',
                     'detail' => 'some error details'
                 ]
             ],
@@ -870,8 +869,8 @@ class RestDocumentBuilderTest extends DocumentBuilderTestCase
         self::assertEquals(
             [
                 [
-                    'code'   => 'errCode',
-                    'title'  => 'some error',
+                    'code' => 'errCode',
+                    'title' => 'some error',
                     'detail' => 'some error details'
                 ]
             ],
@@ -882,7 +881,7 @@ class RestDocumentBuilderTest extends DocumentBuilderTestCase
     public function testMetaPropertyWithResultName()
     {
         $object = [
-            'id'    => 123,
+            'id' => 123,
             'meta1' => 'Meta1'
         ];
 
@@ -894,7 +893,7 @@ class RestDocumentBuilderTest extends DocumentBuilderTestCase
         $this->documentBuilder->setDataObject($object, $this->requestType, $metadata);
         self::assertEquals(
             [
-                'id'          => '123',
+                'id' => 'Test\Entity::123',
                 'resultMeta1' => 'Meta1'
             ],
             $this->documentBuilder->getDocument()
@@ -904,7 +903,7 @@ class RestDocumentBuilderTest extends DocumentBuilderTestCase
     public function testMetaPropertyThatNotMappedToAnyField()
     {
         $object = [
-            'id'    => 123,
+            'id' => 123,
             'meta1' => 'Meta1'
         ];
 
@@ -916,7 +915,7 @@ class RestDocumentBuilderTest extends DocumentBuilderTestCase
         $this->documentBuilder->setDataObject($object, $this->requestType, $metadata);
         self::assertEquals(
             [
-                'id' => '123'
+                'id' => 'Test\Entity::123'
             ],
             $this->documentBuilder->getDocument()
         );
@@ -925,9 +924,9 @@ class RestDocumentBuilderTest extends DocumentBuilderTestCase
     public function testSetDataObjectForEntityWithoutIdentifier()
     {
         $object = [
-            'name'       => 'Name',
-            'meta1'      => 'Meta1',
-            'category'   => 456,
+            'name' => 'Name',
+            'meta1' => 'Meta1',
+            'category' => 456,
             'categories' => [
                 ['id' => 456],
                 ['id' => 457]
@@ -943,9 +942,9 @@ class RestDocumentBuilderTest extends DocumentBuilderTestCase
         $this->documentBuilder->setDataObject($object, $this->requestType, $metadata);
         self::assertEquals(
             [
-                'name'       => 'Name',
-                'meta1'      => 'Meta1',
-                'category'   => 456,
+                'name' => 'Name',
+                'meta1' => 'Meta1',
+                'category' => 'Test\Category::456',
                 'categories' => [456, 457]
             ],
             $this->documentBuilder->getDocument()
@@ -955,7 +954,7 @@ class RestDocumentBuilderTest extends DocumentBuilderTestCase
     public function testInputOnlyMetaProperty()
     {
         $object = [
-            'id'    => 123,
+            'id' => 123,
             'meta1' => 'Meta1'
         ];
 
@@ -967,7 +966,7 @@ class RestDocumentBuilderTest extends DocumentBuilderTestCase
         $this->documentBuilder->setDataObject($object, $this->requestType, $metadata);
         self::assertEquals(
             [
-                'id' => 123
+                'id' => 'Test\Entity::123'
             ],
             $this->documentBuilder->getDocument()
         );
@@ -976,7 +975,7 @@ class RestDocumentBuilderTest extends DocumentBuilderTestCase
     public function testInputOnlyField()
     {
         $object = [
-            'id'     => 123,
+            'id' => 123,
             'field1' => 'value1'
         ];
 
@@ -988,7 +987,7 @@ class RestDocumentBuilderTest extends DocumentBuilderTestCase
         $this->documentBuilder->setDataObject($object, $this->requestType, $metadata);
         self::assertEquals(
             [
-                'id' => 123
+                'id' => 'Test\Entity::123'
             ],
             $this->documentBuilder->getDocument()
         );
@@ -997,7 +996,7 @@ class RestDocumentBuilderTest extends DocumentBuilderTestCase
     public function testInputOnlyAssociation()
     {
         $object = [
-            'id'           => 123,
+            'id' => 123,
             'association1' => 456
         ];
 
@@ -1009,7 +1008,7 @@ class RestDocumentBuilderTest extends DocumentBuilderTestCase
         $this->documentBuilder->setDataObject($object, $this->requestType, $metadata);
         self::assertEquals(
             [
-                'id' => 123
+                'id' => 'Test\Entity::123'
             ],
             $this->documentBuilder->getDocument()
         );
@@ -1069,8 +1068,8 @@ class RestDocumentBuilderTest extends DocumentBuilderTestCase
     public function testAddLinksToCollectionValuedResult()
     {
         $object = [
-            'id'    => 1,
-            'role'  => ['id' => 21, 'name' => 'Role1', 'users' => [211, 212]],
+            'id' => 1,
+            'role' => ['id' => 21, 'name' => 'Role1', 'users' => [211, 212]],
             'roles' => [
                 ['id' => 21, 'name' => 'Role1', 'users' => [211, 212]],
                 ['id' => 22, 'name' => 'Role2', 'users' => [213, 214]]
@@ -1095,11 +1094,23 @@ class RestDocumentBuilderTest extends DocumentBuilderTestCase
         self::assertEquals(
             [
                 [
-                    'id'    => 1,
-                    'role'  => ['name' => 'Role1', 'users' => [211, 212]],
+                    'id' => 'Test\Entity::1',
+                    'role' => [
+                        'id' => 'Test\Role::21',
+                        'name' => 'Role1',
+                        'users' => ['Test\User::211', 'Test\User::212']
+                    ],
                     'roles' => [
-                        ['name' => 'Role1', 'users' => [211, 212]],
-                        ['name' => 'Role2', 'users' => [213, 214]]
+                        [
+                            'id' => 'Test\Role::21',
+                            'name' => 'Role1',
+                            'users' => ['Test\User::211', 'Test\User::212']
+                        ],
+                        [
+                            'id' => 'Test\Role::22',
+                            'name' => 'Role2',
+                            'users' => ['Test\User::213', 'Test\User::214']
+                        ]
                     ]
                 ]
             ],
@@ -1110,8 +1121,8 @@ class RestDocumentBuilderTest extends DocumentBuilderTestCase
     public function testAddLinksToSingleValuedResult()
     {
         $object = [
-            'id'    => 1,
-            'role'  => ['id' => 21, 'name' => 'Role1', 'users' => [211, 212]],
+            'id' => 1,
+            'role' => ['id' => 21, 'name' => 'Role1', 'users' => [211, 212]],
             'roles' => [
                 ['id' => 21, 'name' => 'Role1', 'users' => [211, 212]],
                 ['id' => 22, 'name' => 'Role2', 'users' => [213, 214]]
@@ -1135,11 +1146,23 @@ class RestDocumentBuilderTest extends DocumentBuilderTestCase
 
         self::assertEquals(
             [
-                'id'    => 1,
-                'role'  => ['name' => 'Role1', 'users' => [211, 212]],
+                'id' => 'Test\Entity::1',
+                'role' => [
+                    'id' => 'Test\Role::21',
+                    'name' => 'Role1',
+                    'users' => ['Test\User::211', 'Test\User::212']
+                ],
                 'roles' => [
-                    ['name' => 'Role1', 'users' => [211, 212]],
-                    ['name' => 'Role2', 'users' => [213, 214]]
+                    [
+                        'id' => 'Test\Role::21',
+                        'name' => 'Role1',
+                        'users' => ['Test\User::211', 'Test\User::212']
+                    ],
+                    [
+                        'id' => 'Test\Role::22',
+                        'name' => 'Role2',
+                        'users' => ['Test\User::213', 'Test\User::214']
+                    ]
                 ]
             ],
             $this->documentBuilder->getDocument()
@@ -1149,7 +1172,7 @@ class RestDocumentBuilderTest extends DocumentBuilderTestCase
     public function testMetadataForCollectionValuedResult()
     {
         $object = [
-            'id'   => 1,
+            'id' => 1,
             'name' => 'test'
         ];
 
@@ -1158,16 +1181,16 @@ class RestDocumentBuilderTest extends DocumentBuilderTestCase
         $metadata->addField($this->createFieldMetadata('name'));
 
         $this->documentBuilder->setMetadata([
-            ''        => ['has_more' => true],
+            '' => ['has_more' => true],
             '0.userRoles' => ['has_more' => true],
-            'meta1'   => 'some value'
+            'meta1' => 'some value'
         ]);
         $this->documentBuilder->setDataCollection([$object], $this->requestType, $metadata);
 
         self::assertEquals(
             [
                 [
-                    'id'   => 1,
+                    'id' => 'Test\Entity::1',
                     'name' => 'test'
                 ]
             ],

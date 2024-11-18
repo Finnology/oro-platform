@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\EmailBundle\Command;
@@ -29,9 +30,7 @@ class EmailTemplatesExportCommand extends Command
         $this->doctrineHelper = $doctrineHelper;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function configure()
     {
         $this
@@ -39,17 +38,15 @@ class EmailTemplatesExportCommand extends Command
             ->addOption('template', null, InputOption::VALUE_OPTIONAL, "template name");
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    #[\Override]
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $destination = $input->getArgument('destination');
 
         if (!is_dir($destination) || !is_writable($destination)) {
             $output->writeln(sprintf('<error>Destination path "%s" should be writable folder</error>', $destination));
 
-            return 1;
+            return Command::FAILURE;
         }
 
         $templates = $this->getEmailTemplates($input->getOption('template'));
@@ -79,7 +76,7 @@ class EmailTemplatesExportCommand extends Command
             );
         }
 
-        return 0;
+        return Command::SUCCESS;
     }
 
     /**

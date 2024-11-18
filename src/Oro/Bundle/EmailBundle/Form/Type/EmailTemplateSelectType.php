@@ -2,6 +2,7 @@
 
 namespace Oro\Bundle\EmailBundle\Form\Type;
 
+use Oro\Bundle\EmailBundle\Entity\EmailTemplate;
 use Oro\Bundle\TranslationBundle\Form\Type\Select2TranslatableEntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormInterface;
@@ -14,9 +15,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
  */
 class EmailTemplateSelectType extends AbstractType
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         $choices = function (Options $options) {
@@ -47,7 +46,7 @@ class EmailTemplateSelectType extends AbstractType
         $resolver->setDefaults(
             array(
                 'label'                   => null,
-                'class'                   => 'OroEmailBundle:EmailTemplate',
+                'class'                   => EmailTemplate::class,
                 'choice_label'            => 'name',
                 'query_builder'           => null,
                 'depends_on_parent_field' => 'entityName',
@@ -67,9 +66,7 @@ class EmailTemplateSelectType extends AbstractType
         $resolver->setNormalizer('configs', $configsNormalizer);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function finishView(FormView $view, FormInterface $form, array $options)
     {
         $config = $form->getConfig();
@@ -80,26 +77,14 @@ class EmailTemplateSelectType extends AbstractType
         $view->vars['includeSystemTemplates'] = (bool)$config->getOption('includeSystemTemplates');
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getName()
-    {
-        return $this->getBlockPrefix();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return 'oro_email_template_list';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getParent()
+    #[\Override]
+    public function getParent(): ?string
     {
         return Select2TranslatableEntityType::class;
     }

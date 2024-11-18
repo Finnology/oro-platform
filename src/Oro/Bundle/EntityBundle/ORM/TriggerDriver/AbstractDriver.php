@@ -6,6 +6,9 @@ use Oro\Bundle\EntityBundle\Manager\Db\EntityTriggerDriverInterface;
 use Oro\Bundle\EntityBundle\ORM\DatabaseDriverInterface;
 use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
 
+/**
+ * Abstract driver for different  PDO (MySQL/POSTGRESQL)
+ */
 abstract class AbstractDriver implements DatabaseDriverInterface, EntityTriggerDriverInterface
 {
     /**
@@ -32,27 +35,21 @@ abstract class AbstractDriver implements DatabaseDriverInterface, EntityTriggerD
     {
         $this->doctrineHelper = $doctrineHelper;
     }
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function disable()
     {
         $this->init();
-        $this->connection->exec(sprintf($this->getSqlDisable(), $this->tableName));
+        $this->connection->executeStatement(sprintf($this->getSqlDisable(), $this->tableName));
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function enable()
     {
         $this->init();
-        $this->connection->exec(sprintf($this->getSqlEnable(), $this->tableName));
+        $this->connection->executeStatement(sprintf($this->getSqlEnable(), $this->tableName));
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function setEntityClass($entityClass)
     {
         $this->entityClass = $entityClass;

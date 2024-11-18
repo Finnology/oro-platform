@@ -50,6 +50,7 @@ class TranslatableEntityTypeTest extends FormIntegrationTestCase
     /** @var AclHelper|\PHPUnit\Framework\MockObject\MockObject */
     private $aclHelper;
 
+    #[\Override]
     protected function setUp(): void
     {
         $classMetadata = $this->createMock(ClassMetadataInfo::class);
@@ -75,7 +76,7 @@ class TranslatableEntityTypeTest extends FormIntegrationTestCase
 
         $eventManager = $this->createMock(EventManager::class);
         $eventManager->expects($this->any())
-            ->method('getListeners')
+            ->method('getAllListeners')
             ->willReturn([[$translatableListener]]);
 
         $entityManager = $this->createMock(EntityManagerInterface::class);
@@ -106,9 +107,7 @@ class TranslatableEntityTypeTest extends FormIntegrationTestCase
         parent::setUp();
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     protected function getExtensions(): array
     {
         return [

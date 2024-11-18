@@ -3,6 +3,8 @@
 namespace Oro\Bundle\DataGridBundle\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Oro\Bundle\DataGridBundle\Extension\GridViews\View;
 use Oro\Bundle\DataGridBundle\Extension\GridViews\ViewInterface;
@@ -12,18 +14,15 @@ use Oro\Bundle\UserBundle\Entity\AbstractUser;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * @ORM\Entity()
- * @ORM\Table(
- *     name="oro_grid_view",
- *     indexes={
- *         @ORM\Index(name="idx_oro_grid_view_discr_type", columns={"discr_type"})
- *     }
- * )
- *
- * @ORM\InheritanceType("SINGLE_TABLE")
- * @ORM\DiscriminatorColumn(name="discr_type", type="string")
- * @ORM\DiscriminatorMap({"grid_view" = "Oro\Bundle\DataGridBundle\Entity\GridView"})
- */
+* Entity that represents Abstract Grid View
+*
+*/
+#[ORM\Entity]
+#[ORM\Table(name: 'oro_grid_view')]
+#[ORM\Index(columns: ['discr_type'], name: 'idx_oro_grid_view_discr_type')]
+#[ORM\InheritanceType('SINGLE_TABLE')]
+#[ORM\DiscriminatorColumn(name: 'discr_type', type: 'string')]
+#[ORM\DiscriminatorMap(['grid_view' => GridView::class])]
 abstract class AbstractGridView implements ViewInterface
 {
     const TYPE_PRIVATE = 'private';
@@ -35,93 +34,65 @@ abstract class AbstractGridView implements ViewInterface
         self::TYPE_PUBLIC  => self::TYPE_PUBLIC,
     ];
 
-    /**
-     * @var int $id
-     *
-     * @ORM\Column(type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
-    protected $id;
+    #[ORM\Column(type: Types::INTEGER)]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
+    protected ?int $id = null;
 
-    /**
-     * @var string
-     *
-     * @ORM\Column(type="string")
-     * @Assert\NotBlank
-     */
-    protected $name;
+    #[ORM\Column(type: Types::STRING)]
+    #[Assert\NotBlank]
+    protected ?string $name = null;
 
-    /**
-     * @var string
-     *
-     * @ORM\Column(type="string")
-     * @Assert\NotBlank
-     * @Assert\Choice(callback={"Oro\Bundle\DataGridBundle\Entity\GridView", "getTypes"})
-     */
-    protected $type = self::TYPE_PRIVATE;
+    #[ORM\Column(type: Types::STRING)]
+    #[Assert\NotBlank]
+    #[Assert\Choice(callback: [GridView::class, 'getTypes'])]
+    protected ?string $type = self::TYPE_PRIVATE;
 
     /**
      * @var array
-     *
-     * @ORM\Column(type="array")
      */
+    #[ORM\Column(type: Types::ARRAY)]
     protected $filtersData = [];
 
     /**
      * @var array of ['column name' => -1|1, ... ].
      * Contains information about sorters ('-1' for 'ASC', '1' for 'DESC').
-     *
-     * @ORM\Column(type="array")
      */
+    #[ORM\Column(type: Types::ARRAY)]
     protected $sortersData = [];
 
     /**
      * @var array of ['column name' => ['renderable' => true|false, 'order' = int(0)], ... ].
      * Contains information about columns orders in the grid.
-     *
-     * @ORM\Column(type="array", nullable=true)
      */
+    #[ORM\Column(type: Types::ARRAY, nullable: true)]
     protected $columnsData = [];
 
-    /**
-     * @var string
-     *
-     * @ORM\Column(type="string")
-     * @Assert\NotBlank
-     */
-    protected $gridName;
+    #[ORM\Column(type: Types::STRING)]
+    #[Assert\NotBlank]
+    protected ?string $gridName = null;
 
-    /**
-     * @var AppearanceType
-     *
-     * @ORM\ManyToOne(targetEntity="AppearanceType")
-     * @ORM\JoinColumn(name="appearanceType", referencedColumnName="name")
-     **/
-    protected $appearanceType;
+    #[ORM\ManyToOne(targetEntity: AppearanceType::class)]
+    #[ORM\JoinColumn(name: 'appearanceType', referencedColumnName: 'name')]
+    protected ?AppearanceType $appearanceType = null;
 
     /**
      * @var array
      * Contains data related to appearance, e.g. board id for boards
-     *
-     * @ORM\Column(type="array", nullable=true)
      */
+    #[ORM\Column(type: Types::ARRAY, nullable: true)]
     protected $appearanceData = [];
 
-    /**
-     * @var Organization
-     *
-     * @ORM\ManyToOne(targetEntity="Oro\Bundle\OrganizationBundle\Entity\Organization")
-     * @ORM\JoinColumn(name="organization_id", referencedColumnName="id", onDelete="SET NULL")
-     */
-    protected $organization;
+    #[ORM\ManyToOne(targetEntity: Organization::class)]
+    #[ORM\JoinColumn(name: 'organization_id', referencedColumnName: 'id', onDelete: 'SET NULL')]
+    protected ?OrganizationInterface $organization = null;
 
     /**
      * Collection of users who have chosen this grid view as default.
      *
      * @var ArrayCollection|AbstractGridViewUser[]
      */
-    protected $users;
+    protected ?Collection $users = null;
 
     /**
      * GridView constructor.
@@ -139,9 +110,7 @@ abstract class AbstractGridView implements ViewInterface
         return $this->id;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getName()
     {
         return $this->name;
@@ -155,25 +124,19 @@ abstract class AbstractGridView implements ViewInterface
         return $this->type;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getFiltersData()
     {
         return $this->filtersData;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getSortersData()
     {
         return $this->sortersData;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getGridName()
     {
         return $this->gridName;
@@ -220,9 +183,7 @@ abstract class AbstractGridView implements ViewInterface
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function setFiltersData(array $filtersData = [])
     {
         $this->filtersData = $filtersData;
@@ -230,9 +191,7 @@ abstract class AbstractGridView implements ViewInterface
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function setSortersData(array $sortersData = [])
     {
         $this->sortersData = $sortersData;
@@ -240,9 +199,7 @@ abstract class AbstractGridView implements ViewInterface
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getColumnsData()
     {
         if ($this->columnsData === null) {
@@ -252,17 +209,13 @@ abstract class AbstractGridView implements ViewInterface
         return $this->columnsData;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function setColumnsData(array $columnsData = [])
     {
         $this->columnsData = $columnsData;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function setGridName($gridName)
     {
         $this->gridName = $gridName;
@@ -271,7 +224,7 @@ abstract class AbstractGridView implements ViewInterface
     }
 
     /**
-     * @param AbstractUser $owner
+     * @param AbstractUser|null $owner
      *
      * @return $this
      */
@@ -318,6 +271,7 @@ abstract class AbstractGridView implements ViewInterface
     /**
      * @return string
      */
+    #[\Override]
     public function getAppearanceTypeName()
     {
         return (string) $this->appearanceType;
@@ -357,7 +311,7 @@ abstract class AbstractGridView implements ViewInterface
     /**
      * Set organization
      *
-     * @param OrganizationInterface $organization
+     * @param OrganizationInterface|null $organization
      *
      * @return $this
      */

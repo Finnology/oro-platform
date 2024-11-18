@@ -8,11 +8,11 @@ use Oro\Bundle\EmailBundle\Builder\Helper\EmailModelBuilderHelper;
 use Oro\Bundle\EmailBundle\Entity\Repository\EmailTemplateRepository;
 use Oro\Bundle\EmailBundle\Form\Model\Email;
 use Oro\Bundle\EmailBundle\Form\Model\EmailAttachment;
-use Oro\Bundle\EmailBundle\Provider\EmailRenderer;
 use Oro\Bundle\FormBundle\Form\Type\OroResizeableRichTextType;
 use Oro\Bundle\FormBundle\Form\Type\OroRichTextType;
 use Oro\Bundle\FormBundle\Utils\FormUtils;
 use Oro\Bundle\SecurityBundle\Authentication\TokenAccessorInterface;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Event\PostSubmitEvent;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -31,40 +31,42 @@ use Symfony\Component\Validator\Constraints\Valid;
  */
 class EmailType extends AbstractType
 {
-    /** @var AuthorizationCheckerInterface */
-    protected $authorizationChecker;
+    private const WYSIWYG_VALID_ELEMENTS = [
+        'style[type|media]',
+        'td[background|align|style|class|colspan|width|valign|height]',
+        'span[style]'
+    ];
+    private const WYSIWYG_CUSTOM_ELEMENTS = ['style'];
 
-    /** @var TokenAccessorInterface */
-    protected $tokenAccessor;
+    private AuthorizationCheckerInterface $authorizationChecker;
 
-    /** @var EmailRenderer */
-    protected $emailRenderer;
+    private TokenAccessorInterface $tokenAccessor;
 
-    /** @var EmailModelBuilderHelper */
-    protected $emailModelBuilderHelper;
+    private EmailModelBuilderHelper $emailModelBuilderHelper;
 
-    /** @var ConfigManager */
-    protected $configManager;
+    private ConfigManager $configManager;
+
+    private EventSubscriberInterface $emailTemplateRenderingSubscriber;
 
     public function __construct(
         AuthorizationCheckerInterface $authorizationChecker,
         TokenAccessorInterface $tokenAccessor,
-        EmailRenderer $emailRenderer,
         EmailModelBuilderHelper $emailModelBuilderHelper,
-        ConfigManager $configManager
+        ConfigManager $configManager,
+        EventSubscriberInterface $emailTemplateRenderingSubscriber
     ) {
         $this->authorizationChecker = $authorizationChecker;
         $this->tokenAccessor = $tokenAccessor;
-        $this->emailRenderer = $emailRenderer;
         $this->emailModelBuilderHelper = $emailModelBuilderHelper;
         $this->configManager = $configManager;
+        $this->emailTemplateRenderingSubscriber = $emailTemplateRenderingSubscriber;
     }
 
     /**
-     * {@inheritdoc}
      *
      * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      */
+    #[\Override]
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
@@ -179,9 +181,10 @@ class EmailType extends AbstractType
             );
 
         $builder->addEventListener(FormEvents::PRE_SET_DATA, [$this, 'initChoicesByEntityName']);
-        $builder->addEventListener(FormEvents::PRE_SET_DATA, [$this, 'fillFormByTemplate']);
         $builder->addEventListener(FormEvents::PRE_SUBMIT, [$this, 'initChoicesByEntityName']);
         $builder->addEventListener(FormEvents::POST_SUBMIT, [$this, 'postSubmit']);
+
+        $builder->addEventSubscriber($this->emailTemplateRenderingSubscriber);
     }
 
     public function postSubmit(PostSubmitEvent $event)
@@ -252,36 +255,7 @@ class EmailType extends AbstractType
         );
     }
 
-    public function fillFormByTemplate(FormEvent $event)
-    {
-        /** @var Email|null $data */
-        $data = $event->getData();
-        if (null === $data || !is_object($data) || null === $data->getTemplate()) {
-            return;
-        }
-
-        if (null !== $data->getSubject() && null !== $data->getBody()) {
-            return;
-        }
-
-        $emailTemplate = $data->getTemplate();
-
-        $targetEntity = $this->emailModelBuilderHelper->getTargetEntity($data->getEntityClass(), $data->getEntityId());
-
-        list($emailSubject, $emailBody) = $this->emailRenderer
-            ->compileMessage($emailTemplate, ['entity' => $targetEntity]);
-
-        if (null === $data->getSubject()) {
-            $data->setSubject($emailSubject);
-        }
-        if (null === $data->getBody()) {
-            $data->setBody($emailBody);
-        }
-    }
-
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults(
@@ -293,18 +267,8 @@ class EmailType extends AbstractType
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getName()
-    {
-        return $this->getBlockPrefix();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return 'oro_email_email';
     }
@@ -321,6 +285,8 @@ class EmailType extends AbstractType
         return [
             'valid_elements' => null, //all elements are valid
             'plugins' => array_merge(OroRichTextType::$defaultPlugins, ['fullscreen']),
+            'extended_valid_elements' => implode(',', self::WYSIWYG_VALID_ELEMENTS),
+            'custom_elements' => implode(',', self::WYSIWYG_CUSTOM_ELEMENTS)
         ];
     }
 }

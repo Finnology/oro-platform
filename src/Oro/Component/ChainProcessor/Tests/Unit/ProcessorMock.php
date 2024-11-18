@@ -22,9 +22,12 @@ class ProcessorMock implements ProcessorInterface
         return $this->processorId;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    public function getCallback(): ?callable
+    {
+        return $this->callback;
+    }
+
+    #[\Override]
     public function process(ContextInterface $context): void
     {
         if (null !== $this->callback) {

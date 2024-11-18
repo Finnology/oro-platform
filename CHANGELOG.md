@@ -2,8 +2,628 @@ The upgrade instructions are available at [Oro documentation website](https://do
 
 The current file describes significant changes in the code that may affect the upgrade of your customizations.
 
+## UNRELEASED
+
+### Added
+
+#### DistributionBundle
+* Added the ability to run post-install and post-update composer scripts defined in the composer.json of a dependency. Script that should be run during post-install must be put into section `extra.oro-post-install-cmd`, during post-update - into section `extra.oro-post-update-cmd`.
+* Added new event `oro_distribution.route_collection.all` dispatched when routes are loaded from all route loaders. Implemented via `\Oro\Bundle\DistributionBundle\Routing\DelegatingLoader` decorating the `routing.loader` service.
+* Added `\Oro\Bundle\DistributionBundle\EventListener\RoutePrioritizingListener` as a general solution to alter route priorities.
+* Added `oro_distribution.event_listener.route_prioritizing.web_debug_toolbar` to increase the priorities of web debug toolbar routes (_wdt, _profiler*, _preview_error).
+* Added the ability to override controller template attribute with `_template_override` request attribute. Useful for overriding the template of a forwarded request. Implemented in `\Oro\Bundle\DistributionBundle\EventListener\ControllerTemplateListener`. 
+
+#### FormBundle
+* Added the ability to use nested constraints (e.g. `When`) in `\Oro\Bundle\FormBundle\Validator\ConstraintFactory` that creates constraints from an array definition (e.g. fetched from `system_configuration.yml`).
+
+#### ThemeBundle
+* Added theme configuration feature that provides theme developers a way to make a storefront theme configurable by a store owner.
+* Added new `\Oro\Bundle\ThemeBundle\Entity\ThemeConfiguration` entity that contains theme configuration options.
+* Added new `oro:theme:configuration:validate` command that validates theme configuration.
+* Added `\Oro\Bundle\ThemeBundle\Fallback\Provider\ThemeConfigurationFallbackProvider` fallback provider which fetches data from theme configuration.
+
+#### UIBundle
+* Added new twig function `oro_is_string` that finds whether the given variable type is a string.
+* Added new twig `html_controls_after` variable for `form_row` widget that renders passed html content.
+* Removed jquery-numeric
+
+#### LayoutBundle
+* Added new twig function `oro_theme_configuration_value` that returns theme configuration option value.
+* Added theme configuration definition for configuration section into `\Oro\Bundle\LayoutBundle\Layout\Extension\ThemeConfiguration`.
+
+#### AttachmentBundle
+* Added new `\Oro\Bundle\AttachmentBundle\Form\Type\ContentFileType` form type that saves content from the uploaded file but does not save file in the system.
+
+#### SecurityBundle
+* Added new `\Oro\Bundle\SecurityBundle\DoctrineExtension\Dbal\Types\CryptedTextType` doctrine type that stores text data in crypted format.
+* Decomposed `\Oro\Bundle\SecurityBundle\Request\SessionHttpKernelDecorator` into `\Oro\Bundle\SecurityBundle\Request\SessionStorageOptionsManipulator`.
+* Added `oro_security.session.storage.options` container parameters that holds original session storage options.
+
+#### ApiBundle
+* Added new `crypted_text` doctrine type as a data type to `api_doc_data_types` and `open_api` sections of ORO API configuration.
+* Added an "Add filter" button to each resource for API sandbox.
+* Added a new meta `validate` flag to create and update operations, making API requests with transaction rollback instead of commit.
+* Added a new `rollback_validated_request` event for `customize_form_data` action.
+
+### Changed
+
+#### ThemeBundle
+* Changed a field value of the `type` field on a string instead of the removed `\Oro\Bundle\ThemeBundle\Entity\Enum\ThemeConfigurationType` enum for `\Oro\Bundle\ThemeBundle\Entity\ThemeConfiguration` entity.
+
+#### ApiBundle
+* Changed `\Oro\Bundle\ApiBundle\Filter\FilterValueAccessorInterface` to be able to use filters by same field but with different operators, e.g. `?filter[id][gt]=1&filter[id][lt]=10`:
+  - added `getOne` method
+  - changed return value for `get` method from `?FilterValue` to `FilterValue[]`
+  - changed return value for `getGroup` method from `array [filter key => FilterValue, ...]` to `array [filter key => [FilterValue, ...], ...]`
+  - changed return value for `getAll` method from `array [filter key => FilterValue, ...]` to `array [filter key => [FilterValue, ...], ...]`
+* Outdated format of API filters like `filter[id]>=1` is not supported from now, use `filter[field][operator]=value` syntax instead, e.g. `filter[id][gte]=1`.
+
+#### EntityBundle
+* Changed `\Oro\Bundle\EntityBundle\Provider\EntityNameProvider` to make it work with enum fields.
+
+#### EmailBundle
+* Fixed `\Oro\Bundle\EmailBundle\Sync\NotificationAlertManager` fails to update an existing alert if user is null.
+
+#### UserBundle
+* Changed `\Oro\Bundle\UserBundle\Controller\ResetController::sendEmailAction` so it redirects to the `_return_route` route request attribute in case of error.
+* Changed `\Oro\Bundle\UserBundle\Controller\ResetController::sendEmailAction` so it redirects to the `_target_route` request attribute in case of success.
+* Changed `@OroUser/Reset` templates to enable the ability to override form action path, return path and target path.
+* Changed `@OroUser/Security/login.html.twig` template to enable the ability to override form action path, return path and target path.
+
+#### SanitizeBundle
+* Updated sanitize logic, it takes into account a new `crypted_text` doctrine type now.
+
+#### ActionBundle
+* Disabled key normalization for `data` attributes of the `button_options` section for operations. Now, using the dash symbol for data attribute naming is possible.
+
+# Oro Enum Changes
+
+Updating the ORO Enum implementation is caused by:
+
+- Read-only permissions for web server user on entity extend files in the system cache.
+- Updates to entities from the UI do not require cache updates in the entity management.
+- Need to avoid code generation.
+- Reduce the number of requests in cases where the object uses join queries with a large number of lists.
+- After completion, it will be possible to remove MultiHostBundle on schema update.
+
+## The structure of relationships between entities and storage
+
+*Before:*
+
+- The main storage place for ORO Enums are tables created for each enum. The table name begins with ``oro_enum_``.
+
+Example:
+
+```
+oro_enum_auth_status
+oro_enum_inventory_status
+```
+
+- The connection between a specific enum and a table is created using a relation column. To get the value of the enum,
+  you need to make a join in the query.
+- The entity configuration stores the relationship between the enum and the target table and the configuration of the
+  enum itself.
+- There is a difference in configuration for the enum and for the product attribute of the enum.
+- All extend enums are inherited from the base one ```Oro\Bundle\EntityExtendBundle\Entity\AbstractEnumValue```.
+
+*After:*
+
+- All ORO enums are stored in a table ```oro_enum_option```.
+- The connection between the target table that uses the enum and the enum itself is built without a relation. Enum
+  values used by entities are stored in the field ```serialized_data```.
+
+- Updated enums are inherited not from the ```Oro\Bundle\EntityExtendBundle\Entity\AbstractEnumValue```
+  but from ```Oro\Bundle\EntityExtendBundle\Entity\EnumOptionInterface```
+
+``` json
+{
+    "inventory_status": "prod_inventory_status.in_stock",
+    "multi_enum": ["prod_multi_enum.test_option_1", "prod_multi_enum.test_option_3"]
+}
+```
+## The structure of DB storage
+
+*Before:*
+
+Stored in the generated table, which begins with the prefix "oro_enum_" (that is, each enum has its own table).
+
+Example of enum for "oro_enum_auth_status" table:
+
+```markdown
+| id      | name    | priority | is_default |
+| reset   | Reset   | 2        | false      |
+| locked  | Locked  | 3        | false      |
+| expired | Expired | 4        | false      |
+| active  | Active  | 1        | true       |
+```
+
+*After:*
+
+Stored in the "oro_enum_option" table.
+
+Example:
+
+```markdown
+| id                  | internal_id | enum_code   | name    | priority | is_default |
+| auth_status.locked  | locked      | auth_status | Locked  | 3        | false      |
+| auth_status.expired | expired     | auth_status | Expired | 4        | false      |
+| auth_status.active  | active      | auth_status | Active  | 1        | true       |
+| auth_status.reset   | reset       | auth_status | Reset   | 2        | false      |
+```
+
+## Versioned migration Enum changes:
+
+*Before:*
+
+```php
+    $queries->addPostQuery(
+        new OutdatedInsertEnumValuesQuery(
+            $this->extendExtension,
+            'cu_auth_status', 
+            [new OutdatedEnumDataValue(CustomerUserAuthStatus::STATUS_EXPIRED, 'Expired', 3)]
+        )
+     );
+```
+
+```php
+namespace Oro\Bundle\CalendarBundle\Migrations\Schema\v1_0;
+
+class OroCalendarBundle implements Migration, ExtendExtensionAwareInterface
+ {
+     use ExtendExtensionAwareTrait;
+ 
+     public function up(Schema $schema, QueryBag $queries)
+     {
+         $table = $schema->getTable('oro_calendar_event_attendee');
+        $this->extendExtension->addEnumField(
+            $schema,
+            $table,
+            'status',
+            'ce_attendee_status',
+            false,
+            false,
+            [
+                'extend' => ['owner' => ExtendScope::OWNER_CUSTOM]
+            ]
+         );
+     }
+```
+
+*After:*
+
+```php
+    $queries->addPostQuery(
+        new OutdatedInsertEnumValuesQuery(
+            $this->outdatedExtendExtension, // Outdated extend extension must be used for old enums
+            'cu_auth_status', 
+            [new OutdatedEnumDataValue(CustomerUserAuthStatus::STATUS_EXPIRED, 'Expired', 3)]
+        )
+     );
+```
+
+```php
+namespace Oro\Bundle\CalendarBundle\Migrations\Schema\v1_0;
+
+class OroCalendarBundle implements Migration, OutdatedExtendExtensionAwareInterface
+ {
+     use OutdatedExtendExtensionAwareTrait;
+ 
+    public function up(Schema $schema, QueryBag $queries)
+     {
+         $table = $schema->getTable('oro_calendar_event_attendee');
+        $this->outdatedExtendExtension->addOutdatedEnumField(
+            $schema,
+            $table,
+            'status',
+            'ce_attendee_status',
+            false,
+            false,
+            [
+                'extend' => ['owner' => ExtendScope::OWNER_CUSTOM]
+            ]
+         );
+     }
+```
+
+## Migration data fixture:
+
+*Before:*
+
+```php
+   $queries->addPostQuery(new OutdatedInsertEnumValuesQuery($this->outdatedExtendExtension, 'cu_auth_status', [
+            new OutdatedEnumDataValue(CustomerUserAuthStatus::STATUS_EXPIRED, 'Expired', 3)
+        ]));
+```
+
+*After:*
+
+```php
+class LoadLeadStatusOptionData extends AbstractEnumFixture
+{
+    protected function getData(): array
+    {
+        return [
+            'new' => 'New',
+            'qualified' => 'Qualified',
+            'canceled' => 'Disqualified',
+        ];
+    }
+
+    protected function getDefaultValue(): string
+    {
+        return 'new';
+    }
+
+    protected function getEnumCode(): string
+    {
+        return 'lead_status';
+    }
+}
+
+```
+
+## Joining enum options DQL:
+
+*Before:*
+
+- join Enum options via "relation"
+
+```php
+    ->leftJoin('attendee.status', 'attendee_status')
+```
+
+*After:*
+
+```php
+->leftJoin(
+    EnumOption::class,
+    'attendee_status',
+    Expr\Join::WITH,
+    "JSON_EXTRACT(attendee.serialized_data, 'status') = attendee_status"
+)
+
+```
+
+- Query by enum fields
+
+```php
+ $qb = $this->doctrine->getRepository(CustomerUser::class)
+            ->createQueryBuilder('u')
+            ->select('COUNT(u.id)')
+            ->andWhere('IDENTITY(u.auth_status) <> :authStatus')
+```
+
+*After:*
+
+```php
+ $qb = $this->doctrine->getRepository(CustomerUser::class)
+            ->createQueryBuilder('u')
+            ->select('COUNT(u.id)')
+            ->andWhere("JSON_EXTRACT(u.serialized_data, 'auth_status') <> :authStatus")
+```
+
+## Query to Enum Option Repository:
+
+*Before:*
+
+```php
+   $statusEnum = $this->doctrine
+        ->getRepository(ExtendHelper::buildEnumValueClassName(Attendee::STATUS_ENUM_CODE))
+        ->find(Attendee::STATUS_NONE);
+```
+
+*After:*
+
+```php
+    $statusEnum = $this->doctrine
+         ->getRepository(EnumOption::class)
+         ->find(ExtendHelper::buildEnumOptionId(Attendee::STATUS_ENUM_CODE, Attendee::STATUS_NONE)
+    );
+```
+
+## Comparison of enum option:
+
+*Before:*
+
+```php
+  if ($user->getAuthStatus()->getId() !== UserManager::STATUS_ACTIVE) {}
+```
+
+```php
+  if (!$originalValue instanceof AbstractEnumValue) {}
+```
+
+*After:*
+
+```php
+  if ($user->getAuthStatus()->getIntenalId() !== UserManager::STATUS_ACTIVE) {}
+```
+
+```php
+  if (!$originalValue instanceof EnumOptionInterface) {}
+```
+
+### Expression Language changes:
+
+*Before:*
+
+```yaml
+    shippingRuleD:
+      name: 'D'
+      enabled: true
+      sortOrder: 1
+      stopProcessing: true
+      expression: "lineItems.any( lineItem.product.shipping_category.id = 'd' )"
+```
+
+*After:*
+
+```yaml
+    shippingRuleD:
+        name: 'D'
+        enabled: true
+        sortOrder: 1
+        stopProcessing: true
+        expression: "lineItems.any( lineItem.product.shipping_category.internalId = 'd' )" # use internalId instead of id
+```
+
+### Datagrids changes:
+
+*Before:*
+
+- join enum options
+
+```yaml
+join:
+  left:
+    - { join: ra.status, alias: status }
+```
+
+*After:*
+
+```yaml
+join:
+  left:
+#    - { join: ra.status, alias: status } # removed
+```
+
+- Example of datagrid columns and joins update
+
+*Before:*
+
+```yaml
+    orders-grid:
+        acl_resource: oro_order_view
+        extends: base-orders-grid
+        source:
+            query:
+                select:
+                    - internalStatus.name as internalStatusName
+                    - internalStatus.id as internalStatusId
+                join:
+                    left:
+                        - { join: order1.internal_status, alias: internalStatus }
+                groupBy:  order1.id
+            hints:
+                - HINT_TRANSLATABLE
+        columns:
+            internalStatusName:
+                label: oro.order.internal_status.label
+```
+
+*After:*
+
+```yaml
+    orders-grid:
+        acl_resource: oro_order_view
+        extends: base-orders-grid
+        source:
+            query:
+                select:
+#                    - internalStatus.name as internalStatusName # removed
+#                    - internalStatus.id as internalStatusId # removed
+                join:
+                    left:
+#                       - { join: order1.internal_status, alias: internalStatus } # removed
+                groupBy:  order1.id
+            hints:
+                - HINT_TRANSLATABLE
+        columns:
+            internal_status:
+                label: oro.order.internal_status.label
+```
+
+### Data fixture changes:
+
+- load enum options
+
+*Before:*
+
+```yaml
+Extend\Entity\EV_Acc_Internal_Rating:
+    1_of_5:
+        __construct:
+            - '1_of_5'
+            - '1_of_5'
+```
+*After:*
+
+```yaml
+Oro\Bundle\EntityExtendBundle\Entity\EnumOption:
+    1_of_5:
+        __construct:
+            - 'acc_internal_rating' # enum_code
+            - '1_of_5'
+            - '1_of_5'
+```
+
+## Search index
+
+- Enum fields do not change in the search index, the only thing you need to remember is that in the search, the internal id of the enum is used as a key, and the value remains unchanged.
+
+## Import and Export
+
+- The format of import and export has not changed, but you need to remember that the internalId of the enum option is used as an identifier.
+
+### Transition definition configuration changes:
+
+*Before:*
+
+```yaml
+quote_creating_definition:
+  preconditions:
+    '@and':
+         - '@neq':  [$status.id, 'lost']
+         - '@neq':  [$status.id, 'won']
+         - '@type': [$customer.target, 'Oro\Bundle\CustomerBundle\Entity\Customer']
+
+```
+*After:*
+
+```yaml
+quote_creating_definition:
+  preconditions:
+    '@and':
+      - '@neq':  [$status.internalId, 'lost']
+      - '@neq':  [$status.internalId, 'won']
+      - '@type': [$customer.target, 'Oro\Bundle\CustomerBundle\Entity\Customer']
+```
+
+### Checking the set of changes of enum field
+
+*Before:*
+
+```php
+    $changeSet = $unitOfWork->getEntityChangeSet($entity);
+    if (isset($changeSet['status']) || isset($changeSet['inventory_status'])) {}
+```
+
+*After:*
+
+```php
+    $changeSet = $unitOfWork->getEntityChangeSet($entity);
+    if (isset($changeSet['serialized_data'][0]['status']) # $changeSet['serialized_data'][0] - previous status value
+        || isset($changeSet['serialized_data'][0]['inventory_status'])) {}
+```
+
+### System configuration changes:
+
+*Before:*
+
+```php
+    public function getConfigTreeBuilder(): TreeBuilder
+    {
+        $treeBuilder = new TreeBuilder('oro_seller_dashboard');
+        $rootNode = $treeBuilder->getRootNode();
+
+        SettingsBuilder::append(
+            $rootNode,
+            [
+                'order_count_status_criteria' => [
+                    'type' => 'array',
+                    'value' => [
+                        OrderStatusesProviderInterface::INTERNAL_STATUS_OPEN
+                    ]
+                ]
+            ]
+        );
+    }
+```
+*After:*
+
+```php
+    public function getConfigTreeBuilder(): TreeBuilder
+    {
+        $treeBuilder = new TreeBuilder('oro_seller_dashboard');
+        $rootNode = $treeBuilder->getRootNode();
+
+        SettingsBuilder::append(
+            $rootNode,
+            [
+                'order_count_status_criteria' => [
+                    'type' => 'array',
+                    'value' => [
+                        ExtendHelper::buildEnumOptionId(
+                            Order::INTERNAL_STATUS_CODE,
+                            OrderStatusesProviderInterface::INTERNAL_STATUS_OPEN
+                        ),
+                    ]
+                ]
+            ]
+        );
+    }
+```
+
+### Template changes (optional, to improve performance):
+
+*Before:*
+
+```html
+<i {% if invitationClass %}class="{{ invitationClass }}" title="{{ attendee.status.name }}" {% endif %}></i>
+
+```
+
+*After:*
+
+```html
+<i {% if invitationClass %}class="{{ invitationClass }}" title="{{ attendee.status.id|trans_enum }}" {% endif %}></i>
+```
+
+### Behat test changes:
+
+*Before:*
+
+```text
+ Scenario: Create Multi-Select fields with one auditable
+   ...
+   And I fill form with:
+   | Field name    | AuditableMultiSelect |
+   | Type          | Multi-Select         |
+   And I click "Continue"
+   And set Options with:
+   | Label   |
+   | Option1 |
+   | Option2 |
+   | Option3 |
+   And I fill form with:
+   | Auditable | Yes |
+   And I save and create new form
+   Then click update schema            # schema update step is needed
+   When I click update schema
+   Then I should see Schema updated flash message
+   ...
+```
+*After:*
+
+```text
+Scenario: Create Multi-Select fields with one auditable
+  ...
+  And I fill form with:
+  | Field name    | AuditableMultiSelect |
+  | Type          | Multi-Select         |
+  And I click "Continue"
+  And set Options with:
+  | Label   |
+  | Option1 |
+  | Option2 |
+  | Option3 |
+  And I fill form with:
+  | Auditable | Yes |
+  And I save and create new form
+#  Then click update schema                # This step is not needed more for enums fields!!!
+#  When I click update schema
+#  Then I should see Schema updated flash message
+  ...
+```
+
+### Removed
+
+#### EntityBundle
+* Removed **activity_support** configuration option from **dictionary** entity config scope. Consider replacing it with **collapsed_associations** configuration option of QueryDesignerBundle when it is used for your entity.
+
 ## Changes in the Platform package versions
 
+- [6.0.0](#600-2024-03-30)
 - [5.1.0](#510-2023-03-31)
 - [5.0.0](#500-2022-01-26)
 - [4.2.10](#4210)
@@ -22,6 +642,262 @@ The current file describes significant changes in the code that may affect the u
 - [2.2.0](#220-2017-05-31)
 - [2.1.0](#210-2017-03-30)
 
+## 6.0.0 (2024-03-30)
+[Show detailed list of changes](incompatibilities-6-0.md)
+
+### Security Changes
+
+Based on symfony security changes, the approach to user authentication was updated. The main differences in the new approach will be described below.
+
+* You should use `SecurityExtension::addAuthenticatorFactory()` instead of `SecurityExtension::addSecurityListenerFactory()`.
+
+Before:
+
+```php
+$extension->addSecurityListenerFactory(new OrganizationFormLoginFactory());
+```
+
+After:
+
+```php
+$extension->addAuthenticatorFactory(new OrganizationFormLoginFactory());
+```
+
+* Authenticators have replaced the previous implementation of authentication using providers and listeners.
+
+Before:
+
+```text
+Oro\Bundle\SecurityBundle\Http\Firewal\OrganizationBasicAuthenticationListener
+Oro\Bundle\SecurityBundle\Authentication\Provider\UsernamePasswordOrganizationAuthenticationProvider
+```
+
+After:
+
+```text
+Oro\Bundle\SecurityBundle\Authentication\Authenticator\UsernamePasswordOrganizationAuthenticator
+```
+
+* You should use `security.access_control` rules instead of anonymous authenticator.
+
+Before:
+
+```yaml
+security:
+    firewalls:
+        healthcheck_http_status_checks:
+            pattern:   /healthcheck/http_status_check(s$|/.*)
+            provider:  chain_provider
+            anonymous: true # anonymous authentication is not available
+```
+
+After:
+
+```yaml
+security:
+    firewalls:
+        healthcheck_http_status_checks:
+            pattern:   /healthcheck/http_status_check(s$|/.*)
+            provider:  chain_provider
+
+oro_security:
+    access_control:
+        - { path: /healthcheck/http_status_check(s$|/.*), roles: PUBLIC_ACCESS }
+```
+
+* Changed implementation of `anonymous_customer_user` authnetication. To check whether the user is authorized, it is not enough to check whether the user is absent in the token, it is also worth checking whether this user is not a customer visitor (`CustomerVisitor::class`).
+
+Before:
+
+```php
+if ($this->getUser()) {
+    # implementation
+}
+```
+
+```php
+if (null !== $this->getUser()) {
+    # implementation
+}
+```
+
+After:
+
+```php
+if ($this->getUser() instanceof AbstractUser) {
+    # implementation
+}
+```
+
+```php
+if (!$this->getUser() instanceof CustomerUser) { 
+    # implementation
+}
+```
+
+* In twig templates, to check whether the user is authorized, you need to use the function `is_authenticated` that excludes from the check (anonymous customer user).
+
+Before:
+
+```text
+{% if app.user is not null %}
+    # implementation
+{% endif %}
+```
+
+After:
+
+```text
+{% if is_authenticated() %}
+    # implementation  
+{% endif %}
+```
+
+* Added new `feature_firewall_authenticators` option to `api_firewalls` configuration to disable authenticator when some API feature is disabled.
+
+Before:
+
+```yaml
+oro_api:
+  api_firewalls:
+    api_wsse_secured:
+      feature_firewall_listeners:
+        - Oro\Bundle\OAuth2ServerBundle\Security\Firewall\OAuth2Listener
+    wsse_secured:
+      feature_firewall_listeners:
+        - Oro\Bundle\OAuth2ServerBundle\Security\Firewall\OAuth2Listener
+    frontend_api_wsse_secured:
+      feature_firewall_listeners:
+        - Oro\Bundle\OAuth2ServerBundle\Security\Firewall\OAuth2Listener
+```
+
+After:
+
+```yaml
+oro_api:
+  api_firewalls:
+    api_wsse_secured:
+      feature_firewall_authenticators: # FeatureDependAuthenticatorChecker
+        - Oro\Bundle\OAuth2ServerBundle\Security\Authenticator\OAuth2Authenticator
+    wsse_secured:
+      feature_firewall_authenticators: # FeatureDependAuthenticatorChecker
+        - Oro\Bundle\OAuth2ServerBundle\Security\Authenticator\OAuth2Authenticator
+    frontend_api_wsse_secured:
+      feature_firewall_authenticators: # FeatureDependAuthenticatorChecker
+        - Oro\Bundle\OAuth2ServerBundle\Security\Authenticator\OAuth2Authenticator
+```
+
+### Added
+
+#### ApiBundle
+* String value(s) contains only space symbols is not allowed for string API filters. For example the following filters
+  are not valid: `filter[code]= `, `filter[code]=code1, ,code2`. If by some reasons you want to allow value(s) contains
+  only space symbols for some filters, you can use `allow_empty` filter option in `Resources/config/oro/api.yml`, e.g.:
+
+```yaml
+api:
+  entities:
+    Acme\Bundle\AcmeBundle\Entity\SomeEntity:
+      filters:
+        code:
+          options:
+            allow_empty: true
+```
+* Added the ability to specify `\Symfony\Component\Validator\Constraints\GroupSequence` in validation groups of API config via nested arrays.
+
+#### FormBundle
+* Added the chain of constraint converters to `\Oro\Bundle\FormBundle\Form\Extension\JsValidation\ConstraintConverter` with basic implementation in `\Oro\Bundle\FormBundle\Form\Extension\JsValidation\GenericConstraintConverter`.
+* Added `\Oro\Bundle\FormBundle\Form\Extension\JsValidation\RangeConstraintConverter` for `Range` constraint with the ability to handle `minPropertyPath` and `maxPropertyPath`.
+* Added `\Oro\Bundle\FormBundle\Validator\Constraints\AdaptivelyValidCollection` validation constraint for validating a collection of entities with different validation groups for the new, updated and unchanged elements.
+
+#### PlatformBundle
+* Added `\Oro\Bundle\PlatformBundle\Validator\Constraints\ValidEmbeddable` that allows to apply `Valid` constraint with explicit validation groups specified in `embeddedGroups` option.
+
+#### EmailBundle
+* Added the email template inheritance feature that provides an ability to extend an email template from parent one.
+* Added `oro_email.email_template_wysiwyg_enabled` system config setting allowing to toggle WYSIWYG an Email Template create/edit page. Now WYSIWYG is turned off by default. It is not recommended to turn it on if you are using the email template inheritance feature as it may break template syntax.
+* Added `\Oro\Bundle\EmailBundle\Provider\RenderedEmailTemplateProvider` as an entry point to get a rendered email template by criteria.
+* Added `\Oro\Bundle\EmailBundle\Sender\EmailTemplateSender` as an entry point to render email template and send it to recipients.
+* Added `\Oro\Bundle\EmailBundle\Factory\EmailModelFromEmailTemplateFactory` as an entry point to render an email template and create an email model ready to be sent.
+* Added `\Oro\Bundle\EmailBundle\Provider\EmailTemplateContextProvider` that dispatches `\Oro\Bundle\EmailBundle\Event\EmailTemplateContextCollectEvent` to collect email template context (e.g. localization) needed for its searching and rendering.
+* Added `\Oro\Bundle\EmailBundle\Controller\AjaxEmailController::compileEmailAction` to use it for email template rendering instead of `\Oro\Bundle\EmailBundle\Controller\Api\Rest\EmailTemplateController::getCompiledAction` in a Compose Email dialog.
+
+#### EntityBundle
+* Added method `getEntityTreeNodeByPropertyPath` to JS `EntityStructureDataProvider` (see [documentation](https://doc.oroinc.com/master/bundles/platform/EntityBundle/entity-structure-data-provider#get-entitytreenode-by-property-path))
+* Added magic property `entityTree` to `EntityStructureDataProvider` (see [documentation](https://doc.oroinc.com/master/bundles/platform/EntityBundle/entity-structure-data-provider#entity-tree)) that allows walk through entity fields tree
+* Added JS `EntityTreeNode` that is used in `EntityStructureDataProvider`
+
+#### FormBundle
+* Added JS `ExpressionEditorComponent` (see [documentation](https://doc.oroinc.com/master/bundles/platform/FormBundle/expression-editor#expressioneditorcomponent) that used instead regular `ViewComponent` in formtype options of rule editor. It's designed to prepare instance of `EntityStructureDataProvider` and create instance of `ExpressionEditorView`
+  expression-editor-component.js
+* Added `\Oro\Bundle\FormBundle\Validator\Constraints\UniqueEntity` validation constraint and validator.
+
+#### UIBundle
+* Added `renderCollapsibleWysiwygContentPreview` and `renderWysiwygContentPreview` TWIG macros to UIBundle for
+  rendering WYSIWYG content in backoffice.
+
+#### CurrencyBundle
+* Added supporting of the `readonly` attribute in `\Oro\Bundle\CurrencyBundle\Form\Type\PriceType`.
+
+### Changed
+
+#### ApiBundle
+* Removed support of `{@feature}` placeholder in API documentation. It was done because API documentation should not
+  depend on the application configuration changes made by users.
+
+#### EmailBundle
+* Decomposed `\Oro\Bundle\EmailBundle\Provider\EmailRenderer`, made it as an entry point to render an email template.
+  * Added `\Oro\Bundle\EmailBundle\Event\EmailTemplateRenderBeforeEvent` and `\Oro\Bundle\EmailBundle\Event\EmailTemplateRenderAfterEvent`
+* Decomposed `\Oro\Bundle\EmailBundle\Form\Type\EmailType` into `\Oro\Bundle\EmailBundle\Form\EventListener\EmailTemplateRenderingSubscriber` to move the email template rendering responsibility to the form subscriber.
+* Changed `\Oro\Bundle\EmailBundle\Migrations\Data\ORM\AbstractEmailFixture` to make it ensure that an email template name is equal to its file name.
+
+#### EntityBundle
+* Refactored JS `EntityStructureDataProvider` [[?]](https://github.com/oroinc/platform/tree/master/src/Oro/Bundle/EntityBundle/Resources/public/js/app/services/entity-structure-data-provider.js) (see [documentation](https://doc.oroinc.com/master/bundles/platform/EntityBundle/entity-structure-data-provider/))
+  - method `getPropertyPathByPath` renamed to `getRelativePropertyPathByPath`
+  - method `getPathByPropertyPath` renamed to `getPathByRelativePropertyPath`
+  - method `getPathByPropertyPathSafely` renamed to `getPathByRelativePropertyPathSafely`
+* Decomposed `\Oro\Bundle\EntityBundle\Twig\Sandbox\TemplateRenderer` into separate processors and factories. Moved the TWIG sandbox configuration out of its responsibility.
+
+#### FormBundle
+* Refactored `ExpressionEditorView` [[?]](https://github.com/oroinc/platform/blob/master/src/Oro/Bundle/FormBundle/Resources/public/js/app/views/expression-editor-view.js) (see [documentation](https://doc.oroinc.com/master/bundles/platform/FormBundle/expression-editor/#expressioneditorview))
+* Refactored `ExpressionEditorUtil` [[?]](https://github.com/oroinc/platform/tree/master/src/Oro/Bundle/FormBundle/Resources/public/js/expression-editor-util.js) (see [documentation](https://doc.oroinc.com/master/bundles/platform/FormBundle/expression-editor/#expressioneditorutil))
+  * made it descendant of `BaseClass`
+  * changed options format
+
+#### LocaleBundle
+* Updated `\Oro\Bundle\LocaleBundle\Provider\CurrentLocalizationProvider::setCurrentLocalization` to make it additionally switch localization, language, locale in `\Locale`, `\Gedmo\Translatable\TranslatableListener` and Symfony translator.
+
+#### QueryDesignerBundle
+* JS `*-filter-initialized` modules, defined over `init_module` option in filter configuration, now expected to export a sync callback function
+
+### Datagrids
+* All datagrids used in storefront application were moved from `<BundleName>/Resources/config/oro/datagrids.yml` to layouts folder of the `default` theme `<BundleName>/Resources/views/layouts/default/config/datagrids.yml`.
+This means that storefront datagrids can now differ between themes. Any storefront grid customization should also be moved to the theme folder.
+
+#### SearchBundle
+* Added `\Oro\Bundle\SearchBundle\Event\BeforeIndexEntitiesEvent` that is dispatched in `\Oro\Bundle\SearchBundle\EventListener\IndexListener` in postFlush method after changing or updating indexing entities.
+
+#### DataGridBundle
+* Added postponed delete entities logic to `\Oro\Bundle\DataGridBundle\Extension\MassAction\DeleteMassActionHandler`.
+
+#### UIBundle
+* Removed `$offset-*` scss variables
+* Added `spacing` scss function.
+`$offset-x\$offset-y` => `spacing('base')`
+`$offset-x-m\$offset-y-m` => `spacing('sm')`
+`$offset-x-s\$offset-y-s` => `spacing('xs')`
+
+### Removed
+
+#### EmailBundle
+* Removed `\Oro\Bundle\EmailBundle\Manager\EmailTemplateManager`, use instead `\Oro\Bundle\EmailBundle\Sender\EmailTemplateSender`.
+* Removed `\Oro\Bundle\EmailBundle\Tools\EmailTemplateSerializer`, use instead `\Oro\Bundle\EmailBundle\Sender\EmailTemplateSender`.
+* Removed `\Oro\Bundle\EmailBundle\Provider\LocalizedTemplateProvider` use instead `\Oro\Bundle\EmailBundle\Provider\EmailTemplateProvider` and `\Oro\Bundle\EmailBundle\Provider\TranslatedEmailTemplateProvider`.
+* Removed `\Oro\Bundle\EmailBundle\Provider\\Oro\Bundle\EmailBundle\Provider\EmailTemplateContentProvider`, use instead `\Oro\Bundle\EmailBundle\Provider\RenderedEmailTemplateProvider`.
+
+#### NotificationBundle
+* Removed `\Oro\Bundle\NotificationBundle\Manager\EmailNotificationSender`, use instead `\Oro\Bundle\NotificationBundle\Manager\EmailNotificationManager`.
+* Removed unused `\Oro\Bundle\NotificationBundle\Model\EmailTemplate`, use instead `\Oro\Bundle\EmailBundle\Model\EmailTemplate`.
 
 ## 5.1.0 (2023-03-31)
 
@@ -305,6 +1181,7 @@ use ExtendEntityTrait;
 
 #### LayoutBundle
 * Added `\Oro\Component\Layout\Extension\Theme\Model\ThemeManager::getThemesHierarchy` to easily get the theme hierarchy for the specified theme.
+* Added the ability to specify response status code via layout context option `response_status_code`.
 
 #### Layout Component
 * Added `\Oro\Component\Layout\ContextInterface` and `\Oro\Component\Layout\LayoutContextStack` to `\Oro\Component\Layout\Layout` so now it is aware of own context and can push/pop the current context in the layout context stack.
@@ -356,6 +1233,30 @@ use ExtendEntityTrait;
 * Changed `Oro\Bundle\AttachmentBundle\ImportExport\EventListener\FileStrategyEventListener` constructor, so it expects
   `Oro\Bundle\AttachmentBundle\ImportExport\FileManipulator $fileManipulator`
   instead of `$fileManager`, also the `$authorizationChecker` argument is removed.
+
+### CacheBundle
+
+* The `oro.cache.abstract` abstract service is removed, use `oro.data.cache` instead, with the `cache.pool` tag 
+and the namespace in a tag attribute.
+
+  Before: 
+  ```yaml
+  services:
+      oro_catalog.layout.data_provider.category.cache:
+          parent: oro.cache.abstract
+          public: false
+          calls:
+              - [ setNamespace, [ 'oro_catalog_category' ] ]
+  ```
+  After:
+  ```yaml
+  services:
+      oro_catalog.layout.data_provider.category.cache:
+          parent: oro.data.cache
+          public: false
+          tags:
+              - { name: 'cache.pool', namespace: 'oro_catalog_category' }
+  ```
 
 #### DataGridBundle
 * The `iconHideText` option for `action-launcher` and `dropdown-select-choice-launcher` views was removed, use the `launcherMode` option instead.
@@ -483,6 +1384,13 @@ The widgets `collapse-widget`, `collapse-group-widget`, `rows-collapse-widget` w
 #### NavigationBundle
 * Changed the sorting mechanism in `\Oro\Bundle\NavigationBundle\Provider\BuilderChainProvider`: menu items are sorted as a single list instead of separate - sorted and unsorted parts. 
 
+#### MessageQueueBundle
+* Every custom MQ topic needs a `topic` class now; see more in the [Message Queue Topics](https://doc.oroinc.com/backend/mq/message-queue-topics/) topic.
+
+#### WorkflowBundle
+* To unify the WorkflowBundle and ActionBundle syntax, the `pre_conditions` and `post_actions` options of the workflow process definition configuration were renamed to `preconditions` and `actions` respectively.
+
+
 ### Removed
 
 #### CronBundle
@@ -530,9 +1438,6 @@ The widgets `collapse-widget`, `collapse-group-widget`, `rows-collapse-widget` w
 * The deprecated method `tools.loadModuleAndReplace()` from `'oroui/js/tools'` module, use `loadModules.fromObjectProp` from `'oroui/js/app/services/load-modules'` instead.
 * `vertical_container` layout block type has been removed, as redundant. Use conventional `container` layout block type instead, with additions custom CSS class that implements required alignment.
 
-#### WorkflowBundle
-* The deprecated `pre_conditions` option was removed for the configuration of workflow process definitions.
-* The deprecated `pre_conditions` and `post_actions` options were removed for the configuration of workflows.
 
 #### LayoutBundle
 * Removed `Oro\Bundle\LayoutBundle\Layout\LayoutContextHolder`, use `Oro\Component\Layout\LayoutContextStack` instead.

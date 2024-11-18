@@ -2,6 +2,7 @@
 
 namespace Oro\Bundle\NotificationBundle\Form\Type;
 
+use Oro\Bundle\EmailBundle\Entity\EmailTemplate;
 use Oro\Bundle\EmailBundle\Form\EventListener\BuildTemplateFormSubscriber;
 use Oro\Bundle\FormBundle\Form\Type\Select2ChoiceType;
 use Oro\Bundle\NotificationBundle\Entity\EmailNotification;
@@ -51,9 +52,7 @@ class EmailNotificationType extends AbstractType
         $this->events = $events;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder->addEventSubscriber($this->buildTemplateSubscriber);
@@ -102,7 +101,7 @@ class EmailNotificationType extends AbstractType
             Select2TranslatableEntityType::class,
             [
                 'label' => 'oro.notification.emailnotification.template.label',
-                'class' => 'OroEmailBundle:EmailTemplate',
+                'class' => EmailTemplate::class,
                 'choice_label' => 'name',
                 'configs' => [
                     'allowClear' => true,
@@ -123,9 +122,7 @@ class EmailNotificationType extends AbstractType
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults(
@@ -136,9 +133,7 @@ class EmailNotificationType extends AbstractType
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function finishView(FormView $view, FormInterface $form, array $options)
     {
         $view->vars['listenChangeElements'] = array_filter(
@@ -155,18 +150,13 @@ class EmailNotificationType extends AbstractType
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getName()
     {
         return $this->getBlockPrefix();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return self::NAME;
     }

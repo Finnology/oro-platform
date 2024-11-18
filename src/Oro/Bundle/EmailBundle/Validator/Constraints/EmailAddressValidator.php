@@ -21,13 +21,15 @@ class EmailAddressValidator extends ConstraintValidator
         $this->emailAddressHelper = $emailAddressHelper;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function validate($value, Constraint $constraint)
     {
         if (!$constraint instanceof EmailAddress) {
             throw new UnexpectedTypeException($constraint, EmailAddress::class);
+        }
+
+        if (null === $value) {
+            return;
         }
 
         if (is_scalar($value)) {

@@ -20,10 +20,8 @@ class Configuration implements ConfigurationInterface
     public const ENABLED_LOCALIZATIONS = 'enabled_localizations';
     public const DEFAULT_LOCALIZATION  = 'default_localization';
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getConfigTreeBuilder()
+    #[\Override]
+    public function getConfigTreeBuilder(): TreeBuilder
     {
         $treeBuilder = new TreeBuilder(self::ROOT_NAME);
         $rootNode = $treeBuilder->getRootNode();
@@ -44,7 +42,6 @@ class Configuration implements ConfigurationInterface
                 'currency' => ['value' => null],
                 'timezone' => ['value' => date_default_timezone_get()],
                 'format_address_by_address_country' => ['value' => true, 'type' => 'boolean'],
-                'qwerty' => ['value' => [], 'type' => 'array'],
                 'quarter_start' => ['value' => ['month' => '1', 'day' => '1']],
                 'temperature_unit' => ['value' => 'fahrenheit'],
                 'wind_speed_unit' => ['value' => 'miles_per_hour'],

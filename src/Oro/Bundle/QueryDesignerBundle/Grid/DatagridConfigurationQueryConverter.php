@@ -9,6 +9,7 @@ use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
 use Oro\Bundle\EntityBundle\Provider\EntityNameResolver;
 use Oro\Bundle\EntityBundle\Provider\VirtualFieldProviderInterface;
 use Oro\Bundle\EntityBundle\Provider\VirtualRelationProviderInterface;
+use Oro\Bundle\EntityExtendBundle\Form\Util\EnumTypeHelper;
 use Oro\Bundle\EntityExtendBundle\PropertyAccess;
 use Oro\Bundle\FilterBundle\Filter\FilterUtility;
 use Oro\Bundle\QueryDesignerBundle\Model\AbstractQueryDesigner;
@@ -32,7 +33,8 @@ class DatagridConfigurationQueryConverter extends GroupingOrmQueryConverter
         VirtualRelationProviderInterface $virtualRelationProvider,
         DoctrineHelper $doctrineHelper,
         DatagridGuesser $datagridGuesser,
-        EntityNameResolver $entityNameResolver
+        EntityNameResolver $entityNameResolver,
+        protected EnumTypeHelper $enumTypeHelper
     ) {
         parent::__construct($functionProvider, $virtualFieldProvider, $virtualRelationProvider, $doctrineHelper);
         $this->datagridGuesser = $datagridGuesser;
@@ -57,25 +59,19 @@ class DatagridConfigurationQueryConverter extends GroupingOrmQueryConverter
         return $config;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function createContext(): DatagridConfigurationQueryConverterContext
     {
         return new DatagridConfigurationQueryConverterContext();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function context(): DatagridConfigurationQueryConverterContext
     {
         return parent::context();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function saveTableAliases(array $tableAliases): void
     {
         $this->context()->getConfig()->offsetSetByPath(
@@ -84,9 +80,7 @@ class DatagridConfigurationQueryConverter extends GroupingOrmQueryConverter
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function saveColumnAliases(array $columnAliases): void
     {
         $this->context()->getConfig()->offsetSetByPath(
@@ -95,18 +89,14 @@ class DatagridConfigurationQueryConverter extends GroupingOrmQueryConverter
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function addSelectStatement(): void
     {
         parent::addSelectStatement();
         $this->context()->getConfig()->getOrmQuery()->setSelect($this->context()->getSelectColumns());
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function addSelectColumn(
         string $entityClass,
         string $tableAlias,
@@ -132,9 +122,10 @@ class DatagridConfigurationQueryConverter extends GroupingOrmQueryConverter
             );
         }
 
-        $fieldType = $functionReturnType;
-        if (null === $fieldType) {
-            $fieldType = $this->getFieldType($entityClass, $fieldName);
+        $fieldType = $functionReturnType ?? $this->getFieldType($entityClass, $fieldName);
+
+        if ($this->enumTypeHelper->getEnumCode($entityClass, $fieldName) !== null) {
+            $fieldType = $this->enumTypeHelper->getEnumFieldType($entityClass, $fieldName);
         }
 
         if (!$functionExpr && 'dictionary' === $fieldType) {
@@ -163,7 +154,8 @@ class DatagridConfigurationQueryConverter extends GroupingOrmQueryConverter
                 'translatable' => false
             ],
         ];
-        if (null !== $functionExpr) {
+        $groupingColumns = $this->context()->getDefinition()['grouping_columns'] ?? null;
+        if (null !== $functionExpr && $groupingColumns) {
             $columnOptions[DatagridGuesser::FILTER][FilterUtility::BY_HAVING_KEY] = true;
         }
         $this->datagridGuesser->applyColumnGuesses($entityClass, $fieldName, $fieldType, $columnOptions);
@@ -190,26 +182,20 @@ class DatagridConfigurationQueryConverter extends GroupingOrmQueryConverter
         return $entityClass;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function addFromStatements(): void
     {
         parent::addFromStatements();
         $this->context()->getConfig()->getOrmQuery()->setFrom($this->context()->getFrom());
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function addFromStatement(string $entityClass, string $tableAlias): void
     {
         $this->context()->addFrom($entityClass, $tableAlias);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function addJoinStatements(): void
     {
         parent::addJoinStatements();
@@ -223,9 +209,7 @@ class DatagridConfigurationQueryConverter extends GroupingOrmQueryConverter
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function addJoinStatement(
         ?string $joinType,
         string $join,
@@ -240,9 +224,7 @@ class DatagridConfigurationQueryConverter extends GroupingOrmQueryConverter
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function addWhereStatement(): void
     {
         parent::addWhereStatement();
@@ -252,9 +234,7 @@ class DatagridConfigurationQueryConverter extends GroupingOrmQueryConverter
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function addGroupByStatement(): void
     {
         parent::addGroupByStatement();
@@ -264,17 +244,13 @@ class DatagridConfigurationQueryConverter extends GroupingOrmQueryConverter
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function addGroupByColumn(string $columnAlias): void
     {
         $this->context()->addGroupingColumn($columnAlias);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function addOrderByColumn(string $columnAlias, string $columnSorting): void
     {
         $this->context()->getConfig()->offsetSetByPath(

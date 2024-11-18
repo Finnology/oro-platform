@@ -18,6 +18,7 @@ class TransitionIsAllowedValidatorTest extends ConstraintValidatorTestCase
     /** @var WorkflowRegistry|\PHPUnit\Framework\MockObject\MockObject */
     private $registry;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->registry = $this->createMock(WorkflowRegistry::class);
@@ -25,6 +26,7 @@ class TransitionIsAllowedValidatorTest extends ConstraintValidatorTestCase
         parent::setUp();
     }
 
+    #[\Override]
     protected function createValidator()
     {
         return new TransitionIsAllowedValidator($this->registry);
@@ -108,9 +110,16 @@ class TransitionIsAllowedValidatorTest extends ConstraintValidatorTestCase
         $constraint = new TransitionIsAllowed($workflowItem, $transitionName);
         $this->validator->validate($value, $constraint);
 
-        $this->buildViolation($expectedMessage)
-            ->setParameters($expectedMessageParameters)
-            ->assertRaised();
+        if ($expectedMessage !== $constraint->someConditionsNotMetMessage) {
+            $this->buildViolation($constraint->someConditionsNotMetMessage)
+                ->buildNextViolation($expectedMessage)
+                ->setParameters($expectedMessageParameters)
+                ->assertRaised();
+        } else {
+            $this->buildViolation($expectedMessage)
+                ->setParameters($expectedMessageParameters)
+                ->assertRaised();
+        }
     }
 
     public function validateExceptionsDataProvider(): array

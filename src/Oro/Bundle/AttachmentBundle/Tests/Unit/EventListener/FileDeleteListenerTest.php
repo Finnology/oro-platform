@@ -2,7 +2,7 @@
 
 namespace Oro\Bundle\AttachmentBundle\Tests\Unit\EventListener;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Event\OnFlushEventArgs;
 use Doctrine\ORM\Event\PostFlushEventArgs;
 use Doctrine\ORM\UnitOfWork;
@@ -19,17 +19,18 @@ class FileDeleteListenerTest extends \PHPUnit\Framework\TestCase
 
     private LoggerInterface|\PHPUnit\Framework\MockObject\MockObject $logger;
 
-    private EntityManager|\PHPUnit\Framework\MockObject\MockObject $entityManager;
+    private EntityManagerInterface|\PHPUnit\Framework\MockObject\MockObject $entityManager;
 
     private File $file;
 
     private FileDeleteListener $listener;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->fileManager = $this->createMock(FileManager::class);
         $this->logger = $this->createMock(LoggerInterface::class);
-        $this->entityManager = $this->createMock(EntityManager::class);
+        $this->entityManager = $this->createMock(EntityManagerInterface::class);
         $this->file = new File();
 
         $this->listener = new FileDeleteListener($this->fileManager, $this->logger);

@@ -8,18 +8,8 @@ use Oro\Bundle\MigrationBundle\Migration\QueryBag;
 
 class OroEmailBundle implements Migration
 {
-    /**
-     * {@inheritDoc}
-     */
-    public function up(Schema $schema, QueryBag $queries)
-    {
-        self::changeAttachmentRelation($schema);
-    }
-
-    /**
-     * @throws \Doctrine\DBAL\Schema\SchemaException
-     */
-    public static function changeAttachmentRelation(Schema $schema)
+    #[\Override]
+    public function up(Schema $schema, QueryBag $queries): void
     {
         $table = $schema->getTable('oro_email_attachment');
         $table->removeForeignKey('FK_F4427F2393CB796C');

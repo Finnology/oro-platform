@@ -6,6 +6,7 @@ use Oro\Bundle\DistributionBundle\OroKernel;
 use Symfony\Component\Config\Loader\LoaderInterface;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class KernelStub extends OroKernel
 {
@@ -53,110 +54,78 @@ class KernelStub extends OroKernel
         $this->bundleMap = $bundleMap;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function registerBundles()
+    #[\Override]
+    public function registerBundles(): iterable
     {
         return $this->registeredBundles;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function registerContainerConfiguration(LoaderInterface $loader)
     {
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function serialize()
     {
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function unserialize($serialized)
     {
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function handle(Request $request, $type = self::MASTER_REQUEST, $catch = true)
+    #[\Override]
+    public function handle(Request $request, $type = self::MAIN_REQUEST, $catch = true): Response
     {
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function boot()
+    #[\Override]
+    public function boot(): void
     {
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function shutdown()
     {
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function locateResource($name)
+    #[\Override]
+    public function locateResource($name): string
     {
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getName()
     {
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getEnvironment()
+    #[\Override]
+    public function getEnvironment(): string
     {
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function isDebug()
+    #[\Override]
+    public function isDebug(): bool
     {
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getStartTime()
+    #[\Override]
+    public function getStartTime(): float
     {
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getCacheDir()
+    #[\Override]
+    public function getCacheDir(): string
     {
+        return 'var/cache';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getLogDir()
+    #[\Override]
+    public function getLogDir(): string
     {
         return $this->logDir;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getCharset()
+    #[\Override]
+    public function getCharset(): string
     {
     }
 }

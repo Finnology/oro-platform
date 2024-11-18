@@ -1,6 +1,9 @@
-<?php return [
+<?php
+
+return [
     'change' => [
         'entity' => 'MyOwn\\SuperCustom\\Entity',
+        'metadata' => [],
         'steps' => [
             'step_a' => [
                 'allowed_transitions' => ['transition_two'],
@@ -30,6 +33,7 @@
         'transitions' => [
             'transition_two' => [
                 'step_to' => 'step_b',
+                'conditional_steps_to' => [],
                 'frontend_options' => ['icon' => 'foo'],
                 'is_start' => false,
                 'is_hidden' => false,
@@ -67,6 +71,7 @@
     ],
     'bar' => [
         'entity' => 'Some\\Another\\Entity',
+        'metadata' => [],
         'steps' => [
             'step_a' => [
                 'allowed_transitions' => ['transition_two'],
@@ -96,6 +101,7 @@
         'transitions' => [
             'transition_two' => [
                 'step_to' => 'step_b',
+                'conditional_steps_to' => [],
                 'frontend_options' => ['icon' => 'foo'],
                 'is_start' => false,
                 'is_hidden' => false,
@@ -133,6 +139,7 @@
     ],
     'foo' => [
         'entity' => 'Some\\Entity',
+        'metadata' => [],
         'steps' => [
             'step_a' => [
                 'allowed_transitions' => [],
@@ -155,6 +162,7 @@
             'transition_one' => [
                 'is_start' => true,
                 'step_to' => 'step_a',
+                'conditional_steps_to' => [],
                 'frontend_options' => ['icon' => 'foo'],
                 'is_hidden' => false,
                 'is_unavailable_hidden' => false,

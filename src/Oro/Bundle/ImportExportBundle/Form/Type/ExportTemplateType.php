@@ -8,34 +8,26 @@ class ExportTemplateType extends ExportType
 {
     const NAME = 'oro_importexport_export_template';
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function getProcessorType()
     {
         return ProcessorRegistry::TYPE_EXPORT_TEMPLATE;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function generateProcessorLabel($alias)
     {
         return sprintf('oro.importexport.export_template.%s', $alias);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getName()
     {
         return $this->getBlockPrefix();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return self::NAME;
     }

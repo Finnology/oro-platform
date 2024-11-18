@@ -11,13 +11,10 @@ use Symfony\Component\DependencyInjection\ContainerAwareTrait;
 
 class LoadTestAuditDataWithOneToManyData extends AbstractFixture implements ContainerAwareInterface
 {
+    use ContainerAwareTrait;
     private const CHILD_COUNT = 4;
 
-    use ContainerAwareTrait;
-
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function load(ObjectManager $manager)
     {
         $owner = new TestAuditDataOwner();

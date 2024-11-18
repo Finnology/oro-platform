@@ -39,12 +39,6 @@ class MutableAclProvider extends AclProvider implements MutableAclProviderInterf
     /** @var \SplObjectStorage  */
     private $propertyChanges;
 
-    /**
-     * @param Connection                          $connection
-     * @param PermissionGrantingStrategyInterface $permissionGrantingStrategy
-     * @param array                               $options
-     * @param AclCache                            $cache
-     */
     public function __construct(
         Connection $connection,
         PermissionGrantingStrategyInterface $permissionGrantingStrategy,
@@ -191,9 +185,7 @@ class MutableAclProvider extends AclProvider implements MutableAclProviderInterf
         return [preg_replace('/^SELECT id FROM/', 'DELETE FROM', $sql), $params, $types];
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function createAcl(ObjectIdentityInterface $oid)
     {
         if (false !== $this->retrieveObjectIdentityPrimaryKey($oid)) {
@@ -221,9 +213,7 @@ class MutableAclProvider extends AclProvider implements MutableAclProviderInterf
         return $this->findAcl($oid);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function deleteAcl(ObjectIdentityInterface $oid)
     {
         $this->connection->beginTransaction();
@@ -278,9 +268,7 @@ class MutableAclProvider extends AclProvider implements MutableAclProviderInterf
         $this->connection->executeStatement($sql, $params, $types);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function findAcls(array $oids, array $sids = [])
     {
         $result = parent::findAcls($oids, $sids);
@@ -322,6 +310,7 @@ class MutableAclProvider extends AclProvider implements MutableAclProviderInterf
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      * @SuppressWarnings(PHPMD.NPathComplexity)
      */
+    #[\Override]
     public function propertyChanged($sender, $propertyName, $oldValue, $newValue)
     {
         if (!$sender instanceof MutableAclInterface && !$sender instanceof EntryInterface) {
@@ -392,11 +381,11 @@ class MutableAclProvider extends AclProvider implements MutableAclProviderInterf
     }
 
     /**
-     * {@inheritdoc}
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      * @SuppressWarnings(PHPMD.NPathComplexity)
      */
+    #[\Override]
     public function updateAcl(MutableAclInterface $acl)
     {
         if (!$this->propertyChanges->contains($acl)) {
@@ -1008,14 +997,14 @@ class MutableAclProvider extends AclProvider implements MutableAclProviderInterf
     private function createOrRetrieveClassId($classType)
     {
         [$sql, $params, $types] = $this->getSelectClassIdSql($classType);
-        if (false !== $id = $this->connection->executeQuery($sql, $params, $types)->fetchColumn()) {
+        if (false !== $id = $this->connection->executeQuery($sql, $params, $types)->fetchOne()) {
             return $id;
         }
 
         [$insertSql, $insertParams, $insertTypes] = $this->getInsertClassSql($classType);
         $this->connection->executeStatement($insertSql, $insertParams, $insertTypes);
 
-        return $this->connection->executeQuery($sql, $params, $types)->fetchColumn();
+        return $this->connection->executeQuery($sql, $params, $types)->fetchOne();
     }
 
     /**
@@ -1031,7 +1020,7 @@ class MutableAclProvider extends AclProvider implements MutableAclProviderInterf
     private function createOrRetrieveSecurityIdentityId(SecurityIdentityInterface $sid)
     {
         [$sql, $params, $types] = $this->getSelectSecurityIdentityIdSql($sid);
-        $id = $this->connection->executeQuery($sql, $params, $types)->fetchColumn();
+        $id = $this->connection->executeQuery($sql, $params, $types)->fetchOne();
         if (false !== $id) {
             return $id;
         }
@@ -1039,7 +1028,7 @@ class MutableAclProvider extends AclProvider implements MutableAclProviderInterf
         [$insertSql, $insertParams, $insertTypes] = $this->getInsertSecurityIdentitySql($sid);
         $this->connection->executeStatement($insertSql, $insertParams, $insertTypes);
 
-        return $this->connection->executeQuery($sql, $params, $types)->fetchColumn();
+        return $this->connection->executeQuery($sql, $params, $types)->fetchOne();
     }
 
     /**
@@ -1145,7 +1134,7 @@ class MutableAclProvider extends AclProvider implements MutableAclProviderInterf
                         $field,
                         $aceOrder
                     );
-                    $aceId = $this->connection->executeQuery($sql, $params, $types)->fetchColumn();
+                    $aceId = $this->connection->executeQuery($sql, $params, $types)->fetchOne();
                     $this->loadedAces[$aceId] = new \SplObjectStorage();
                     $this->loadedAces[$aceId]->attach($ace->getAcl(), $ace);
 
@@ -1236,7 +1225,7 @@ class MutableAclProvider extends AclProvider implements MutableAclProviderInterf
                     null,
                     $i
                 );
-                $aceId = $this->connection->executeQuery($sql, $params, $types)->fetchColumn();
+                $aceId = $this->connection->executeQuery($sql, $params, $types)->fetchOne();
                 $this->loadedAces[$aceId] = new \SplObjectStorage();
                 $this->loadedAces[$aceId]->attach($ace->getAcl(), $ace);
 

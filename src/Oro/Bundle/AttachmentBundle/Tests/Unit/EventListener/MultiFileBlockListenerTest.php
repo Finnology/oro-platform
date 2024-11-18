@@ -6,6 +6,7 @@ use Oro\Bundle\AttachmentBundle\EventListener\MultiFileBlockListener;
 use Oro\Bundle\AttachmentBundle\Tests\Unit\Stub\Entity\TestEntity1;
 use Oro\Bundle\EntityConfigBundle\Config\Config;
 use Oro\Bundle\EntityConfigBundle\Config\Id\FieldConfigId;
+use Oro\Bundle\EntityConfigBundle\Manager\AttributeManager;
 use Oro\Bundle\EntityConfigBundle\Provider\ConfigProvider;
 use Oro\Bundle\EntityExtendBundle\Event\ValueRenderEvent;
 use Oro\Bundle\UIBundle\Event\BeforeFormRenderEvent;
@@ -26,15 +27,24 @@ class MultiFileBlockListenerTest extends \PHPUnit\Framework\TestCase
     /** @var ConfigProvider|\PHPUnit\Framework\MockObject\MockObject */
     private $configProvider;
 
+    /** @var AttributeManager|\PHPUnit\Framework\MockObject\MockObject */
+    private $attributeManager;
+
     /** @var MultiFileBlockListener */
     private $listener;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->configProvider = $this->createMock(ConfigProvider::class);
         $this->translator = $this->createMock(TranslatorInterface::class);
+        $this->attributeManager = $this->createMock(AttributeManager::class);
 
-        $this->listener = new MultiFileBlockListener($this->configProvider, $this->translator);
+        $this->listener = new MultiFileBlockListener(
+            $this->configProvider,
+            $this->translator,
+            $this->attributeManager
+        );
     }
 
     public function testOnBeforeValueRender()
@@ -196,6 +206,9 @@ class MultiFileBlockListenerTest extends \PHPUnit\Framework\TestCase
         $multiFileConfigId = new FieldConfigId('extend', TestEntity1::class, 'multiFileField', 'multiFile');
         $multiImageConfigId = new FieldConfigId('extend', TestEntity1::class, 'multiImageField', 'multiImage');
 
+        $translatedMultiFileLabel = 'translated multiFileLabel';
+        $translatedMultiImageLabel = 'translated multiImageLabel';
+
         $multiFileConfig = new Config($multiFileConfigId, [
             'label' => 'multiFileLabel',
         ]);
@@ -218,8 +231,8 @@ class MultiFileBlockListenerTest extends \PHPUnit\Framework\TestCase
         $this->translator->expects(self::exactly(2))
             ->method('trans')
             ->willReturnMap([
-                ['multiFileLabel', [], null, null, 'translated multiFileLabel'],
-                ['multiImageLabel', [], null, null, 'translated multiImageLabel'],
+                ['multiFileLabel', [], null, null, $translatedMultiFileLabel],
+                ['multiImageLabel', [], null, null, $translatedMultiImageLabel],
             ]);
 
         $twig->expects(self::exactly(2))
@@ -227,12 +240,25 @@ class MultiFileBlockListenerTest extends \PHPUnit\Framework\TestCase
             ->willReturnMap([
                 [
                     '@OroAttachment/Twig/dynamicField.html.twig',
-                    ['data' => ['entity' => $entity, 'fieldConfigId' => $multiFileConfigId]],
+                    [
+                        'data' => [
+                            'entity' => $entity,
+                            'fieldConfigId' => $multiFileConfigId,
+                            'fieldLabel' => $translatedMultiFileLabel
+                        ]
+                    ],
                     'multiFile html'
                 ],
                 [
                     '@OroAttachment/Twig/dynamicField.html.twig',
-                    ['data' => ['entity' => $entity, 'fieldConfigId' => $multiImageConfigId]],
+                    [
+                        'data' =>
+                            [
+                                'entity' => $entity,
+                                'fieldConfigId' => $multiImageConfigId,
+                                'fieldLabel' => $translatedMultiImageLabel
+                            ]
+                    ],
                     'multiImage html'
                 ],
             ]);

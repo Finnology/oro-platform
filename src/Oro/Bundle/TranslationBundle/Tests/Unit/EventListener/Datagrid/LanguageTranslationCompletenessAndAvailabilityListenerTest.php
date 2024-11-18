@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\TranslationBundle\Tests\Unit\EventListener\Datagrid;
@@ -23,6 +24,7 @@ class LanguageTranslationCompletenessAndAvailabilityListenerTest extends \PHPUni
     /** @var LanguageTranslationCompletenessAndAvailabilityListener */
     private $listener;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->translationMetricsProvider = $this->createMock(TranslationMetricsProviderInterface::class);

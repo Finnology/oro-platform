@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\ImportExportBundle\Command\Cron;
@@ -18,6 +19,7 @@ abstract class CleanupStorageCommandAbstract extends Command implements CronComm
     protected const DEFAULT_PERIOD = 14; // days
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     protected function configure()
     {
         $this
@@ -43,6 +45,7 @@ HELP
         ;
     }
 
+    #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $period = (int)$input->getOption('interval');
@@ -63,7 +66,7 @@ HELP
 
         $output->writeln(sprintf('<info>Were removed "%s" files.</info>', count($files)));
 
-        return 0;
+        return Command::SUCCESS;
     }
 
     /**

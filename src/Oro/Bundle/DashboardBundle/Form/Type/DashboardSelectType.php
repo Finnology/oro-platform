@@ -9,6 +9,9 @@ use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
+/**
+ * Dashboard select form type
+ */
 class DashboardSelectType extends AbstractType
 {
     /**
@@ -21,22 +24,18 @@ class DashboardSelectType extends AbstractType
         $this->manager = $manager;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getParent()
+    #[\Override]
+    public function getParent(): ?string
     {
         return EntityType::class;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults(
             array(
-                'class' => 'OroDashboardBundle:Dashboard',
+                'class' => Dashboard::class,
                 'choice_label' => 'label',
                 'choices' => $this->getChoices(),
                 'placeholder' => 'oro.dashboard.start_dashboard.empty_value',
@@ -57,18 +56,13 @@ class DashboardSelectType extends AbstractType
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getName()
     {
         return $this->getBlockPrefix();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return 'oro_dashboard_select';
     }

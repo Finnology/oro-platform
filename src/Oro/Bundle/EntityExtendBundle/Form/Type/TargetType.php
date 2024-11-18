@@ -31,9 +31,7 @@ class TargetType extends AbstractType
         $this->featureChecker = $featureChecker;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder->addEventListener(FormEvents::PRE_SET_DATA, function (FormEvent $event) use ($options) {
@@ -41,9 +39,7 @@ class TargetType extends AbstractType
         });
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setRequired('field_config_id');
@@ -81,18 +77,14 @@ class TargetType extends AbstractType
         });
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return 'oro_entity_target_type';
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function getParent()
+    #[\Override]
+    public function getParent(): ?string
     {
         return Select2ChoiceType::class;
     }
@@ -162,10 +154,6 @@ class TargetType extends AbstractType
 
     /**
      * Returns a list of choice attributes for the given entity
-     *
-     * @param string $entityClass
-     *
-     * @return array
      */
     private function getChoiceAttributes(string $entityClass): array
     {
@@ -178,11 +166,6 @@ class TargetType extends AbstractType
 
     /**
      * Checks if entity is suitable as target for relation
-     *
-     * @param ConfigInterface $config
-     * @param string|null     $targetEntityClass
-     *
-     * @return bool
      */
     private function isSuitableAsTarget(ConfigInterface $config, ?string $targetEntityClass): bool
     {

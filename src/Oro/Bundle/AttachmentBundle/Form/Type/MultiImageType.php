@@ -13,9 +13,7 @@ class MultiImageType extends AbstractType
 {
     const TYPE = 'oro_attachment_multi_image';
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->addNormalizer('entry_options', static function (Options $allOptions, array $option) {
@@ -27,18 +25,14 @@ class MultiImageType extends AbstractType
         });
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return self::TYPE;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getParent()
+    #[\Override]
+    public function getParent(): ?string
     {
         return MultiFileType::class;
     }

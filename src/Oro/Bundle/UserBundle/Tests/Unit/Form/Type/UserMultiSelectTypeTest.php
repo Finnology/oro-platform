@@ -1,4 +1,5 @@
 <?php
+
 namespace Oro\Bundle\UserBundle\Tests\Unit\Form\Type;
 
 use Doctrine\ORM\EntityManager;
@@ -18,6 +19,7 @@ class UserMultiSelectTypeTest extends \PHPUnit\Framework\TestCase
     /** @var UserMultiSelectType */
     private $type;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->em = $this->createMock(EntityManager::class);

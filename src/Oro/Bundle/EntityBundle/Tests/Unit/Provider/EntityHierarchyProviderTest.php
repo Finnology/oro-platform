@@ -2,9 +2,8 @@
 
 namespace Oro\Bundle\EntityBundle\Tests\Unit\Provider;
 
-use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Mapping\Driver\AnnotationDriver;
+use Doctrine\ORM\Mapping\Driver\AttributeDriver;
 use Doctrine\Persistence\ManagerRegistry;
 use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
 use Oro\Bundle\EntityBundle\Provider\EntityHierarchyProvider;
@@ -25,10 +24,11 @@ class EntityHierarchyProviderTest extends OrmTestCase
     /** @var EntityManagerInterface */
     private $emMock;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->emMock = $this->getTestEntityManager();
-        $this->emMock->getConfiguration()->setMetadataDriverImpl(new AnnotationDriver(new AnnotationReader()));
+        $this->emMock->getConfiguration()->setMetadataDriverImpl(new AttributeDriver([]));
 
         $this->extendConfigProvider = $this->getExtendConfigMock();
     }

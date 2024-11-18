@@ -20,6 +20,7 @@ class UserLoaderTest extends \PHPUnit\Framework\TestCase
     /** @var UserLoader */
     private $userLoader;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->doctrine = $this->createMock(ManagerRegistry::class);
@@ -74,7 +75,7 @@ class UserLoaderTest extends \PHPUnit\Framework\TestCase
             ->with(['username' => $username])
             ->willReturn($user);
 
-        self::assertSame($user, $this->userLoader->loadUserByUsername($username));
+        self::assertSame($user, $this->userLoader->loadUserByIdentifier($username));
     }
 
     /**

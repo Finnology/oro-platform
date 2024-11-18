@@ -27,6 +27,7 @@ class DataUpdateTopicSenderTest extends \PHPUnit\Framework\TestCase
     /** @var DataUpdateTopicSender */
     private $dataUpdateTopicSender;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->websocketClient = $this->createMock(WebsocketClientInterface::class);
@@ -52,7 +53,7 @@ class DataUpdateTopicSenderTest extends \PHPUnit\Framework\TestCase
             ->method('getUser')
             ->willReturn($user);
         $user->expects(self::once())
-            ->method('getUserName')
+            ->method('getUserIdentifier')
             ->willReturn(self::TEST_USERNAME);
 
         $this->connectionChecker->expects(self::once())
@@ -102,7 +103,7 @@ class DataUpdateTopicSenderTest extends \PHPUnit\Framework\TestCase
             ->willReturn($token);
         $token->expects(self::once())
             ->method('getUser')
-            ->willReturn(self::TEST_USERNAME);
+            ->willReturn($this->createMock(UserInterface::class));
 
         $this->connectionChecker->expects(self::once())
             ->method('checkConnection')

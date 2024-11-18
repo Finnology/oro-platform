@@ -60,17 +60,13 @@ class FolderingCumulativeFileLoader implements CumulativeResourceLoader
         $this->initialize();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getResource()
     {
         return $this->resource;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function load($bundleClass, $bundleDir, $bundleAppDir = '')
     {
         $result = [];
@@ -94,7 +90,7 @@ class FolderingCumulativeFileLoader implements CumulativeResourceLoader
                                 $loader->setRelativeFilePath($currentRelativeFilePath);
                                 $this->addLoadedResource(
                                     $result,
-                                    $loader->load($bundleClass, $bundleDir, $bundleAppDir)
+                                    $loader->load($bundleClass, $bundleDir, $bundleAppDir, $file->getFilename())
                                 );
                             } catch (\Exception $e) {
                                 $loader->setRelativeFilePath($originalRelativeFilePath);
@@ -114,9 +110,7 @@ class FolderingCumulativeFileLoader implements CumulativeResourceLoader
         return $result;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function registerFoundResource($bundleClass, $bundleDir, $bundleAppDir, CumulativeResource $resource)
     {
         foreach ($this->fileResourceLoaders as $loader) {
@@ -152,9 +146,9 @@ class FolderingCumulativeFileLoader implements CumulativeResourceLoader
     }
 
     /**
-     * {@inheritdoc}
      * @throws \Exception
      */
+    #[\Override]
     public function isResourceFresh($bundleClass, $bundleDir, $bundleAppDir, CumulativeResource $resource, $timestamp)
     {
         if ($this->fileResourceLoaders === null) {
@@ -193,7 +187,8 @@ class FolderingCumulativeFileLoader implements CumulativeResourceLoader
             $this->folderPattern,
             $this->fileResourceLoaders,
             $this->registeredRelativeFilePaths
-        ] = $serialized[0];
+        ] = $serialized;
+        $this->initialize();
     }
 
     /**
@@ -317,13 +312,6 @@ class FolderingCumulativeFileLoader implements CumulativeResourceLoader
     }
 
     /**
-     * @param CumulativeFileLoader $loader
-     * @param string $bundleClass
-     * @param string $bundleDir
-     * @param string $bundleAppDir
-     * @param CumulativeResource $resource
-     * @param int $timestamp
-     * @return bool
      * @throws \Exception
      */
     private function isLoaderResourceFresh(

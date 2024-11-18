@@ -3,7 +3,7 @@
 namespace Oro\Bundle\ActivityBundle\Form\Type;
 
 use Doctrine\Common\Util\ClassUtils;
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Oro\Bundle\ActivityBundle\Event\PrepareContextTitleEvent;
 use Oro\Bundle\ActivityBundle\Form\DataTransformer\ContextsToViewTransformer;
 use Oro\Bundle\EntityBundle\Provider\EntityNameResolver;
@@ -26,7 +26,7 @@ class ContextsSelectType extends AbstractType
 {
     const NAME = 'oro_activity_contexts_select';
 
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     protected $entityManager;
 
     /** @var ConfigManager */
@@ -45,24 +45,22 @@ class ContextsSelectType extends AbstractType
     protected $featureChecker;
 
     public function __construct(
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         ConfigManager $configManager,
         TranslatorInterface $translator,
         EventDispatcherInterface $dispatcher,
         EntityNameResolver $entityNameResolver,
         FeatureChecker $featureChecker
     ) {
-        $this->entityManager      = $entityManager;
-        $this->configManager      = $configManager;
-        $this->translator         = $translator;
-        $this->dispatcher         = $dispatcher;
+        $this->entityManager = $entityManager;
+        $this->configManager = $configManager;
+        $this->translator = $translator;
+        $this->dispatcher = $dispatcher;
         $this->entityNameResolver = $entityNameResolver;
-        $this->featureChecker     = $featureChecker;
+        $this->featureChecker = $featureChecker;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder->resetViewTransformers();
@@ -74,9 +72,7 @@ class ContextsSelectType extends AbstractType
         $builder->addViewTransformer($contextsToViewTransformer);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function buildView(FormView $view, FormInterface $form, array $options)
     {
         $view->vars['attr']['data-selected-data'] = $this->getSelectedData($form, $options['configs']['separator']);
@@ -158,9 +154,7 @@ class ContextsSelectType extends AbstractType
         return $this->translator->trans($label);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         $defaultConfigs = [
@@ -186,26 +180,19 @@ class ContextsSelectType extends AbstractType
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getParent()
+    #[\Override]
+    public function getParent(): ?string
     {
         return Select2HiddenType::class;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getName()
     {
         return $this->getBlockPrefix();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return self::NAME;
     }

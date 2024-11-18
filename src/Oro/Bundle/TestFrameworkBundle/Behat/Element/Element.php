@@ -17,7 +17,8 @@ use WebDriver\Exception\NoSuchElement;
  */
 class Element extends NodeElement
 {
-    use AssertTrait, SpinTrait;
+    use AssertTrait;
+    use SpinTrait;
 
     /**
      * @var OroElementFactory
@@ -168,9 +169,7 @@ class Element extends NodeElement
         return $this->elementFactory->findElementContains($name, $text, $this);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function click()
     {
         try {

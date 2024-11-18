@@ -3,56 +3,37 @@
 namespace Oro\Bundle\ActivityListBundle\Entity;
 
 use Doctrine\Common\Collections\Criteria;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
+use Oro\Bundle\OrganizationBundle\Entity\OrganizationInterface;
 use Oro\Bundle\UserBundle\Entity\User;
 
 /**
- * @ORM\Table(
- *      name="oro_activity_owner",
- *      uniqueConstraints={
- *          @ORM\UniqueConstraint(
- *              name="UNQ_activity_owner",
- *              columns={"activity_id", "user_id"}
- *          )
- *      }
- * )
- * @ORM\Entity()
- */
+* Entity that represents Activity Owner
+*
+*/
+#[ORM\Entity]
+#[ORM\Table(name: 'oro_activity_owner')]
+#[ORM\UniqueConstraint(name: 'UNQ_activity_owner', columns: ['activity_id', 'user_id'])]
 class ActivityOwner
 {
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
-    protected $id;
+    #[ORM\Column(name: 'id', type: Types::INTEGER)]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
+    protected ?int $id = null;
 
-    /**
-     * @var ActivityList
-     *
-     * @ORM\ManyToOne(targetEntity="Oro\Bundle\ActivityListBundle\Entity\ActivityList", inversedBy="activityOwners")
-     * @ORM\JoinColumn(name="activity_id", referencedColumnName="id", onDelete="CASCADE")
-     */
-    protected $activity;
+    #[ORM\ManyToOne(targetEntity: ActivityList::class, inversedBy: 'activityOwners')]
+    #[ORM\JoinColumn(name: 'activity_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
+    protected ?ActivityList $activity = null;
 
-    /**
-     * @var Organization
-     *
-     * @ORM\ManyToOne(targetEntity="Oro\Bundle\OrganizationBundle\Entity\Organization")
-     * @ORM\JoinColumn(name="organization_id", referencedColumnName="id")
-     */
-    protected $organization;
+    #[ORM\ManyToOne(targetEntity: Organization::class)]
+    #[ORM\JoinColumn(name: 'organization_id', referencedColumnName: 'id')]
+    protected ?OrganizationInterface $organization = null;
 
-    /**
-     * @var User
-     *
-     * @ORM\ManyToOne(targetEntity="Oro\Bundle\UserBundle\Entity\User")
-     * @ORM\JoinColumn(name="user_id", referencedColumnName="id")
-     */
-    protected $user;
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id')]
+    protected ?User $user = null;
 
     /**
      * @return int
@@ -75,7 +56,7 @@ class ActivityOwner
     /**
      * Set organization
      *
-     * @param Organization $organization
+     * @param Organization|null $organization
      *
      * @return self
      */
@@ -99,7 +80,7 @@ class ActivityOwner
     /**
      * Set activity
      *
-     * @param ActivityList $activity
+     * @param ActivityList|null $activity
      *
      * @return self
      */
@@ -111,7 +92,7 @@ class ActivityOwner
     }
 
     /**
-     * @param User $user
+     * @param User|null $user
      *
      * @return self
      */
@@ -148,6 +129,7 @@ class ActivityOwner
     /**
      * @return string
      */
+    #[\Override]
     public function __toString()
     {
         return (string)$this->getId();

@@ -28,10 +28,8 @@ class AutoResponseListener extends MailboxEmailListener implements
         $this->container = $container;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public static function getSubscribedServices()
+    #[\Override]
+    public static function getSubscribedServices(): array
     {
         return [
             'oro_email.autoresponserule_manager' => AutoResponseManager::class,

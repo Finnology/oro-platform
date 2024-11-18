@@ -153,7 +153,8 @@ define(function(require, exports, module) {
 
         setOptions: function(options) {
             const truthy = _.pick(options, 'template', 'label', 'title', 'ariaLabel', 'allowDefaultAriaLabel',
-                'icon', 'link', 'launcherMode', 'iconClassName', 'className', 'action', 'attributes', 'withinDropdown');
+                'icon', 'link', 'launcherMode', 'iconClassName', 'className', 'action', 'attributes', 'withinDropdown',
+                'actionClassNames', 'entityName');
 
             _.extend(
                 this,
@@ -166,10 +167,19 @@ define(function(require, exports, module) {
 
         getTemplateData: function() {
             const data = _.pick(this, 'icon', 'title', 'label', 'ariaLabel', 'className', 'iconClassName',
-                'launcherMode', 'link', 'links', 'action', 'attributes', 'enabled', 'tagName', 'withinDropdown');
+                'launcherMode', 'link', 'links', 'action', 'attributes', 'enabled', 'tagName', 'withinDropdown',
+                'actionClassNames', 'entityName');
 
             if (!data.label) {
                 data.label = this.action.label;
+            }
+
+            if (!data.entityName) {
+                data.entityName = this.action.entityName;
+            }
+
+            if (!data.className) {
+                data.className = this.action.className;
             }
 
             if (!data.ariaLabel && this.action.ariaLabel) {
@@ -180,12 +190,24 @@ define(function(require, exports, module) {
                 data.attributes = {...this.action.attributes};
             }
 
+            if (data.attributes) {
+                data.attributes = Object.fromEntries(
+                    Object.entries(data.attributes).map(attr => {
+                        if (_.isObject(attr[1])) {
+                            attr[1] = JSON.stringify(attr[1]);
+                        }
+                        return attr;
+                    }));
+            }
+
             if (!data.ariaLabel && this.allowDefaultAriaLabel) {
                 data.ariaLabel = this.getDefaultAriaLabel(data.label);
             }
 
             if (!data.title) {
-                data.title = data.label;
+                const entityName = typeof data.entityName === 'string' ? data.entityName.trim() : '';
+
+                data.title = data.label ? `${data.label.trim()} ${entityName}`.trim() : entityName;
             }
 
             if (!data.launcherMode) {

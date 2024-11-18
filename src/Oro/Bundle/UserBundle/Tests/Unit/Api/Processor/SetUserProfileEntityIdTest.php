@@ -7,6 +7,7 @@ use Oro\Bundle\UserBundle\Api\Processor\SetUserProfileEntityId;
 use Oro\Bundle\UserBundle\Entity\AbstractUser;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 class SetUserProfileEntityIdTest extends GetProcessorTestCase
 {
@@ -16,6 +17,7 @@ class SetUserProfileEntityIdTest extends GetProcessorTestCase
     /** @var SetUserProfileEntityId */
     private $processor;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -45,7 +47,7 @@ class SetUserProfileEntityIdTest extends GetProcessorTestCase
             ->willReturn($token);
         $token->expects(self::once())
             ->method('getUser')
-            ->willReturn('someUser');
+            ->willReturn($this->createMock(UserInterface::class));
 
         $this->processor->process($this->context);
 

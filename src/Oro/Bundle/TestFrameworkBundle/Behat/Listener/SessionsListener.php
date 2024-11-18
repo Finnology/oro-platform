@@ -42,10 +42,8 @@ class SessionsListener extends MinkSessionsListener
         parent::__construct($mink, $defaultSession, $javascriptSession, $availableJavascriptSessions);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedEvents()
+    #[\Override]
+    public static function getSubscribedEvents(): array
     {
         return array(
             FeatureTested::BEFORE   => array('prepareDefaultMinkFeatureSession', 10),

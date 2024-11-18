@@ -22,14 +22,19 @@ layout:
                     blockType: block
                 __datagrid_toolbar_pagination:
                     blockType: block
+                __datagrid_toolbar_pagination_info:
+                    blockType: block
                 __datagrid_toolbar_sorting:
                     blockType: block
                 __datagrid_items_counter:
+                    blockType: block
+                __datagrid_mass_actions_panel:
                     blockType: block
             tree:
                 __root:
                     __datagrid_toolbar:
                         __datagrid_items_counter: ~
+                        __datagrid_mass_actions_panel: ~
                         __datagrid_toolbar_sorting: ~
                         __datagrid_toolbar_actions_container:
                             __datagrid_toolbar_mass_actions: ~
@@ -39,3 +44,4 @@ layout:
                                 __datagrid_toolbar_actions_panel: ~
                             __datagrid_toolbar_page_size: ~
                         __datagrid_toolbar_pagination: ~
+                        __datagrid_toolbar_pagination_info: ~

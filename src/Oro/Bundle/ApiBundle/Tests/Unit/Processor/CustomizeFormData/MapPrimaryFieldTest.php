@@ -40,7 +40,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  */
 class MapPrimaryFieldTest extends CustomizeFormDataProcessorTestCase
 {
-    /** @var \PHPUnit\Framework\MockObject\MockObject|ActionProcessorInterface */
+    /** @var ActionProcessorInterface|\PHPUnit\Framework\MockObject\MockObject */
     private $customizationProcessor;
 
     /** @var CustomizeFormDataHandler */
@@ -58,6 +58,7 @@ class MapPrimaryFieldTest extends CustomizeFormDataProcessorTestCase
     /** @var MapPrimaryField */
     private $processor;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -107,9 +108,7 @@ class MapPrimaryFieldTest extends CustomizeFormDataProcessorTestCase
         );
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     protected function getFormExtensions(): array
     {
         return [
@@ -518,7 +517,7 @@ class MapPrimaryFieldTest extends CustomizeFormDataProcessorTestCase
             $config,
             $data,
             ['enabledRole' => '1'],
-            ['constraints' => [new Assert\Length(['min' => 3, 'allowEmptyString' => false])]],
+            ['constraints' => [new Assert\Length(['min' => 3]), new Assert\NotBlank()]],
             RestrictedNameContainerType::class
         );
         self::assertTrue($form->isSynchronized());
@@ -553,7 +552,7 @@ class MapPrimaryFieldTest extends CustomizeFormDataProcessorTestCase
                     ['name' => 'role2']
                 ]
             ],
-            ['constraints' => [new Assert\Length(['min' => 3, 'allowEmptyString' => false])]]
+            ['constraints' => [new Assert\Length(['min' => 3]), new Assert\NotBlank()]],
         );
         self::assertTrue($form->isSynchronized());
         self::assertFalse($form->isValid());

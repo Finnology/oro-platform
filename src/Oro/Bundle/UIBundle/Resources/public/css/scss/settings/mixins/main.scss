@@ -2,11 +2,19 @@
 
 @use 'sass:list';
 
+@import 'breakpoint';
 @import 'loading';
 @import 'label';
 @import 'absolute-line-height';
 @import 'validation-failed';
 @import 'gradient-pattern';
+
+// Ellipsis text
+@mixin ellipsis() {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
 
 // Helper to clear inner floats
 @mixin clearfix() {

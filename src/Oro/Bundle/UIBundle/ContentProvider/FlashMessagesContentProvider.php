@@ -2,26 +2,20 @@
 
 namespace Oro\Bundle\UIBundle\ContentProvider;
 
-use Symfony\Component\HttpFoundation\Session\Session;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
  * Returns all flash messages.
  */
 class FlashMessagesContentProvider implements ContentProviderInterface
 {
-    /** @var Session */
-    private $session;
-
-    public function __construct(Session $session)
+    public function __construct(protected RequestStack $requestStack)
     {
-        $this->session = $session;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getContent()
     {
-        return $this->session->getFlashBag()->all();
+        return $this->requestStack->getSession()->getFlashBag()->all();
     }
 }

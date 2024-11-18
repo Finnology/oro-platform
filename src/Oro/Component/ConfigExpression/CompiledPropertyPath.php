@@ -42,26 +42,20 @@ final class CompiledPropertyPath implements \IteratorAggregate, PropertyPathInte
         $this->isIndex  = $isIndex;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function __toString()
+    #[\Override]
+    public function __toString(): string
     {
         return (string)$this->path;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getLength()
+    #[\Override]
+    public function getLength(): int
     {
         return count($this->elements);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getParent()
+    #[\Override]
+    public function getParent(): ?PropertyPathInterface
     {
         if ($this->getLength() <= 1) {
             return null;
@@ -78,26 +72,21 @@ final class CompiledPropertyPath implements \IteratorAggregate, PropertyPathInte
 
     /**
      * Returns a new iterator for this path.
-     *
-     * @return PropertyPathIteratorInterface
      */
+    #[\Override]
     public function getIterator(): PropertyPathIteratorInterface
     {
         return new PropertyPathIterator($this);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getElements()
+    #[\Override]
+    public function getElements(): array
     {
         return $this->elements;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getElement($index)
+    #[\Override]
+    public function getElement($index): string
     {
         if (!isset($this->elements[$index])) {
             throw new Exception\OutOfBoundsException(sprintf('The index %s is not within the property path', $index));
@@ -106,10 +95,8 @@ final class CompiledPropertyPath implements \IteratorAggregate, PropertyPathInte
         return $this->elements[$index];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function isProperty($index)
+    #[\Override]
+    public function isProperty($index): bool
     {
         if (!isset($this->isIndex[$index])) {
             throw new Exception\OutOfBoundsException(sprintf('The index %s is not within the property path', $index));
@@ -118,10 +105,8 @@ final class CompiledPropertyPath implements \IteratorAggregate, PropertyPathInte
         return !$this->isIndex[$index];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function isIndex($index)
+    #[\Override]
+    public function isIndex($index): bool
     {
         if (!isset($this->isIndex[$index])) {
             throw new Exception\OutOfBoundsException(sprintf('The index %s is not within the property path', $index));

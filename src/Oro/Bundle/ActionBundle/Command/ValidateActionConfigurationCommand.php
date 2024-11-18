@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\ActionBundle\Command;
@@ -32,6 +33,7 @@ class ValidateActionConfigurationCommand extends Command
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     protected function configure()
     {
         $this
@@ -51,7 +53,8 @@ HELP
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      * @noinspection PhpMissingParentCallCommonInspection
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    #[\Override]
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $output->writeln('Load actions ...');
 
@@ -68,6 +71,6 @@ HELP
             $output->writeln('No actions found.');
         }
 
-        return 0;
+        return Command::SUCCESS;
     }
 }

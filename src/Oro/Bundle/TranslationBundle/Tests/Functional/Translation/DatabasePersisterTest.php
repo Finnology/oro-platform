@@ -15,6 +15,7 @@ use Oro\Component\Testing\ReflectionUtil;
 
 class DatabasePersisterTest extends WebTestCase
 {
+    #[\Override]
     protected function setUp(): void
     {
         $this->initClient();
@@ -114,7 +115,7 @@ class DatabasePersisterTest extends WebTestCase
             ->getSingleScalarResult();
     }
 
-    private function getTranslationEntity(Language $language, TranslationKey $key):Translation
+    private function getTranslationEntity(Language $language, TranslationKey $key): Translation
     {
         /** @var EntityRepository $repo */
         return self::getContainer()->get('doctrine')

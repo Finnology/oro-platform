@@ -2,7 +2,8 @@
 
 @mixin element-state($state) {
     @if $state == 'active' {
-        &:active {
+        &:active,
+        &.active {
             @content;
         }
     } @else if $state == 'hover' {
@@ -38,6 +39,10 @@
         &--disabled,
         &.disabled,
         &:disabled {
+            @content;
+        }
+    } @else if $state == 'readonly' {
+        &[readonly] {
             @content;
         }
     }

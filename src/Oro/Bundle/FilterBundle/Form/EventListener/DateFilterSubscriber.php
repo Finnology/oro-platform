@@ -38,10 +38,8 @@ class DateFilterSubscriber implements EventSubscriberInterface
         $this->dateFilterModifier = $modifier;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedEvents()
+    #[\Override]
+    public static function getSubscribedEvents(): array
     {
         return [
             FormEvents::PRE_SUBMIT => 'preSubmit',

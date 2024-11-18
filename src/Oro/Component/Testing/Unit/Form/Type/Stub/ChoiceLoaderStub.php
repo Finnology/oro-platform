@@ -3,8 +3,12 @@
 namespace Oro\Component\Testing\Unit\Form\Type\Stub;
 
 use Symfony\Component\Form\ChoiceList\ArrayChoiceList;
+use Symfony\Component\Form\ChoiceList\ChoiceListInterface;
 use Symfony\Component\Form\ChoiceList\Loader\ChoiceLoaderInterface;
 
+/**
+ * Stub for Symfony\Component\Form\ChoiceList\Loader\ChoiceLoaderInterface
+ */
 class ChoiceLoaderStub implements ChoiceLoaderInterface
 {
     /**
@@ -23,26 +27,20 @@ class ChoiceLoaderStub implements ChoiceLoaderInterface
         });
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function loadChoiceList($value = null)
+    #[\Override]
+    public function loadChoiceList($value = null): ChoiceListInterface
     {
         return $this->choiceList;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function loadChoicesForValues(array $values, $value = null)
+    #[\Override]
+    public function loadChoicesForValues(array $values, $value = null): array
     {
         return $this->choiceList->getChoicesForValues($values);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function loadValuesForChoices(array $choices, $value = null)
+    #[\Override]
+    public function loadValuesForChoices(array $choices, $value = null): array
     {
         return $this->choiceList->getValuesForChoices($choices);
     }

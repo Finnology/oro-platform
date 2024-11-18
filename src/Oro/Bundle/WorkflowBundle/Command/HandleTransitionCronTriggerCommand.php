@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\WorkflowBundle\Command;
@@ -40,6 +41,7 @@ class HandleTransitionCronTriggerCommand extends Command
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     public function configure()
     {
         $this
@@ -64,19 +66,20 @@ HELP
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
-    public function execute(InputInterface $input, OutputInterface $output)
+    #[\Override]
+    public function execute(InputInterface $input, OutputInterface $output): int
     {
         $triggerId = $input->getOption('id');
         if (!filter_var($triggerId, FILTER_VALIDATE_INT)) {
             $output->writeln('<error>No workflow transition cron trigger identifier defined</error>');
-            return 1;
+            return Command::FAILURE;
         }
 
         /** @var TransitionCronTrigger $trigger */
         $trigger = $this->getTransitionCronTriggerRepository()->find($triggerId);
         if (!$trigger) {
             $output->writeln('<error>Transition cron trigger not found</error>');
-            return 1;
+            return Command::FAILURE;
         }
 
         try {
@@ -112,7 +115,7 @@ HELP
             throw $e;
         }
 
-        return 0;
+        return Command::SUCCESS;
     }
 
     /**

@@ -18,9 +18,7 @@ abstract class RestController extends RestGetController implements
     FormHandlerAwareInterface,
     RestApiCrudInterface
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function handleUpdateRequest($id)
     {
         $entity = $this->getManager()->find($id);
@@ -46,6 +44,7 @@ abstract class RestController extends RestGetController implements
      *
      * @return Response
      */
+    #[\Override]
     public function handleCreateRequest($_ = null)
     {
         $isProcessed = false;
@@ -63,9 +62,7 @@ abstract class RestController extends RestGetController implements
         return $this->buildResponse($view, self::ACTION_CREATE, ['success' => $isProcessed, 'entity' => $entity]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getForm()
     {
         $handler = $this->getFormHandler();
@@ -92,9 +89,7 @@ abstract class RestController extends RestGetController implements
         return call_user_func_array(array($this->getManager(), 'createEntity'), func_get_args());
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function handleDeleteRequest($id, array $options = [])
     {
         $isProcessed = false;
@@ -144,7 +139,7 @@ abstract class RestController extends RestGetController implements
         $formName = $this->getForm()->getName();
         $data     = empty($formName)
             ? $request->request->all()
-            : $request->request->get($formName);
+            : $request->get($formName);
 
         if (is_array($data) && $this->fixFormData($data, $entity)) {
             if (empty($formName)) {
@@ -203,6 +198,6 @@ abstract class RestController extends RestGetController implements
      */
     protected function getDeleteHandler()
     {
-        return $this->get('oro_soap.handler.delete');
+        return $this->container->get('oro_soap.handler.delete');
     }
 }

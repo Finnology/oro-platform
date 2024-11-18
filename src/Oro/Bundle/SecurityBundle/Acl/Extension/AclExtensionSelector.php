@@ -4,7 +4,7 @@ namespace Oro\Bundle\SecurityBundle\Acl\Extension;
 
 use Oro\Bundle\SecurityBundle\Acl\Domain\DomainObjectWrapper;
 use Oro\Bundle\SecurityBundle\Acl\Domain\ObjectIdAccessor;
-use Oro\Bundle\SecurityBundle\Annotation\Acl as AclAnnotation;
+use Oro\Bundle\SecurityBundle\Attribute\Acl as AclAttribute;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\Security\Acl\Exception\InvalidDomainObjectException;
 use Symfony\Component\Security\Acl\Model\ObjectIdentityInterface;
@@ -36,9 +36,7 @@ class AclExtensionSelector implements ResetInterface
         $this->objectIdAccessor = $objectIdAccessor;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function reset()
     {
         $this->localCache = [];
@@ -60,7 +58,7 @@ class AclExtensionSelector implements ResetInterface
      * Gets ACL extension responsible for work with the given domain object
      *
      * @param mixed $val            A domain object, ObjectIdentity, object identity descriptor (id:type)
-     *                              or ACL annotation
+     *                              or ACL attribute
      * @param bool  $throwException Whether to throw exception in case the entity has several identifier fields
      *
      * @return AclExtensionInterface|null
@@ -143,7 +141,7 @@ class AclExtensionSelector implements ResetInterface
         if ($object instanceof ObjectIdentityInterface) {
             $id = $object->getIdentifier();
             $type = $object->getType();
-        } elseif ($object instanceof AclAnnotation) {
+        } elseif ($object instanceof AclAttribute) {
             $id = $object->getType();
             $type = $object->getClass();
             if (empty($type)) {

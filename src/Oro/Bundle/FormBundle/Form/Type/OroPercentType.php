@@ -8,46 +8,41 @@ use Symfony\Component\Form\Extension\Core\Type\PercentType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
+/**
+ * Form type for percentage values.
+ */
 class OroPercentType extends AbstractType
 {
     const NAME = 'oro_percent';
 
-    /**
-     * {@inheritDoc}
-     */
     public function getName()
     {
         return $this->getBlockPrefix();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return self::NAME;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function getParent()
+    #[\Override]
+    public function getParent(): ?string
     {
         return PercentType::class;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setAllowedTypes('scale', ['null', 'int']);
-        $resolver->setDefaults(array('scale' => null));
+        $resolver->setDefaults([
+            'scale' => null,
+            'rounding_mode' => \NumberFormatter::ROUND_CEILING
+        ]);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder->resetViewTransformers()

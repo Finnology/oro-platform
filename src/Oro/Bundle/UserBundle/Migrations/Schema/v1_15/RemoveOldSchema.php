@@ -9,33 +9,20 @@ use Oro\Bundle\MigrationBundle\Migration\QueryBag;
 
 class RemoveOldSchema implements Migration, OrderedMigrationInterface
 {
-    /**
-     * {@inheritDoc}
-     */
-    public function up(Schema $schema, QueryBag $queries)
+    #[\Override]
+    public function getOrder(): int
     {
-        $schema->dropTable('oro_user_email_origin');
-
-        self::execute($schema);
+        return 2;
     }
 
-    /**
-     * @throws \Doctrine\DBAL\Schema\SchemaException
-     */
-    public static function execute(Schema $schema)
+    #[\Override]
+    public function up(Schema $schema, QueryBag $queries): void
     {
+        $schema->dropTable('oro_user_email_origin');
         $schema->dropTable('oro_email_to_folder');
 
         $emailTable = $schema->getTable('oro_email');
         $emailTable->dropColumn('is_seen');
         $emailTable->dropColumn('received');
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getOrder()
-    {
-        return 2;
     }
 }

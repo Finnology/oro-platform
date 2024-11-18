@@ -22,24 +22,20 @@ class LoadWorkflowDefinitions extends AbstractFixture implements ContainerAwareI
     const WITH_GROUPS2 = 'test_groups_flow2';
     const START_FROM_ENTITY_TRANSITION = 'start_transition_from_entities';
     const START_FROM_ROUTE_TRANSITION = 'start_transition_from_routes';
-    const START_FROM_ROUTE_TRANSITION_WITH_FORM ='start_transition_from_routes_with_form';
+    const START_FROM_ROUTE_TRANSITION_WITH_FORM = 'start_transition_from_routes_with_form';
 
     /**
      * @var ContainerInterface
      */
     protected $container;
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function setContainer(ContainerInterface $container = null)
     {
         $this->container = $container;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function load(ObjectManager $manager)
     {
         $hasDefinitions = false;
@@ -75,6 +71,6 @@ class LoadWorkflowDefinitions extends AbstractFixture implements ContainerAwareI
      */
     protected function getWorkflowConfiguration()
     {
-        return Yaml::parse(file_get_contents(__DIR__ . '/config/oro/workflows.yml')) ? : [];
+        return Yaml::parse(file_get_contents(__DIR__ . '/config/oro/workflows.yml')) ?: [];
     }
 }

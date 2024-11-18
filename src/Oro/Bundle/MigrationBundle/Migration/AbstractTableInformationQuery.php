@@ -19,9 +19,7 @@ abstract class AbstractTableInformationQuery extends ParametrizedMigrationQuery
 
     abstract public function doExecute(LoggerInterface $logger, bool $dryRun = false): void;
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getDescription(): array
     {
         $logger = new ArrayLogger();
@@ -31,9 +29,7 @@ abstract class AbstractTableInformationQuery extends ParametrizedMigrationQuery
         return $logger->getMessages();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function execute(LoggerInterface $logger): void
     {
         $this->doExecute($logger);
@@ -56,7 +52,7 @@ abstract class AbstractTableInformationQuery extends ParametrizedMigrationQuery
             $this->logQuery($logger, $sql, $params, $types);
         }
 
-        return $this->connection->fetchAll($sql, $params, $types);
+        return $this->connection->fetchAllAssociative($sql, $params, $types);
     }
 
     /**
@@ -68,7 +64,7 @@ abstract class AbstractTableInformationQuery extends ParametrizedMigrationQuery
 
         return array_map(static function (array $columnData) {
             return array_change_key_case($columnData, CASE_LOWER);
-        }, $this->connection->fetchAll($listTableForeignKeysSQL));
+        }, $this->connection->fetchAllAssociative($listTableForeignKeysSQL));
     }
 
     /**
@@ -189,7 +185,7 @@ abstract class AbstractTableInformationQuery extends ParametrizedMigrationQuery
             $this->logQuery($logger, $sql, $params, $types);
         }
 
-        return $this->connection->fetchAll($sql, $params, $types);
+        return $this->connection->fetchAllAssociative($sql, $params, $types);
     }
 
     protected function getPgSqlUniqueColumnNamesQuery(): string

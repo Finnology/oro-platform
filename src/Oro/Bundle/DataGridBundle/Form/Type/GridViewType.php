@@ -2,6 +2,7 @@
 
 namespace Oro\Bundle\DataGridBundle\Form\Type;
 
+use Oro\Bundle\DataGridBundle\Entity\AppearanceType;
 use Oro\Bundle\DataGridBundle\Entity\GridView;
 use Oro\Bundle\FormBundle\Form\Type\OroUnstructuredHiddenType;
 use Oro\Bundle\FormBundle\Form\Type\OroUnstructuredTextType;
@@ -25,8 +26,8 @@ class GridViewType extends AbstractType
      *     '-1': 'ASC',
      *     '1': 'DESC'
      *
-     * {@inheritdoc}
      */
+    #[\Override]
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
@@ -47,7 +48,7 @@ class GridViewType extends AbstractType
                 'appearanceType',
                 EntityType::class,
                 [
-                    'class' => 'OroDataGridBundle:AppearanceType',
+                    'class' => AppearanceType::class,
                     'property_path' => 'appearanceType',
                     'required' => false,
                 ]
@@ -80,9 +81,7 @@ class GridViewType extends AbstractType
             ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults([
@@ -91,18 +90,13 @@ class GridViewType extends AbstractType
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getName()
     {
         return $this->getBlockPrefix();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return 'oro_datagrid_grid_view';
     }

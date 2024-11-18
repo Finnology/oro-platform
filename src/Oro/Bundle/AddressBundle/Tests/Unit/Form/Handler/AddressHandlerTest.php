@@ -25,6 +25,7 @@ class AddressHandlerTest extends \PHPUnit\Framework\TestCase
     /** @var AddressHandler */
     private $handler;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->form = $this->createMock(FormInterface::class);
@@ -46,7 +47,7 @@ class AddressHandlerTest extends \PHPUnit\Framework\TestCase
             ->method('submit');
         $this->form->expects($this->once())
             ->method('isValid')
-            ->willReturn('true');
+            ->willReturn(true);
 
         $this->om->expects($this->once())
             ->method('persist')

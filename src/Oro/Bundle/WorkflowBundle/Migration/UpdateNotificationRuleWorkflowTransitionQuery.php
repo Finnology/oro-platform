@@ -51,9 +51,7 @@ class UpdateNotificationRuleWorkflowTransitionQuery extends ParametrizedMigratio
         $this->newTransitionName = $newTransitionName;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getDescription()
     {
         $logger = new ArrayLogger();
@@ -64,17 +62,12 @@ class UpdateNotificationRuleWorkflowTransitionQuery extends ParametrizedMigratio
         return $logger->getMessages();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function execute(LoggerInterface $logger)
     {
         $this->doExecute($logger);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     private function doExecute(LoggerInterface $logger, $dryRun = false): void
     {
         $query = 'UPDATE oro_notification_email_notif 
@@ -112,7 +105,7 @@ class UpdateNotificationRuleWorkflowTransitionQuery extends ParametrizedMigratio
      */
     private function getTemplateId(): int
     {
-        return $this->connection->fetchColumn(
+        return $this->connection->fetchOne(
             'SELECT id FROM oro_email_template WHERE name = :name',
             [
                 'name' => $this->templateName

@@ -14,10 +14,8 @@ class HelpConfiguration implements ConfigurationInterface
 {
     public const ROOT_NODE = 'help';
 
-    /**
-     * {@inheritDoc}
-     */
-    public function getConfigTreeBuilder()
+    #[\Override]
+    public function getConfigTreeBuilder(): TreeBuilder
     {
         $treeBuilder = new TreeBuilder(self::ROOT_NODE);
         $rootNode = $treeBuilder->getRootNode();

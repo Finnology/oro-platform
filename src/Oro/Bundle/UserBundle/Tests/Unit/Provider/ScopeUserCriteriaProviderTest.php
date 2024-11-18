@@ -6,6 +6,7 @@ use Oro\Bundle\UserBundle\Entity\User;
 use Oro\Bundle\UserBundle\Provider\ScopeUserCriteriaProvider;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 class ScopeUserCriteriaProviderTest extends \PHPUnit\Framework\TestCase
 {
@@ -15,6 +16,7 @@ class ScopeUserCriteriaProviderTest extends \PHPUnit\Framework\TestCase
     /** @var ScopeUserCriteriaProvider */
     private $provider;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->tokenStorage = $this->createMock(TokenStorageInterface::class);
@@ -45,7 +47,7 @@ class ScopeUserCriteriaProviderTest extends \PHPUnit\Framework\TestCase
 
     public function testGetCriteriaValueForNotSupportedUser()
     {
-        $user = new \stdClass();
+        $user = $this->createMock(UserInterface::class);
 
         $token = $this->createMock(TokenInterface::class);
         $token->expects($this->once())

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\TranslationBundle\Download;
@@ -35,6 +36,7 @@ class CachingTranslationMetricsProvider implements TranslationMetricsProviderInt
         $this->logger = $logger;
     }
 
+    #[\Override]
     public function getAll(): array
     {
         if (null === $this->metrics) {
@@ -44,6 +46,7 @@ class CachingTranslationMetricsProvider implements TranslationMetricsProviderInt
         return $this->metrics;
     }
 
+    #[\Override]
     public function getForLanguage(string $languageCode): ?array
     {
         $metrics = $this->getAll();

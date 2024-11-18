@@ -7,6 +7,9 @@ use Oro\Component\Action\Action\AbstractDateAction;
 use Oro\Component\Action\Exception\InvalidParameterException;
 use Oro\Component\ConfigExpression\ContextAccessor;
 
+/**
+ * Action create DateTime object based on date string
+ */
 class CreateDate extends AbstractDateAction
 {
     /**
@@ -26,6 +29,7 @@ class CreateDate extends AbstractDateAction
      *
      * @return \DateTime
      */
+    #[\Override]
     protected function createDateTime($context)
     {
         $fullDate = new \DateTime($this->getOption($this->options, 'date'), new \DateTimeZone('UTC'));
@@ -33,14 +37,12 @@ class CreateDate extends AbstractDateAction
         return new \DateTime($fullDate->format('Y-m-d'), new \DateTimeZone('UTC'));
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function initialize(array $options)
     {
         if (empty($options['date'])) {
             // as a default value should be used local timezone date
-            $localDate = new \DateTime(null, new \DateTimeZone($this->localeSettings->getTimeZone()));
+            $localDate = new \DateTime('', new \DateTimeZone($this->localeSettings->getTimeZone()));
             $options['date'] = $localDate->format('Y-m-d');
         } elseif (!is_string($options['date'])) {
             throw new InvalidParameterException(

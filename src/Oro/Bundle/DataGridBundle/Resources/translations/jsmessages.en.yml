@@ -21,7 +21,7 @@
 "oro.datagrid.headerCell.selectAll.allVisible": "All visible"
 "oro.datagrid.headerCell.selectAll.none": "None"
 "oro.datagrid.headerCell.selectAll.input.aria_label": "Select all rows"
-"oro.datagrid.headerCell.selectAllVisible.input.aria_label": "Select all visible rows"
+"oro.datagrid.headerCell.selectAllVisible.input.aria_label": "Select All on Page"
 "only short": "only short"
 "this is long text for test": "this is long text for test"
 "View per page": "View per page"
@@ -50,8 +50,11 @@
 "oro.datagrid.pagination.next.aria_label": "Next Page"
 "oro.datagrid.pagination.totalPages": "of {{ totalPages }}"
 "oro.datagrid.pagination.visibleItems": "Showing {{ count }} of {{ total }} records"
-"oro.datagrid.pagination.totalRecords": "{1}Total of {{ totalRecords }} record|]1,Inf[Total of {{ totalRecords }} records"
-"oro.datagrid.pagination.totalRecordsShort": "{1}{{ totalRecords }} total record|]1,Inf[{{ totalRecords }} total records"
+"oro.datagrid.pagination.totalRecords": "Total of {{ totalRecords }} records"
+"oro.datagrid.pagination.totalRecordsPlural": "{1}Total of {{ totalRecords }} record|]1,Inf[Total of {{ totalRecords }} records"
+"oro.datagrid.pagination.totalRecordsShort": "{{ totalRecords }} total records"
+"oro.datagrid.pagination.totalRecordsShortPlural": "{1}product|]1,Inf[products"
+"oro.datagrid.pagination.totalRecordsLong": "{1}{{ minRangeThreshold }}-{{ maxRangeThreshold }} of {{ totalRecords }} product|]1,Inf[{{ minRangeThreshold }}-{{ maxRangeThreshold }} of {{ totalRecords }} products"
 oro.datagrid.extension.export.label: "Export Grid"
 oro.datagrid.extension.export.tooltip: "With this button you will export the content of the grid as it appears to you, with filters and sorting applied. All pages will be exported."
 oro_datagrid.label_add_filter: "Manage filters"
@@ -123,11 +126,11 @@ oro:
                 aria_label: 'Show all added items with pagination'
                 label: 'Show Less'
             group_similar:
-                aria_label: 'Group similar items'
-                label: 'Group Similar'
+                aria_label: 'Group product variants'
+                label: 'Group Product Variants'
             ungroup_similar:
-                aria_label: 'Show similar items separately'
-                label: 'Ungroup Similar'
+                aria_label: 'Show product variants separately'
+                label: 'Ungroup Product Variants'
         not_number: Not a number
         inline_editing:
             message:

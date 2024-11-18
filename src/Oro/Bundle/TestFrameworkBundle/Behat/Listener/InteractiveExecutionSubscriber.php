@@ -18,10 +18,8 @@ class InteractiveExecutionSubscriber implements EventSubscriberInterface
         $this->output = $output;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedEvents()
+    #[\Override]
+    public static function getSubscribedEvents(): array
     {
         return [
             AfterStepTested::AFTER  => ['afterStep', 1000],

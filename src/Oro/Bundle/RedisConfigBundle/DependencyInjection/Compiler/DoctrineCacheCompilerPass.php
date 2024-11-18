@@ -5,6 +5,7 @@ namespace Oro\Bundle\RedisConfigBundle\DependencyInjection\Compiler;
 use Oro\Bundle\CacheBundle\Adapter\ChainAdapter;
 use Oro\Bundle\CacheBundle\DependencyInjection\Compiler\CacheConfigurationPass as CacheConfiguration;
 use Oro\Bundle\RedisConfigBundle\DependencyInjection\RedisEnabledCheckTrait;
+use Oro\Bundle\RedisConfigBundle\Factory\RedisCacheInstantiator;
 use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -21,6 +22,7 @@ class DoctrineCacheCompilerPass implements CompilerPassInterface
     private const DOCTRINE_CACHE_SERVICE           = 'oro.doctrine.abstract';
     private const DOCTRINE_CACHE_NO_MEMORY_SERVICE = 'oro.doctrine.abstract.without_memory_cache';
 
+    #[\Override]
     public function process(ContainerBuilder $container): void
     {
         if ($this->isRedisEnabledForDoctrine($container)) {
@@ -58,6 +60,12 @@ class DoctrineCacheCompilerPass implements CompilerPassInterface
                     $container->setDefinition($serviceId, $newServiceDef);
                 }
             }
+
+            $redisInstatiatorDef = new Definition(RedisCacheInstantiator::class, [
+                new Reference('oro.cache.doctrine.redis_provider'),
+                $container->getParameter('oro_cache.data_adapter_lifetime')
+            ]);
+            $container->setDefinition('oro_security.acl_query.cache_instantiator', $redisInstatiatorDef);
         }
     }
 

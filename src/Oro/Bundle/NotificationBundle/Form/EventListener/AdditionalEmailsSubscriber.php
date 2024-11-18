@@ -27,10 +27,8 @@ class AdditionalEmailsSubscriber implements EventSubscriberInterface
         $this->associationProvider = $associationProvider;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedEvents()
+    #[\Override]
+    public static function getSubscribedEvents(): array
     {
         return [
             FormEvents::PRE_SET_DATA => 'preSetData',

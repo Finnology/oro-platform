@@ -30,6 +30,8 @@ class JsonApiDocumentBuilder extends AbstractDocumentBuilder
     public const TYPE = 'type';
     public const HREF = 'href';
     public const META_UPDATE = 'update';
+    public const META_UPSERT = 'upsert';
+    public const META_VALIDATE = 'validate';
 
     private const ERROR_STATUS = 'status';
     private const ERROR_CODE = 'code';
@@ -39,9 +41,7 @@ class JsonApiDocumentBuilder extends AbstractDocumentBuilder
     private const ERROR_POINTER = 'pointer';
     private const ERROR_PARAMETER = 'parameter';
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getDocument(): array
     {
         $result = $this->result;
@@ -62,27 +62,21 @@ class JsonApiDocumentBuilder extends AbstractDocumentBuilder
         return $result;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function setDataObject(mixed $object, RequestType $requestType, ?EntityMetadata $metadata): void
     {
         parent::setDataObject($object, $requestType, $metadata);
         $this->removeRelatedObjectsThatDuplicatePrimaryObjects(false);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function setDataCollection($collection, RequestType $requestType, ?EntityMetadata $metadata): void
     {
         parent::setDataCollection($collection, $requestType, $metadata);
         $this->removeRelatedObjectsThatDuplicatePrimaryObjects(true);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function convertCollectionToArray(
         iterable $collection,
         RequestType $requestType,
@@ -101,9 +95,7 @@ class JsonApiDocumentBuilder extends AbstractDocumentBuilder
         return [self::META => [self::DATA => $items]];
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function convertObjectToArray(
         mixed $object,
         RequestType $requestType,
@@ -120,10 +112,9 @@ class JsonApiDocumentBuilder extends AbstractDocumentBuilder
                 $objectClass = $metadata->getClassName();
             }
             $objectAlias = $this->getEntityAlias($objectClass, $requestType);
-            $objectId = null;
-            if ($hasIdentifierFields) {
-                $objectId = $this->getEntityId($object, $requestType, $metadata);
-            }
+            $objectId = $hasIdentifierFields
+                ? $this->getEntityId($object, $requestType, $metadata)
+                : null;
 
             $entityData = $data;
             $entityData[DataAccessorInterface::ENTITY_CLASS] = $objectClass;
@@ -156,9 +147,7 @@ class JsonApiDocumentBuilder extends AbstractDocumentBuilder
         return $result;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function convertErrorToArray(Error $error): array
     {
         $result = [];
@@ -187,17 +176,13 @@ class JsonApiDocumentBuilder extends AbstractDocumentBuilder
         return $result;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function convertToEntityType(string $entityClass, RequestType $requestType): string
     {
         return ValueNormalizerUtil::convertToEntityType($this->valueNormalizer, $entityClass, $requestType);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function tryConvertToEntityType(string $entityClass, RequestType $requestType): ?string
     {
         return ValueNormalizerUtil::tryConvertToEntityType($this->valueNormalizer, $entityClass, $requestType);
@@ -237,9 +222,7 @@ class JsonApiDocumentBuilder extends AbstractDocumentBuilder
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function addLinkToResult(array &$result, string $name, LinkMetadataInterface $link): void
     {
         $href = $this->getLinkHref($link);
@@ -251,9 +234,7 @@ class JsonApiDocumentBuilder extends AbstractDocumentBuilder
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function addMetaToCollectionResult(array &$result, string $name, mixed $value): void
     {
         $result[self::META][$name] = $value;
@@ -273,6 +254,9 @@ class JsonApiDocumentBuilder extends AbstractDocumentBuilder
         }
     }
 
+    /**
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     */
     protected function addRelationships(
         array &$result,
         array $data,
@@ -316,16 +300,23 @@ class JsonApiDocumentBuilder extends AbstractDocumentBuilder
                             $i
                         );
                         $this->addAssociationMeta($value[$i], $this->getAssociationMeta($association));
+                        if (\is_array($item)) {
+                            $this->addMeta($value[$i], $item, $association->getTargetMetadata());
+                        }
                         $this->addLinks($value[$i], $association->getLinks());
                         $i++;
                     }
                 }
             } elseif (null !== $value) {
+                $item = $data[$name] ?? null;
                 $this->resultDataAccessor->setAssociation(
                     $name,
-                    $this->getAssociationData($requestType, $data[$name] ?? null, $value[self::ID])
+                    $this->getAssociationData($requestType, $item, $value[self::ID])
                 );
                 $this->addAssociationMeta($value, $this->getAssociationMeta($association));
+                if (\is_array($item)) {
+                    $this->addMeta($value, $item, $association->getTargetMetadata());
+                }
                 $this->addLinks($value, $association->getLinks());
             }
             $relationshipValue[self::DATA] = $value;
@@ -383,9 +374,7 @@ class JsonApiDocumentBuilder extends AbstractDocumentBuilder
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function processRelatedObject(
         mixed $object,
         RequestType $requestType,
@@ -464,9 +453,7 @@ class JsonApiDocumentBuilder extends AbstractDocumentBuilder
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function addRelatedObject(array $object): void
     {
         // check whether this object was already added

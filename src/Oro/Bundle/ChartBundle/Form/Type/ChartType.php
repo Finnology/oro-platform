@@ -27,9 +27,7 @@ class ChartType extends ConfigProviderAwareType
         $this->eventListener = $eventListener;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder->addEventSubscriber($this->eventListener);
@@ -79,27 +77,21 @@ class ChartType extends ConfigProviderAwareType
         return $result;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefined(['chart_filter']);
         $resolver->setAllowedTypes('chart_filter', 'callable');
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getName()
     {
         return $this->getBlockPrefix();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return 'oro_chart';
     }

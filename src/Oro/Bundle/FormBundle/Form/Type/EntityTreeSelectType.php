@@ -14,9 +14,7 @@ class EntityTreeSelectType extends AbstractType
 {
     const NAME = 'oro_entity_tree_select';
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setRequired(['tree_data', 'tree_key']);
@@ -44,9 +42,7 @@ class EntityTreeSelectType extends AbstractType
         $resolver->setAllowedTypes('page_component_options', ['array']);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function finishView(FormView $view, FormInterface $form, array $options)
     {
         if (is_callable($options['tree_data'])) {
@@ -65,26 +61,19 @@ class EntityTreeSelectType extends AbstractType
         ], $options['page_component_options']);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getName()
     {
         return $this->getBlockPrefix();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return self::NAME;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getParent()
+    #[\Override]
+    public function getParent(): ?string
     {
         return EntityIdentifierType::class;
     }

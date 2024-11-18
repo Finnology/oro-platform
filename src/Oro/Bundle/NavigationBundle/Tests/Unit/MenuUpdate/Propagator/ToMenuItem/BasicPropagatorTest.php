@@ -18,6 +18,7 @@ class BasicPropagatorTest extends \PHPUnit\Framework\TestCase
 
     private BasicPropagator $propagator;
 
+    #[\Override]
     protected function setUp(): void
     {
         $localizationHelper = $this->createMock(LocalizationHelper::class);
@@ -145,8 +146,7 @@ class BasicPropagatorTest extends \PHPUnit\Framework\TestCase
         $menuItem = $this->createItem('sample_item')
             ->setLabel('existing label')
             ->setDisplay(true)
-            ->setUri('/existing/uri')
-            ->setLinkAttribute('existing_key', 'existing_value');
+            ->setUri('/existing/uri');
 
         return [
             'empty' => [

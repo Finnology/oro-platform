@@ -18,6 +18,7 @@ class OroHiddenNumberTypeTest extends FormIntegrationTestCase
     /** @var OroHiddenNumberType */
     private $formType;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->numberFormatter = $this->createMock(NumberFormatter::class);
@@ -41,32 +42,42 @@ class OroHiddenNumberTypeTest extends FormIntegrationTestCase
 
     public function testDeFormatting()
     {
-        \Locale::setDefault('de_DE');
-
         $this->numberFormatter->expects(self::once())
             ->method('getAttribute')
             ->with(\NumberFormatter::GROUPING_USED)
             ->willReturn(true);
 
-        $form = $this->factory->create(OroHiddenNumberType::class);
-        $form->setData('12345.67890');
+        $defaultLocale = \Locale::getDefault();
+        \Locale::setDefault('de_DE');
+        try {
+            $form = $this->factory->create(OroHiddenNumberType::class);
+            $form->setData('12345.67890');
+            $view = $form->createView();
+        } finally {
+            \Locale::setDefault($defaultLocale);
+        }
 
-        self::assertSame('12.345,679', $form->createView()->vars['value']);
+        self::assertSame('12.345,679', $view->vars['value']);
     }
 
     public function testEnFormatting()
     {
-        \Locale::setDefault('en_US');
-
         $this->numberFormatter->expects(self::once())
             ->method('getAttribute')
             ->with(\NumberFormatter::GROUPING_USED)
             ->willReturn(false);
 
-        $form = $this->factory->create(OroHiddenNumberType::class);
-        $form->setData('12345.67890');
+        $defaultLocale = \Locale::getDefault();
+        \Locale::setDefault('en_US');
+        try {
+            $form = $this->factory->create(OroHiddenNumberType::class);
+            $form->setData('12345.67890');
+            $view = $form->createView();
+        } finally {
+            \Locale::setDefault($defaultLocale);
+        }
 
-        self::assertSame('12345.679', $form->createView()->vars['value']);
+        self::assertSame('12345.679', $view->vars['value']);
     }
 
     /**
@@ -104,9 +115,7 @@ class OroHiddenNumberTypeTest extends FormIntegrationTestCase
         ];
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     protected function getExtensions(): array
     {
         return [

@@ -12,6 +12,9 @@ use Oro\Bundle\MigrationBundle\Migration\ArrayLogger;
 use Oro\Bundle\MigrationBundle\Migration\ParametrizedMigrationQuery;
 use Psr\Log\LoggerInterface;
 
+/**
+ * Migration to update note association kind
+ */
 class UpdateNoteAssociationKindQuery extends ParametrizedMigrationQuery
 {
     const NOTE_CLASS = 'Oro\Bundle\NoteBundle\Entity\Note';
@@ -56,9 +59,7 @@ class UpdateNoteAssociationKindQuery extends ParametrizedMigrationQuery
         $this->nameGenerator = $nameGenerator;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getDescription()
     {
         $logger = new ArrayLogger();
@@ -68,9 +69,7 @@ class UpdateNoteAssociationKindQuery extends ParametrizedMigrationQuery
         return $logger->getMessages();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function execute(LoggerInterface $logger)
     {
         $this->doExecute($logger);
@@ -130,7 +129,7 @@ class UpdateNoteAssociationKindQuery extends ParametrizedMigrationQuery
         $sql = 'SELECT id, class_name, data FROM oro_entity_config';
 
         $this->logQuery($logger, $sql);
-        $entityConfigs = $this->connection->fetchAll($sql);
+        $entityConfigs = $this->connection->fetchAllAssociative($sql);
 
         $result = [];
         foreach ($entityConfigs as $entityConfig) {
@@ -155,7 +154,7 @@ class UpdateNoteAssociationKindQuery extends ParametrizedMigrationQuery
         $types = ['class' => 'string'];
 
         $this->logQuery($logger, $sql, $params, $types);
-        $result = $this->connection->fetchAssoc($sql, $params, $types);
+        $result = $this->connection->fetchAssociative($sql, $params, $types);
         $result['data'] = $this->connection->convertToPHPValue($result['data'], 'array');
 
         return $result;

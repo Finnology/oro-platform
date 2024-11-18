@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\SearchBundle\Command;
@@ -31,13 +32,14 @@ class IndexCommand extends Command
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     protected function configure()
     {
         $this
             ->addArgument('class', InputArgument::REQUIRED, 'Entity to reindex (FQCN or short name)')
             ->addArgument(
                 'identifiers',
-                InputArgument::REQUIRED|InputArgument::IS_ARRAY,
+                InputArgument::REQUIRED | InputArgument::IS_ARRAY,
                 'IDs of the entities to reindex'
             )
             ->setDescription('Updates search index for specified entities.')
@@ -53,7 +55,8 @@ HELP
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    #[\Override]
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $class = $input->getArgument('class');
         $identifiers = $input->getArgument('identifiers');
@@ -73,6 +76,6 @@ HELP
 
         $output->writeln('Started index update for entities.');
 
-        return 0;
+        return Command::SUCCESS;
     }
 }

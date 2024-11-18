@@ -10,9 +10,7 @@ use Oro\Bundle\MigrationBundle\Fixture\VersionedFixtureInterface;
  */
 class UpdateEmailTemplates extends AbstractHashEmailMigration implements VersionedFixtureInterface
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function getEmailHashesToUpdate(): array
     {
         return [
@@ -22,18 +20,14 @@ class UpdateEmailTemplates extends AbstractHashEmailMigration implements Version
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getVersion()
+    #[\Override]
+    public function getVersion(): string
     {
         return '1.0';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getEmailsDir()
+    #[\Override]
+    public function getEmailsDir(): string
     {
         return $this->container
             ->get('kernel')

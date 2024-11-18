@@ -48,9 +48,7 @@ class NormalizeMetadata implements ProcessorInterface
         $this->entityOverrideProviderRegistry = $entityOverrideProviderRegistry;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function process(ContextInterface $context): void
     {
         /** @var MetadataContext $context */
@@ -213,14 +211,20 @@ class NormalizeMetadata implements ProcessorInterface
         EntityMetadata $targetEntityMetadata
     ): bool {
         $isPropertyAdded = false;
+        $linkedProperty = $targetEntityMetadata->getPropertyByPropertyPath($linkedPropertyName);
+        if (null !== $linkedProperty) {
+            $linkedPropertyName = $linkedProperty->getName();
+        }
         if ($targetEntityMetadata->hasAssociation($linkedPropertyName)) {
             $association = clone $targetEntityMetadata->getAssociation($linkedPropertyName);
             $association->setName($fieldName);
+            $association->setPropertyPath(null);
             $entityMetadata->addAssociation($association);
             $isPropertyAdded = true;
         } elseif ($targetEntityMetadata->hasField($linkedPropertyName)) {
             $field = clone $targetEntityMetadata->getField($linkedPropertyName);
             $field->setName($fieldName);
+            $field->setPropertyPath(null);
             $entityMetadata->addField($field);
             $isPropertyAdded = true;
         }

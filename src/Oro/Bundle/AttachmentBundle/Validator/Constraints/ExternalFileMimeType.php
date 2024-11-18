@@ -11,7 +11,7 @@ class ExternalFileMimeType extends Constraint
 {
     public const INVALID_MIME_TYPE_ERROR = '349af3a8-9059-416c-bb74-9f774f357714';
 
-    protected static $errorNames = [
+    protected const ERROR_NAMES = [
         self::INVALID_MIME_TYPE_ERROR => 'INVALID_MIME_TYPE_ERROR',
     ];
 
@@ -19,6 +19,7 @@ class ExternalFileMimeType extends Constraint
 
     public string $message = 'oro.attachment.external_file.invalid_mime_type';
 
+    #[\Override]
     public function getTargets(): array
     {
         return [self::CLASS_CONSTRAINT, self::PROPERTY_CONSTRAINT];

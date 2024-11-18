@@ -1,4 +1,5 @@
 <?php
+
 namespace Oro\Bundle\NavigationBundle\Tests\Unit\Event;
 
 use Knp\Menu\FactoryInterface;
@@ -16,6 +17,7 @@ class ConfigureMenuEventTest extends \PHPUnit\Framework\TestCase
     /** @var ConfigureMenuEvent */
     private $event;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->factory = $this->createMock(FactoryInterface::class);

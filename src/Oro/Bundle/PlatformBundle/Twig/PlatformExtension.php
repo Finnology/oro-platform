@@ -21,9 +21,7 @@ class PlatformExtension extends AbstractExtension implements ServiceSubscriberIn
         $this->container = $container;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getFunctions()
     {
         return [
@@ -36,10 +34,8 @@ class PlatformExtension extends AbstractExtension implements ServiceSubscriberIn
         return $this->getVersionHelper()->getVersion();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedServices()
+    #[\Override]
+    public static function getSubscribedServices(): array
     {
         return [
             'oro_platform.composer.version_helper' => VersionHelper::class,

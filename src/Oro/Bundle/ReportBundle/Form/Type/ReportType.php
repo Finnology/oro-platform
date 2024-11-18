@@ -11,11 +11,12 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
+/**
+ * Report form type
+ */
 class ReportType extends AbstractQueryDesignerType
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
@@ -25,7 +26,7 @@ class ReportType extends AbstractQueryDesignerType
                 'type',
                 EntityType::class,
                 array(
-                    'class'       => 'OroReportBundle:ReportType',
+                    'class'       => \Oro\Bundle\ReportBundle\Entity\ReportType::class,
                     'choice_label'    => 'label',
                     'required'    => true,
                     'placeholder' => 'oro.report.form.choose_report_type'
@@ -50,9 +51,7 @@ class ReportType extends AbstractQueryDesignerType
         $builder->addEventSubscriber(new DateGroupingFormSubscriber());
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         parent::configureOptions($resolver);
@@ -69,18 +68,13 @@ class ReportType extends AbstractQueryDesignerType
         $resolver->setDefaults($options);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getName()
     {
         return $this->getBlockPrefix();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return 'oro_report';
     }

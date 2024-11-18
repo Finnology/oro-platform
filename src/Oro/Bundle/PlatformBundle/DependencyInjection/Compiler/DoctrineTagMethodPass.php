@@ -13,6 +13,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
  */
 class DoctrineTagMethodPass implements CompilerPassInterface
 {
+    #[\Override]
     public function process(ContainerBuilder $container)
     {
         $events = [
@@ -61,7 +62,8 @@ class DoctrineTagMethodPass implements CompilerPassInterface
 
                 $definition = $container->getDefinition($id);
                 $definition->setDeprecated(
-                    true,
+                    'oro/platform',
+                    '6.0',
                     sprintf(
                         'Passing "method" option to "%%service_id%%" tag for "%s" event is not supported by Doctrine.',
                         $event

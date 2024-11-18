@@ -8,6 +8,7 @@ use Oro\Bundle\ApiBundle\Config\EntityDefinitionConfig;
 use Oro\Bundle\ApiBundle\Config\Extra\DescriptionsConfigExtra;
 use Oro\Bundle\ApiBundle\Config\Extra\DisabledAssociationsConfigExtra;
 use Oro\Bundle\ApiBundle\Config\Extra\EntityDefinitionConfigExtra;
+use Oro\Bundle\ApiBundle\Config\Extra\FilterFieldsConfigExtra;
 use Oro\Bundle\ApiBundle\Metadata\EntityMetadata;
 use Oro\Bundle\ApiBundle\Processor\ActionProcessorBagInterface;
 use Oro\Bundle\ApiBundle\Processor\Context;
@@ -36,6 +37,7 @@ class RestDocContextProviderTest extends \PHPUnit\Framework\TestCase
     /** @var RestDocContextProvider */
     private $contextProvider;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->requestType = new RequestType([RequestType::REST]);
@@ -110,7 +112,7 @@ class RestDocContextProviderTest extends \PHPUnit\Framework\TestCase
                     $context->getConfigExtras()
                 );
                 self::assertEquals(ApiActionGroup::INITIALIZE, $context->getLastGroup());
-                self::assertTrue($context->isMasterRequest());
+                self::assertTrue($context->isMainRequest());
                 self::assertEquals($entityClass, $context->getClassName());
             });
 
@@ -151,11 +153,15 @@ class RestDocContextProviderTest extends \PHPUnit\Framework\TestCase
                     $context->getConfigExtras()
                 );
                 self::assertEquals(ApiActionGroup::INITIALIZE, $context->getLastGroup());
-                self::assertTrue($context->isMasterRequest());
+                self::assertTrue($context->isMainRequest());
                 self::assertEquals($entityClass, $context->getParentClassName());
                 self::assertEquals($associationName, $context->getAssociationName());
                 self::assertEquals(
-                    [new EntityDefinitionConfigExtra($action)],
+                    [
+                        new EntityDefinitionConfigExtra($action, false, $entityClass, $associationName),
+                        new FilterFieldsConfigExtra([$entityClass => [$associationName]]),
+                        new DescriptionsConfigExtra()
+                    ],
                     $context->getParentConfigExtras()
                 );
             });
@@ -197,7 +203,7 @@ class RestDocContextProviderTest extends \PHPUnit\Framework\TestCase
                     $context->getConfigExtras()
                 );
                 self::assertEquals(ApiActionGroup::INITIALIZE, $context->getLastGroup());
-                self::assertTrue($context->isMasterRequest());
+                self::assertTrue($context->isMainRequest());
                 self::assertEquals($entityClass, $context->getClassName());
                 self::assertEquals('list', $context->getActionType());
             });
@@ -239,7 +245,7 @@ class RestDocContextProviderTest extends \PHPUnit\Framework\TestCase
                     $context->getConfigExtras()
                 );
                 self::assertEquals(ApiActionGroup::INITIALIZE, $context->getLastGroup());
-                self::assertTrue($context->isMasterRequest());
+                self::assertTrue($context->isMainRequest());
                 self::assertEquals($entityClass, $context->getClassName());
                 self::assertEquals('item', $context->getActionType());
             });
@@ -287,7 +293,7 @@ class RestDocContextProviderTest extends \PHPUnit\Framework\TestCase
                     $context->getConfigExtras()
                 );
                 self::assertEquals(ApiActionGroup::INITIALIZE, $context->getLastGroup());
-                self::assertTrue($context->isMasterRequest());
+                self::assertTrue($context->isMainRequest());
                 self::assertEquals($entityClass, $context->getClassName());
                 self::assertEquals($actionType, $context->getActionType());
             });

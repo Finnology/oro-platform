@@ -4,28 +4,11 @@
         column_chain_template_selector: '#column-chain-template',
         field_choice_filter_preset: 'querydesigner',
     }|merge(params) %}
-    {% set segment_selection_template_id = 'segment-template' %}
-    {% set segmentConditionOptions = {
-        filters: params.metadata.filters|default([]),
-        segmentChoice: {
-            select2: {
-                placeholder: 'oro.segment.condition_builder.choose_entity_segment'|trans,
-                formatSelectionTemplateSelector: '#' ~ segment_selection_template_id,
-                ajax: {
-                    url: 'oro_api_get_segment_items',
-                    quietMillis: 100
-                },
-                pageLimit: params.page_limit|default(10)
-            },
-            currentSegment: params.currentSegmentId|default(null)
-        }
-    }|merge_recursive(params.segmentConditionOptions|default({})) %}
     {% set conditionBuilderOptions = {
         fieldsRelatedCriteria: ['condition-item', 'condition-segment'],
     }|merge_recursive(params.conditionBuilderOptions|default({})) %}
     {% set conditionBuilderOptions = update_segment_condition_builder_options(conditionBuilderOptions) %}
 
-    {{ segmentMacros.query_designer_segment_template(segment_selection_template_id) }}
     <div class="condition-builder"
          data-page-component-module="oroquerydesigner/js/app/components/condition-builder-component"
          data-page-component-options="{{ conditionBuilderOptions|json_encode }}"
@@ -34,11 +17,6 @@
             <div class="criteria-list-container filter-criteria">
                 <ul class="criteria-list">
                     {% placeholder segment_criteria_list with {params: params} %}
-                    <li class="option" data-criteria="condition-segment"
-                        data-module="orosegment/js/app/views/segment-condition-view"
-                        data-options="{{ segmentConditionOptions|json_encode }}">
-                        {{ 'oro.segment.condition_builder.criteria.segment_condition'|trans }}
-                    </li>
                     <li class="option" data-criteria="conditions-group">
                         {{ 'oro.query_designer.condition_builder.criteria.conditions_group'|trans }}
                     </li>
@@ -49,13 +27,6 @@
             </div>
         </div>
     </div>
-{% endmacro %}
-
-{% macro query_designer_segment_template(id) %}
-    <script type="text/html" id="{{ id }}">
-        {% trans %}Apply segment {% endtrans %}
-        <%= obj.text %>
-    </script>
 {% endmacro %}
 
 {#
@@ -122,4 +93,31 @@
 
     <div data-page-component-module="orosegment/js/app/components/segment-component"
          data-page-component-options="{{ widgetOptions|json_encode }}"></div>
+{% endmacro %}
+
+{#
+    Renders textarea with attributes for initialization of an editor component
+
+    @param array    params
+
+    @param string   param.name - name of instance of page component
+    @param array    params.options - options for js-component
+#}
+{% macro expressionEditor(params) %}
+    {% set params = {
+        options: {
+            itemLevelLimit: 50,
+            dataProviderConfig: {
+                filterPreset: 'querydesigner'
+            },
+            expressionFunctionProviderModules: [
+                'oroquerydesigner/js/query-type-converter/expression-functions-provider'
+            ]
+        }
+    }|merge_recursive(params|default({})) %}
+    {% import '@OroUI/macros.html.twig' as UI %}
+    <textarea {{ UI.renderPageComponentAttributes({
+        module: 'oroform/js/app/components/expression-editor-component',
+        name: 'expression-editor'
+    }|merge(params)) }} class="hidden-textarea"></textarea>
 {% endmacro %}

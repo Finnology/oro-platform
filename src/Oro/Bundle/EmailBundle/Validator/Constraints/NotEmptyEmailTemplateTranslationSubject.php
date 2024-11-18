@@ -9,10 +9,8 @@ use Symfony\Component\Validator\Constraints\NotBlank;
  */
 class NotEmptyEmailTemplateTranslationSubject extends NotBlank
 {
-    /**
-     * {@inheritdoc}
-     */
-    public function getTargets()
+    #[\Override]
+    public function getTargets(): string|array
     {
         return self::CLASS_CONSTRAINT;
     }

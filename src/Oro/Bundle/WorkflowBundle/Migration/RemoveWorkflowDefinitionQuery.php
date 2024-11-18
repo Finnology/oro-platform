@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\WorkflowBundle\Migration;
@@ -19,6 +20,7 @@ class RemoveWorkflowDefinitionQuery extends ParametrizedMigrationQuery
         $this->workflowName = $workflowName;
     }
 
+    #[\Override]
     public function getDescription()
     {
         return \sprintf('Removes %s workflow definition.', $this->workflowName);
@@ -27,6 +29,7 @@ class RemoveWorkflowDefinitionQuery extends ParametrizedMigrationQuery
     /**
      * @throws \Doctrine\DBAL\DBALException
      */
+    #[\Override]
     public function execute(LoggerInterface $logger)
     {
         $sql = 'DELETE FROM oro_workflow_definition WHERE name = :workflow_name';

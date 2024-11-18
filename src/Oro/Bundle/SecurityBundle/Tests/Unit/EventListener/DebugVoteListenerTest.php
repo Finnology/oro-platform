@@ -19,6 +19,7 @@ class DebugVoteListenerTest extends \PHPUnit\Framework\TestCase
     /** @var DebugVoteListener */
     private $listener;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->configManager = $this->createMock(ConfigManager::class);
@@ -42,7 +43,7 @@ class DebugVoteListenerTest extends \PHPUnit\Framework\TestCase
             ->with('oro_security.symfony_profiler_collection_of_voter_decisions', true)
             ->willReturn(true);
 
-        $event = new VoteEvent($this->createMock(VoterInterface::class), new \stdClass, [], 0);
+        $event = new VoteEvent($this->createMock(VoterInterface::class), new \stdClass(), [], 0);
 
         $this->innerListener->expects($this->exactly(2))
             ->method('onVoterVote')
@@ -64,9 +65,9 @@ class DebugVoteListenerTest extends \PHPUnit\Framework\TestCase
         $this->innerListener->expects($this->never())
             ->method('onVoterVote');
 
-        $this->listener->onVoterVote(new VoteEvent($this->createMock(VoterInterface::class), new \stdClass, [], 0));
+        $this->listener->onVoterVote(new VoteEvent($this->createMock(VoterInterface::class), new \stdClass(), [], 0));
 
         // Checks local cache.
-        $this->listener->onVoterVote(new VoteEvent($this->createMock(VoterInterface::class), new \stdClass, [], 0));
+        $this->listener->onVoterVote(new VoteEvent($this->createMock(VoterInterface::class), new \stdClass(), [], 0));
     }
 }

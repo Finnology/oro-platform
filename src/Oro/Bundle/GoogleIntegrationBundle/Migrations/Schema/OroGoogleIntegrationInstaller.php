@@ -15,18 +15,14 @@ class OroGoogleIntegrationInstaller implements Installation, ContainerAwareInter
 {
     use ContainerAwareTrait;
 
-    /**
-     * {@inheritDoc}
-     */
-    public function getMigrationVersion()
+    #[\Override]
+    public function getMigrationVersion(): string
     {
         return 'v1_0';
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function up(Schema $schema, QueryBag $queries)
+    #[\Override]
+    public function up(Schema $schema, QueryBag $queries): void
     {
         $this->updateUserEntity($schema);
         if ($this->container->get(ApplicationState::class)->isInstalled()) {

@@ -44,6 +44,7 @@ class EntitySecurityMetadataProviderTest extends \PHPUnit\Framework\TestCase
     /** @var EntitySecurityMetadataProvider */
     private $provider;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->configManager = $this->createMock(ConfigManager::class);
@@ -407,7 +408,6 @@ class EntitySecurityMetadataProviderTest extends \PHPUnit\Framework\TestCase
         $this->cacheItem->expects($this->once())
             ->method('get')
             ->willReturn([\stdClass::class => $entitySecurityMetadata]);
-
 
         $this->assertEquals([$entitySecurityMetadata], $this->provider->getEntities());
         // test local cache

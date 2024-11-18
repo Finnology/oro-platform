@@ -2,7 +2,7 @@
 
 namespace Oro\Bundle\LayoutBundle\Tests\Unit\Request;
 
-use Oro\Bundle\LayoutBundle\Annotation\Layout as LayoutAnnotation;
+use Oro\Bundle\LayoutBundle\Attribute\Layout as LayoutAttribute;
 use Oro\Bundle\LayoutBundle\Request\LayoutHelper;
 use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\HttpFoundation\Request;
@@ -16,6 +16,7 @@ class LayoutHelperTest extends \PHPUnit\Framework\TestCase
     /** @var LayoutHelper */
     private $helper;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->requestStack = $this->createMock(RequestStack::class);
@@ -32,7 +33,7 @@ class LayoutHelperTest extends \PHPUnit\Framework\TestCase
             ],
             [
                 'request' => null,
-                'annotation' => $this->createMock(LayoutAnnotation::class),
+                'annotation' => $this->createMock(LayoutAttribute::class),
             ],
             [
                 'request' => $this->createMock(Request::class),
@@ -40,7 +41,7 @@ class LayoutHelperTest extends \PHPUnit\Framework\TestCase
             ],
             [
                 'request' => $this->createMock(Request::class),
-                'annotation' => $this->createMock(LayoutAnnotation::class),
+                'annotation' => $this->createMock(LayoutAttribute::class),
             ],
         ];
     }
@@ -48,22 +49,22 @@ class LayoutHelperTest extends \PHPUnit\Framework\TestCase
     /**
      * @dataProvider layoutHelperDataProvider
      */
-    public function testIsLayoutRequest(?Request $request, ?LayoutAnnotation $annotation)
+    public function testIsLayoutRequest(?Request $request, ?LayoutAttribute $attribute)
     {
-        $this->setUpRequestStack($request, $annotation);
-        $this->assertEquals(null !== $annotation, $this->helper->isLayoutRequest($request));
+        $this->setUpRequestStack($request, $attribute);
+        $this->assertEquals(null !== $attribute, $this->helper->isLayoutRequest($request));
     }
 
     /**
      * @dataProvider layoutHelperDataProvider
      */
-    public function testIsTemplateRequest(?Request $request, ?LayoutAnnotation $annotation)
+    public function testIsTemplateRequest(?Request $request, ?LayoutAttribute $attribute)
     {
-        $this->setUpRequestStack($request, $annotation);
-        $this->assertEquals(null === $annotation, $this->helper->isTemplateRequest($request));
+        $this->setUpRequestStack($request, $attribute);
+        $this->assertEquals(null === $attribute, $this->helper->isTemplateRequest($request));
     }
 
-    private function setUpRequestStack(?Request $request, ?LayoutAnnotation $annotation): void
+    private function setUpRequestStack(?Request $request, ?LayoutAttribute $attribute): void
     {
         if ($request) {
             $this->requestStack->expects($this->never())
@@ -80,6 +81,6 @@ class LayoutHelperTest extends \PHPUnit\Framework\TestCase
         $attributes->expects($this->once())
             ->method('get')
             ->with('_layout')
-            ->willReturn($annotation);
+            ->willReturn($attribute);
     }
 }

@@ -16,9 +16,7 @@ class AclPrivilegeType extends AbstractType
 {
     const NAME = 'oro_acl_privilege';
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder->add(
@@ -44,17 +42,13 @@ class AclPrivilegeType extends AbstractType
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function buildView(FormView $view, FormInterface $form, array $options)
     {
         $view->vars['privileges_config'] = $options['privileges_config'];
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults(
@@ -65,18 +59,13 @@ class AclPrivilegeType extends AbstractType
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getName()
     {
         return $this->getBlockPrefix();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return self::NAME;
     }

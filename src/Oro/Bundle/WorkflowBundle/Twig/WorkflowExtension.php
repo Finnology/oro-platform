@@ -29,9 +29,7 @@ class WorkflowExtension extends AbstractExtension implements ServiceSubscriberIn
         $this->container = $container;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getFunctions()
     {
         return [
@@ -40,9 +38,7 @@ class WorkflowExtension extends AbstractExtension implements ServiceSubscriberIn
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getFilters()
     {
         return [
@@ -84,10 +80,8 @@ class WorkflowExtension extends AbstractExtension implements ServiceSubscriberIn
         return $this->getWorkflowVariableFormatter()->formatWorkflowVariableValue($variable);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedServices()
+    #[\Override]
+    public static function getSubscribedServices(): array
     {
         return [
             WorkflowVariableFormatter::class,

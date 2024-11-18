@@ -22,10 +22,8 @@ class ProcessDefinitionConfiguration extends AbstractConfiguration implements Co
         return $processor->processConfiguration($this, array($configs));
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function getConfigTreeBuilder()
+    #[\Override]
+    public function getConfigTreeBuilder(): TreeBuilder
     {
         $treeBuilder = new TreeBuilder('configuration');
         $rootNode = $treeBuilder->getRootNode();

@@ -30,21 +30,17 @@ class CleanupUnusedConfigurationsCacheWarmer implements CacheWarmerInterface
         $this->appState = $appState;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function isOptional()
+    #[\Override]
+    public function isOptional(): bool
     {
         return false;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function warmUp(string $cacheDir)
+    #[\Override]
+    public function warmUp(string $cacheDir): array
     {
         if (!$this->appState->isInstalled()) {
-            return;
+            return [];
         }
 
         /** @var Connection $configConnection */
@@ -56,11 +52,9 @@ class CleanupUnusedConfigurationsCacheWarmer implements CacheWarmerInterface
         );
         $query->setConnection($configConnection);
         $query->execute($this->logger);
+        return [];
     }
 
-    /**
-     * @return array
-     */
     private function getUnusedEntityConfigurations(): array
     {
         return [
@@ -69,9 +63,6 @@ class CleanupUnusedConfigurationsCacheWarmer implements CacheWarmerInterface
         ];
     }
 
-    /**
-     * @return array
-     */
     private function getUnusedFieldConfigurations(): array
     {
         return [

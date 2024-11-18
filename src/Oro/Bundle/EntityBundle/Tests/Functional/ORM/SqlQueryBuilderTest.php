@@ -5,6 +5,7 @@ namespace Oro\Bundle\EntityBundle\Tests\Functional\ORM;
 use Oro\Bundle\EntityBundle\Tests\Functional\DataFixtures\LoadUserData;
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
 use Oro\Bundle\TestFrameworkBundle\Test\WebTestCase;
+use Oro\Bundle\TestFrameworkBundle\Tests\Functional\DataFixtures\LoadOrganization;
 use Oro\Bundle\UserBundle\Entity\User;
 use Oro\Component\DoctrineUtils\ORM\ResultSetMappingUtil;
 use Oro\Component\DoctrineUtils\ORM\SqlQueryBuilder;
@@ -14,13 +15,11 @@ use Oro\Component\DoctrineUtils\ORM\SqlQueryBuilder;
  */
 class SqlQueryBuilderTest extends WebTestCase
 {
+    #[\Override]
     protected function setUp(): void
     {
         $this->initClient();
-
-        $this->loadFixtures([
-            LoadUserData::class
-        ]);
+        $this->loadFixtures([LoadUserData::class, LoadOrganization::class]);
     }
 
     public function testSimpleUpdate()
@@ -63,9 +62,8 @@ class SqlQueryBuilderTest extends WebTestCase
     {
         /** @var User $user */
         $user = $this->getReference('simple_user');
-        $registry = $this->getContainer()->get('doctrine');
-        $em = $registry->getManagerForClass(Organization::class);
-        $organization = $em->getRepository(Organization::class)->getFirst();
+        /** @var Organization $organization */
+        $organization = $this->getReference(LoadOrganization::ORGANIZATION);
 
         $qb = $this->createSqlQueryBuilder();
         $qb->update('oro_user', 'u')
@@ -87,10 +85,8 @@ class SqlQueryBuilderTest extends WebTestCase
     {
         /** @var User $user */
         $user = $this->getReference('simple_user');
-        $registry = $this->getContainer()->get('doctrine');
-        $em = $registry->getManagerForClass(Organization::class);
         /** @var Organization $organization */
-        $organization = $em->getRepository(Organization::class)->getFirst();
+        $organization = $this->getReference(LoadOrganization::ORGANIZATION);
         $bu = $organization->getBusinessUnits()->first();
 
         $qb = $this->createSqlQueryBuilder();
@@ -136,10 +132,8 @@ class SqlQueryBuilderTest extends WebTestCase
     {
         /** @var User $user */
         $user = $this->getReference('simple_user');
-        $registry = $this->getContainer()->get('doctrine');
-        $em = $registry->getManagerForClass(Organization::class);
         /** @var Organization $organization */
-        $organization = $em->getRepository(Organization::class)->getFirst();
+        $organization = $this->getReference(LoadOrganization::ORGANIZATION);
         $bu = $organization->getBusinessUnits()->first();
 
         $qb = $this->createSqlQueryBuilder();
@@ -166,8 +160,7 @@ class SqlQueryBuilderTest extends WebTestCase
 
     private function createSqlQueryBuilder(): SqlQueryBuilder
     {
-        $registry = $this->getContainer()->get('doctrine');
-        $em = $registry->getManagerForClass(User::class);
+        $em = self::getContainer()->get('doctrine')->getManagerForClass(User::class);
 
         $rsm = ResultSetMappingUtil::createResultSetMapping($em->getConnection()->getDatabasePlatform());
         $rsm->addScalarResult('id', 'id');

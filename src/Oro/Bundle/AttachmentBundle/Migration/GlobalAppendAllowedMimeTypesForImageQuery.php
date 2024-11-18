@@ -25,9 +25,7 @@ class GlobalAppendAllowedMimeTypesForImageQuery extends ParametrizedMigrationQue
      */
     private $mimeTypes;
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getDescription()
     {
         $logger = new ArrayLogger();
@@ -36,9 +34,7 @@ class GlobalAppendAllowedMimeTypesForImageQuery extends ParametrizedMigrationQue
         return $logger->getMessages();
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function execute(LoggerInterface $logger)
     {
         $this->doExecute($logger);
@@ -74,7 +70,7 @@ class GlobalAppendAllowedMimeTypesForImageQuery extends ParametrizedMigrationQue
         $parameters = [self::IMAGE_CONFIG_NAME, self::CONFIG_SECTION];
         $this->logQuery($logger, $sql, $parameters);
 
-        return $this->connection->fetchAll($sql, $parameters);
+        return $this->connection->fetchAllAssociative($sql, $parameters);
     }
 
     /**
@@ -90,7 +86,7 @@ class GlobalAppendAllowedMimeTypesForImageQuery extends ParametrizedMigrationQue
         $this->logQuery($logger, $sql, $parameters);
 
         if (!$dryRun) {
-            $this->connection->prepare($sql)->execute($parameters);
+            $this->connection->prepare($sql)->executeQuery($parameters);
         }
     }
 }

@@ -25,9 +25,7 @@ class DemoMobileExtension extends AbstractExtension implements ServiceSubscriber
         $this->container = $container;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getFunctions()
     {
         return [
@@ -60,10 +58,8 @@ class DemoMobileExtension extends AbstractExtension implements ServiceSubscriber
         return !$this->isMobile();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedServices()
+    #[\Override]
+    public static function getSubscribedServices(): array
     {
         return [
             'oro_ui.user_agent_provider' => UserAgentProviderInterface::class,

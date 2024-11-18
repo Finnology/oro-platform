@@ -3,6 +3,7 @@
 namespace Oro\Bundle\ApiBundle\Tests\Unit\Processor\Shared;
 
 use Oro\Bundle\ApiBundle\Config\EntityDefinitionConfig;
+use Oro\Bundle\ApiBundle\Model\EntityHolderInterface;
 use Oro\Bundle\ApiBundle\Processor\Shared\ValidateEntityObjectAccess;
 use Oro\Bundle\ApiBundle\Tests\Unit\Fixtures\Entity\Product;
 use Oro\Bundle\ApiBundle\Tests\Unit\Processor\Get\GetProcessorTestCase;
@@ -11,12 +12,13 @@ use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 class ValidateEntityObjectAccessTest extends GetProcessorTestCase
 {
-    /** @var \PHPUnit\Framework\MockObject\MockObject|AuthorizationCheckerInterface */
+    /** @var AuthorizationCheckerInterface|\PHPUnit\Framework\MockObject\MockObject */
     private $authorizationChecker;
 
     /** @var ValidateEntityObjectAccess */
     private $processor;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -29,12 +31,15 @@ class ValidateEntityObjectAccessTest extends GetProcessorTestCase
         );
     }
 
-    public function testProcessWhenNoEntity()
+    public function testProcessWhenNoEntity(): void
     {
+        $this->authorizationChecker->expects(self::never())
+            ->method('isGranted');
+
         $this->processor->process($this->context);
     }
 
-    public function testProcessWhenAccessGranted()
+    public function testProcessWhenAccessGranted(): void
     {
         $entity = new Product();
         $config = new EntityDefinitionConfig();
@@ -50,7 +55,7 @@ class ValidateEntityObjectAccessTest extends GetProcessorTestCase
         $this->processor->process($this->context);
     }
 
-    public function testProcessWhenAccessDenied()
+    public function testProcessWhenAccessDenied(): void
     {
         $this->expectException(AccessDeniedException::class);
         $this->expectExceptionMessage('No access by "VIEW" permission to the entity.');
@@ -69,7 +74,7 @@ class ValidateEntityObjectAccessTest extends GetProcessorTestCase
         $this->processor->process($this->context);
     }
 
-    public function testProcessWhenAccessGrantedByAclResource()
+    public function testProcessWhenAccessGrantedByAclResource(): void
     {
         $entity = new Product();
         $config = new EntityDefinitionConfig();
@@ -86,7 +91,7 @@ class ValidateEntityObjectAccessTest extends GetProcessorTestCase
         $this->processor->process($this->context);
     }
 
-    public function testProcessWhenAccessDeniedByAclResource()
+    public function testProcessWhenAccessDeniedByAclResource(): void
     {
         $this->expectException(AccessDeniedException::class);
         $entity = new Product();
@@ -104,7 +109,7 @@ class ValidateEntityObjectAccessTest extends GetProcessorTestCase
         $this->processor->process($this->context);
     }
 
-    public function testProcessWhenAccessCheckDisabledBySettingEmptyAclResource()
+    public function testProcessWhenAccessCheckDisabledBySettingEmptyAclResource(): void
     {
         $entity = new Product();
         $config = new EntityDefinitionConfig();
@@ -116,6 +121,66 @@ class ValidateEntityObjectAccessTest extends GetProcessorTestCase
         $this->context->setClassName(get_class($entity));
         $this->context->setConfig($config);
         $this->context->setResult($entity);
+        $this->processor->process($this->context);
+    }
+
+    public function testProcessWhenAccessGrantedForEntityHolderModel(): void
+    {
+        $entity = new Product();
+        $config = new EntityDefinitionConfig();
+        $model = $this->createMock(EntityHolderInterface::class);
+        $model->expects(self::once())
+            ->method('getEntity')
+            ->willReturn($entity);
+
+        $this->authorizationChecker->expects(self::once())
+            ->method('isGranted')
+            ->with('VIEW', self::identicalTo($entity))
+            ->willReturn(true);
+
+        $this->context->setClassName(get_class($entity));
+        $this->context->setConfig($config);
+        $this->context->setResult($model);
+        $this->processor->process($this->context);
+    }
+
+    public function testProcessWhenAccessDeniedForEntityHolderModel(): void
+    {
+        $this->expectException(AccessDeniedException::class);
+        $this->expectExceptionMessage('No access by "VIEW" permission to the entity.');
+
+        $entity = new Product();
+        $config = new EntityDefinitionConfig();
+        $model = $this->createMock(EntityHolderInterface::class);
+        $model->expects(self::once())
+            ->method('getEntity')
+            ->willReturn($entity);
+
+        $this->authorizationChecker->expects(self::once())
+            ->method('isGranted')
+            ->with('VIEW', self::identicalTo($entity))
+            ->willReturn(false);
+
+        $this->context->setClassName(get_class($entity));
+        $this->context->setConfig($config);
+        $this->context->setResult($model);
+        $this->processor->process($this->context);
+    }
+
+    public function testProcessWhenEntityHolderModelDoesNotHaveEntity(): void
+    {
+        $config = new EntityDefinitionConfig();
+        $model = $this->createMock(EntityHolderInterface::class);
+        $model->expects(self::once())
+            ->method('getEntity')
+            ->willReturn(null);
+
+        $this->authorizationChecker->expects(self::never())
+            ->method('isGranted');
+
+        $this->context->setClassName(Product::class);
+        $this->context->setConfig($config);
+        $this->context->setResult($model);
         $this->processor->process($this->context);
     }
 }

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\ReminderBundle\Command;
@@ -33,17 +34,13 @@ class SendRemindersCommand extends Command implements
         $this->sender = $sender;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getDefaultDefinition(): string
     {
         return '*/1 * * * *';
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function isActive(): bool
     {
         $count = $this->getReminderRepository()->countRemindersToSend();
@@ -52,6 +49,7 @@ class SendRemindersCommand extends Command implements
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     protected function configure()
     {
         $this
@@ -71,12 +69,13 @@ HELP
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      * @noinspection PhpMissingParentCallCommonInspection
      */
-    public function execute(InputInterface $input, OutputInterface $output)
+    #[\Override]
+    public function execute(InputInterface $input, OutputInterface $output): int
     {
         $reminders = $this->getReminderRepository()->findRemindersToSend();
         if (!$reminders) {
             $output->writeln('<info>No reminders to sent</info>');
-            return 0;
+            return Command::SUCCESS;
         }
 
         $output->writeln(
@@ -97,7 +96,7 @@ HELP
             throw $e;
         }
 
-        return 0;
+        return Command::SUCCESS;
     }
 
     private function sendReminders(OutputInterface $output, array $reminders): int

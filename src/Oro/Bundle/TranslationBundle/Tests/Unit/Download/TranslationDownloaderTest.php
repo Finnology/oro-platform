@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\TranslationBundle\Tests\Unit\Download;
@@ -16,6 +17,8 @@ use Oro\Bundle\TranslationBundle\Exception\TranslationDownloaderException;
 use Oro\Bundle\TranslationBundle\Provider\JsTranslationDumper;
 use Oro\Bundle\TranslationBundle\Translation\DatabasePersister;
 use Oro\Component\Testing\TempDirExtension;
+use PHPUnit\Framework\MockObject\MockObject;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Translation\Loader\YamlFileLoader;
 use Symfony\Component\Translation\Reader\TranslationReader;
@@ -34,7 +37,7 @@ class TranslationDownloaderTest extends \PHPUnit\Framework\TestCase
     private const WEIRD_YAML_TRANSLATIONS = <<<'YAML'
 ---
 test: test
-test1:
+test1: ~
 test %num%: tessto presto %num% #%num%
 multi: |-
   Test l'aide <a href="http://community.oroinc.com"> forums</a>.
@@ -48,7 +51,6 @@ YAML
 
     private const PARSED_YAML_TRANSLATIONS = [
         'test' => 'test',
-        'test1' => null,
         'test %num%' => 'tessto presto %num%',
         'multi' => "Test l'aide <a href=\"http://community.oroinc.com\"> forums</a>.\nSecond line.",
         'another one' => 'another one string',
@@ -57,24 +59,28 @@ YAML
         'escaping "double" quotes' => 'escaping "double" quotes',
     ];
 
-    /** @var TranslationServiceAdapterInterface|\PHPUnit\Framework\MockObject\MockObject */
+    /** @var TranslationServiceAdapterInterface|MockObject */
     private $translationServiceAdapter;
 
-    /** @var TranslationMetricsProviderInterface|\PHPUnit\Framework\MockObject\MockObject */
+    /** @var TranslationMetricsProviderInterface|MockObject */
     private $translationMetricsProvider;
 
-    /** @var JsTranslationDumper|\PHPUnit\Framework\MockObject\MockObject */
+    /** @var JsTranslationDumper|MockObject */
     private $jsTranslationDumper;
 
-    /** @var DatabasePersister|\PHPUnit\Framework\MockObject\MockObject */
+    /** @var DatabasePersister|MockObject */
     private $databasePersister;
 
-    /** @var ManagerRegistry|\PHPUnit\Framework\MockObject\MockObject */
+    /** @var ManagerRegistry|MockObject */
     private $doctrine;
 
     /** @var TranslationDownloader */
     private $downloader;
 
+    /** @var EventDispatcherInterface|MockObject */
+    private $eventDispatcher;
+
+    #[\Override]
     protected function setUp(): void
     {
         $this->translationServiceAdapter = $this->createMock(TranslationServiceAdapterInterface::class);
@@ -82,6 +88,7 @@ YAML
         $this->jsTranslationDumper  = $this->createMock(JsTranslationDumper::class);
         $this->databasePersister = $this->createMock(DatabasePersister::class);
         $this->doctrine = $this->createMock(ManagerRegistry::class);
+        $this->eventDispatcher = $this->createMock(EventDispatcherInterface::class);
 
         $translationReader = new TranslationReader();
         $translationReader->addLoader('yml', new YamlFileLoader());
@@ -92,10 +99,12 @@ YAML
             $this->jsTranslationDumper,
             $translationReader,
             $this->databasePersister,
-            $this->doctrine
+            $this->doctrine,
+            $this->eventDispatcher
         );
     }
 
+    #[\Override]
     protected function tearDown(): void
     {
         $tmpDir = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'oro_translations';

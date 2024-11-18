@@ -10,9 +10,7 @@ use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 
 class OroTagExtension extends Extension
 {
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function load(array $configs, ContainerBuilder $container): void
     {
         $config = $this->processConfiguration($this->getConfiguration($configs, $container), $configs);
@@ -24,5 +22,9 @@ class OroTagExtension extends Extension
         $loader->load('form.yml');
         $loader->load('controllers.yml');
         $loader->load('controllers_api.yml');
+
+        if ('test' === $container->getParameter('kernel.environment')) {
+            $loader->load('services_test.yml');
+        }
     }
 }

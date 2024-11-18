@@ -16,10 +16,8 @@ class ExtensionProxy extends AbstractExtension implements ValueHolderInterface
         $this->extension = $extension;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getWrappedValueHolderValue() : ?object
+    #[\Override]
+    public function getWrappedValueHolderValue(): ?object
     {
         return $this->extension;
     }

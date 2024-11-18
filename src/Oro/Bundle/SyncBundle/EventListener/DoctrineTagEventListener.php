@@ -40,7 +40,7 @@ class DoctrineTagEventListener implements OptionalListenerInterface, ServiceSubs
             return;
         }
 
-        $uow = $event->getEntityManager()->getUnitOfWork();
+        $uow = $event->getObjectManager()->getUnitOfWork();
         foreach ($uow->getScheduledEntityInsertions() as $entity) {
             $this->addEntityTags($entity, true);
         }
@@ -106,10 +106,8 @@ class DoctrineTagEventListener implements OptionalListenerInterface, ServiceSubs
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public static function getSubscribedServices()
+    #[\Override]
+    public static function getSubscribedServices(): array
     {
         return [
             'oro_sync.content.tag_generator' => TagGeneratorInterface::class,

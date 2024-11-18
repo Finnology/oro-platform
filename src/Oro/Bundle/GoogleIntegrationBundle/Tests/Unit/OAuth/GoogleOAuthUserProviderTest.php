@@ -2,7 +2,7 @@
 
 namespace Oro\Bundle\GoogleIntegrationBundle\Tests\Unit\OAuth;
 
-use HWI\Bundle\OAuthBundle\OAuth\Response\UserResponseInterface;
+use HWI\Bundle\OAuthBundle\OAuth\Response\PathUserResponse;
 use Oro\Bundle\ConfigBundle\Config\ConfigManager;
 use Oro\Bundle\GoogleIntegrationBundle\OAuth\GoogleOAuthUserProvider;
 use Oro\Bundle\GoogleIntegrationBundle\Tests\Unit\Stub\User;
@@ -19,6 +19,7 @@ class GoogleOAuthUserProviderTest extends \PHPUnit\Framework\TestCase
     /** @var GoogleOAuthUserProvider */
     private $userProvider;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->userManager = $this->createMock(UserManager::class);
@@ -76,9 +77,9 @@ class GoogleOAuthUserProviderTest extends \PHPUnit\Framework\TestCase
 
     public function testFindUserWhenUserFoundByGoogleId(): void
     {
-        $response = $this->createMock(UserResponseInterface::class);
+        $response = $this->createMock(PathUserResponse::class);
         $response->expects(self::once())
-            ->method('getUsername')
+            ->method('getUserIdentifier')
             ->willReturn('username');
         $response->expects(self::never())
             ->method('getEmail');
@@ -99,9 +100,9 @@ class GoogleOAuthUserProviderTest extends \PHPUnit\Framework\TestCase
 
     public function testFindUserWhenUserNotFoundByGoogleIdButFoundByEmail(): void
     {
-        $response = $this->createMock(UserResponseInterface::class);
+        $response = $this->createMock(PathUserResponse::class);
         $response->expects(self::once())
-            ->method('getUsername')
+            ->method('getUserIdentifier')
             ->willReturn('username');
         $response->expects(self::once())
             ->method('getEmail')
@@ -129,9 +130,9 @@ class GoogleOAuthUserProviderTest extends \PHPUnit\Framework\TestCase
 
     public function testFindUserWhenUserNotFoundByGoogleIdAndNoUserEmail(): void
     {
-        $response = $this->createMock(UserResponseInterface::class);
+        $response = $this->createMock(PathUserResponse::class);
         $response->expects(self::once())
-            ->method('getUsername')
+            ->method('getUserIdentifier')
             ->willReturn('username');
         $response->expects(self::once())
             ->method('getEmail')
@@ -151,9 +152,9 @@ class GoogleOAuthUserProviderTest extends \PHPUnit\Framework\TestCase
 
     public function testFindUserWhenUserNotFound(): void
     {
-        $response = $this->createMock(UserResponseInterface::class);
+        $response = $this->createMock(PathUserResponse::class);
         $response->expects(self::once())
-            ->method('getUsername')
+            ->method('getUserIdentifier')
             ->willReturn('username');
         $response->expects(self::once())
             ->method('getEmail')

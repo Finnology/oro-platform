@@ -10,19 +10,10 @@ use Oro\Bundle\UserBundle\Entity\User;
 
 class RemoveDisableLogin implements Migration
 {
-    /**
-     * {@inheritdoc}
-     */
-    public function up(Schema $schema, QueryBag $queries)
+    #[\Override]
+    public function up(Schema $schema, QueryBag $queries): void
     {
-        $table = $schema->getTable('oro_user');
-        $table->dropColumn('login_disabled');
-
-        $queries->addQuery(
-            new RemoveFieldQuery(
-                User::class,
-                'loginDisabled'
-            )
-        );
+        $schema->getTable('oro_user')->dropColumn('login_disabled');
+        $queries->addQuery(new RemoveFieldQuery(User::class, 'loginDisabled'));
     }
 }

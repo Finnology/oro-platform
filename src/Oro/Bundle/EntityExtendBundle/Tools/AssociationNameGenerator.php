@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\EntityExtendBundle\Tools;
@@ -10,6 +11,9 @@ use Oro\Component\DoctrineUtils\Inflector\InflectorFactory;
  */
 class AssociationNameGenerator
 {
+    protected const NAME_PREFIXES = ['get', 'set', 'has', 'add', 'remove', 'reset', 'support'];
+    protected const NAME_POSTFIXES = ['Targets', 'Target'];
+
     /**
      * Converts a string into a "class-name-like" name, e.g. 'first_name' to 'FirstName'.
      *
@@ -116,5 +120,27 @@ class AssociationNameGenerator
     public static function generateRemoveTargetMethodName($associationKind)
     {
         return sprintf('remove%sTarget', self::classify($associationKind));
+    }
+
+    /**
+     * Extract association kind from method name:
+     * [
+     *    'getSourceTarget' => 'source'
+     *    'getSourceListTarget' => 'sourceList'
+     *    'getTarget' => null
+     * ]
+     */
+    public static function extractAssociationKind(string $methodName): ?string
+    {
+        $methodSplit = preg_split('/(?=[A-Z])/', $methodName);
+        if (count($methodSplit) < 3) {
+            return null;
+        }
+        if (in_array($methodSplit[0], self::NAME_PREFIXES)
+            && in_array(end($methodSplit), self::NAME_POSTFIXES)) {
+            return lcfirst(implode('', array_slice($methodSplit, 1, -1)));
+        }
+
+        return null;
     }
 }

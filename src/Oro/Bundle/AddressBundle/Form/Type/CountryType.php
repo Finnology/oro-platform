@@ -1,22 +1,25 @@
 <?php
+
 namespace Oro\Bundle\AddressBundle\Form\Type;
 
 use Doctrine\ORM\EntityRepository;
+use Oro\Bundle\AddressBundle\Entity\Country;
 use Oro\Bundle\TranslationBundle\Form\Type\Select2TranslatableEntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
+/**
+ * Form type for selecting Country entity
+ */
 class CountryType extends AbstractType
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults(
             array(
                 'label' => 'oro.address.country.entity_label',
-                'class' => 'OroAddressBundle:Country',
+                'class' => Country::class,
                 'random_id' => true,
                 'query_builder' => function (EntityRepository $er) {
                     return $er->createQueryBuilder('c')
@@ -33,26 +36,19 @@ class CountryType extends AbstractType
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getParent()
+    #[\Override]
+    public function getParent(): ?string
     {
         return Select2TranslatableEntityType::class;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getName()
     {
         return $this->getBlockPrefix();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return 'oro_country';
     }

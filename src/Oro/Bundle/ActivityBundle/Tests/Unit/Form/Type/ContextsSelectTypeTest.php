@@ -2,7 +2,7 @@
 
 namespace Oro\Bundle\ActivityBundle\Tests\Unit\Form\Type;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Oro\Bundle\ActivityBundle\Form\DataTransformer\ContextsToViewTransformer;
 use Oro\Bundle\ActivityBundle\Form\Type\ContextsSelectType;
 use Oro\Bundle\EntityBundle\Provider\EntityNameResolver;
@@ -17,7 +17,7 @@ use Symfony\Component\Translation\DataCollectorTranslator;
 
 class ContextsSelectTypeTest extends TypeTestCase
 {
-    /** @var EntityManager|\PHPUnit\Framework\MockObject\MockObject */
+    /** @var EntityManagerInterface|\PHPUnit\Framework\MockObject\MockObject */
     private $em;
 
     /** @var ConfigManager|\PHPUnit\Framework\MockObject\MockObject */
@@ -35,11 +35,12 @@ class ContextsSelectTypeTest extends TypeTestCase
     /* @var ContextsSelectType */
     private $type;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->em = $this->createMock(EntityManager::class);
+        $this->em = $this->createMock(EntityManagerInterface::class);
         $this->configManager = $this->createMock(ConfigManager::class);
         $this->translator = $this->createMock(DataCollectorTranslator::class);
         $this->dispatcher = $this->createMock(EventDispatcherInterface::class);

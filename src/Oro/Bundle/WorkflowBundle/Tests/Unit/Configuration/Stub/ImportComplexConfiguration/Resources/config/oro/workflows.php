@@ -1,6 +1,9 @@
-<?php return [
+<?php
+
+return [
     'chained_result' => [
         'entity' => 'MyOwn\\SuperCustom\\Entity',
+        'metadata' => [],
         'steps' => [
             'step_a' => [
                 'allowed_transitions' => ['transition_two'],
@@ -26,6 +29,7 @@
         'transitions' => [
             'transition_two' => [
                 'step_to' => 'step_b',
+                'conditional_steps_to' => [],
                 'frontend_options' => ['icon' => 'foo'],
                 'is_start' => false,
                 'is_hidden' => false,

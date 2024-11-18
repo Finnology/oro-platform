@@ -2,56 +2,38 @@
 
 namespace Oro\Bundle\NavigationBundle\Entity;
 
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Oro\Bundle\UserBundle\Entity\AbstractUser;
 
 /**
  * Base class for pinbar tabs.
- *
- * @ORM\MappedSuperclass
  */
+#[ORM\MappedSuperclass]
 class AbstractPinbarTab implements NavigationItemInterface
 {
-    /**
-     * @var integer $id
-     *
-     * @ORM\Id
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
-    protected $id;
+    #[ORM\Id]
+    #[ORM\Column(name: 'id', type: Types::INTEGER)]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
+    protected ?int $id = null;
 
-    /**
-     * @var NavigationItemInterface $item
-     */
-    protected $item;
+    protected ?NavigationItemInterface $item = null;
 
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="maximized", type="datetime", nullable=true)
-     */
-    protected $maximized;
+    #[ORM\Column(name: 'maximized', type: Types::DATETIME_MUTABLE, nullable: true)]
+    protected ?\DateTimeInterface $maximized = null;
 
-    /**
-     * @var string $title
-     *
-     * @ORM\Column(name="title", type="string", length=255)
-     */
-    protected $title;
+    #[ORM\Column(name: 'title', type: Types::STRING, length: 255)]
+    protected ?string $title = null;
 
-    /**
-     * @var string $title
-     *
-     * @ORM\Column(name="title_short", type="string", length=255)
-     */
-    protected $titleShort;
+    #[ORM\Column(name: 'title_short', type: Types::STRING, length: 255)]
+    protected ?string $titleShort = null;
 
     /**
      * Get id
      *
      * @return integer
      */
+    #[\Override]
     public function getId()
     {
         return $this->id;
@@ -105,9 +87,8 @@ class AbstractPinbarTab implements NavigationItemInterface
 
     /**
      * Pre persist event handler
-     *
-     * @ORM\PrePersist
      */
+    #[ORM\PrePersist]
     public function doPrePersist()
     {
         $this->maximized = null;
@@ -118,6 +99,7 @@ class AbstractPinbarTab implements NavigationItemInterface
      *
      * @return AbstractUser
      */
+    #[\Override]
     public function getUser()
     {
         if ($this->getItem()) {
@@ -127,9 +109,6 @@ class AbstractPinbarTab implements NavigationItemInterface
         return null;
     }
 
-    /**
-     * @return string
-     */
     public function getTitle(): ?string
     {
         return $this->title;
@@ -159,9 +138,6 @@ class AbstractPinbarTab implements NavigationItemInterface
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function getTitleShort(): ?string
     {
         return $this->titleShort;
@@ -170,6 +146,7 @@ class AbstractPinbarTab implements NavigationItemInterface
     /**
      * Set entity properties
      */
+    #[\Override]
     public function setValues(array $values)
     {
         if (isset($values['maximized'])) {

@@ -36,12 +36,13 @@ class TagsExtensionTest extends \PHPUnit\Framework\TestCase
     /** @var InlineEditingConfigurator|\PHPUnit\Framework\MockObject\MockObject */
     private $inlineEditingConfigurator;
 
-    /** @var FeatureChecker|\PHPUnit\Framework\MockObject\MockObject  */
+    /** @var FeatureChecker|\PHPUnit\Framework\MockObject\MockObject */
     private $featureChecker;
 
     /** @var TagsExtension */
     private $extension;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->tagManager = $this->createMock(TagManager::class);

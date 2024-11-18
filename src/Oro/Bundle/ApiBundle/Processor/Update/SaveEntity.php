@@ -24,9 +24,7 @@ class SaveEntity implements ProcessorInterface
         $this->flushDataHandler = $flushDataHandler;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function process(ContextInterface $context): void
     {
         /** @var UpdateContext $context */
@@ -42,14 +40,14 @@ class SaveEntity implements ProcessorInterface
             return;
         }
 
-        $em = $this->doctrineHelper->getEntityManager($entity, false);
-        if (null === $em) {
-            // only manageable entities are supported
+        $entityClass = $context->getManageableEntityClass($this->doctrineHelper);
+        if (!$entityClass) {
+            // only manageable entities or resources based on manageable entities are supported
             return;
         }
 
         $this->flushDataHandler->flushData(
-            $em,
+            $this->doctrineHelper->getEntityManagerForClass($entityClass),
             new FlushDataHandlerContext([$context], $context->getSharedData())
         );
 

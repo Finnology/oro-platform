@@ -1,4 +1,5 @@
 <?php
+
 namespace Oro\Component\MessageQueue\Transport\Dbal;
 
 use Doctrine\Persistence\ManagerRegistry;
@@ -42,11 +43,13 @@ class DbalLazyConnection extends DbalConnection
         $this->isInitialized = false;
     }
 
+    #[\Override]
     public function createSession()
     {
         return parent::createSession();
     }
 
+    #[\Override]
     public function getDBALConnection()
     {
         $this->initialize();
@@ -54,16 +57,19 @@ class DbalLazyConnection extends DbalConnection
         return parent::getDBALConnection();
     }
 
+    #[\Override]
     public function getTableName()
     {
         return $this->tableName;
     }
 
+    #[\Override]
     public function getOptions()
     {
         return $this->options;
     }
 
+    #[\Override]
     public function close()
     {
         if ($this->isInitialized) {

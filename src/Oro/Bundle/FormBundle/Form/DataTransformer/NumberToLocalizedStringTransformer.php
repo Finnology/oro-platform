@@ -4,13 +4,12 @@ namespace Oro\Bundle\FormBundle\Form\DataTransformer;
 
 use Brick\Math\BigDecimal;
 use Oro\Bundle\LocaleBundle\Formatter\NumberFormatter;
-use Symfony\Component\Form\Extension\Core\DataTransformer\NumberToLocalizedStringTransformer as BaseTransformer;
 
 /**
  * Transforms between a number type and a localized number (or string in case when a number has bigger scale than float)
  * with grouping (each thousand) and comma separators.
  */
-class NumberToLocalizedStringTransformer extends BaseTransformer
+class NumberToLocalizedStringTransformer extends Symfony54NumberToLocalizedStringTransformer
 {
     private NumberFormatter $numberFormatter;
 
@@ -22,7 +21,7 @@ class NumberToLocalizedStringTransformer extends BaseTransformer
         NumberFormatter $numberFormatter,
         int $scale = null,
         ?bool $grouping = false,
-        ?int $roundingMode = self::ROUND_HALF_UP,
+        ?int $roundingMode = \NumberFormatter::ROUND_HALFUP,
         string $locale = null
     ) {
         $this->numberFormatter = $numberFormatter;
@@ -33,10 +32,8 @@ class NumberToLocalizedStringTransformer extends BaseTransformer
         parent::__construct($scale, $grouping, $roundingMode, $locale);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function transform($value)
+    #[\Override]
+    public function transform($value): string
     {
         if (null === $value) {
             return '';
@@ -53,10 +50,8 @@ class NumberToLocalizedStringTransformer extends BaseTransformer
         return $this->numberFormatter->formatDecimal($value, $attributes, [], [], $this->locale);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function reverseTransform($value)
+    #[\Override]
+    public function reverseTransform($value): string|float|int|null
     {
         if (null === $value || '' === $value) {
             return null;
@@ -105,5 +100,16 @@ class NumberToLocalizedStringTransformer extends BaseTransformer
         }
 
         return $formattedValue;
+    }
+
+    /**
+     * @param $value
+     *
+     * @return int|float
+     */
+    #[\Override]
+    protected function castParsedValue($value): float|int
+    {
+        return $value;
     }
 }

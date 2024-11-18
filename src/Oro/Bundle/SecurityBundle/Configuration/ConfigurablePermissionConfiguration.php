@@ -14,10 +14,8 @@ class ConfigurablePermissionConfiguration implements ConfigurationInterface
 {
     public const ROOT_NODE = 'oro_configurable_permissions';
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getConfigTreeBuilder()
+    #[\Override]
+    public function getConfigTreeBuilder(): TreeBuilder
     {
         $builder = new TreeBuilder(self::ROOT_NODE);
         $rootNode = $builder->getRootNode();

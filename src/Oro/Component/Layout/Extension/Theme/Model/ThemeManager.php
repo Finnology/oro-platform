@@ -16,6 +16,9 @@ class ThemeManager
     /** @var Theme[] */
     private $instances = [];
 
+    /** @var array local cache with all the themes  */
+    private array $themes = [];
+
     /**
      * @var string[]
      */
@@ -29,7 +32,7 @@ class ThemeManager
     public function __construct(
         ThemeFactoryInterface $themeFactory,
         ThemeDefinitionBagInterface $themeDefinitionBag,
-        array $enabledThemes
+        array $enabledThemes,
     ) {
         $this->themeFactory = $themeFactory;
         $this->themeDefinitionBag = $themeDefinitionBag;
@@ -131,6 +134,11 @@ class ThemeManager
      */
     public function getAllThemes($groups = null)
     {
+        $cacheKey = $groups === null ? 'all' : implode(',', (array)$groups);
+        if (array_key_exists($cacheKey, $this->themes) && $this->themes[$cacheKey] !== null) {
+            return $this->themes[$cacheKey];
+        }
+
         $names = $this->getThemeNames();
 
         $themes = array_combine(
@@ -153,6 +161,8 @@ class ThemeManager
             );
         }
 
+        $this->themes[$cacheKey] = $themes;
+
         return $themes;
     }
 
@@ -174,5 +184,16 @@ class ThemeManager
         } while ($themeName = $theme->getParentTheme());
 
         return array_reverse($themesHierarchy);
+    }
+
+    public function themeHasParent(string $theme, array $parentThemes): bool
+    {
+        $hierarchy = $this->getThemesHierarchy($theme);
+        foreach ($hierarchy as $currentTheme) {
+            if (in_array($currentTheme->getName(), $parentThemes)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

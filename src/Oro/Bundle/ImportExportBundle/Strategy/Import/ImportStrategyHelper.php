@@ -29,6 +29,8 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * Helper methods for import strategies.
+ *
+ * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  */
 class ImportStrategyHelper
 {
@@ -184,7 +186,7 @@ class ImportStrategyHelper
     /**
      * Checks if an access to a resource is granted to the caller
      *
-     * @param string|string[] $attributes Can be a role name(s), permission name(s), an ACL annotation id,
+     * @param string|string[] $attributes Can be a role name(s), permission name(s), an ACL attribute id,
      *                                    string in format "permission;descriptor"
      *                                    (VIEW;entity:AcmeDemoBundle:AcmeEntity, EDIT;action:acme_action)
      *                                    or something else, it depends on registered security voters
@@ -276,9 +278,17 @@ class ImportStrategyHelper
                 continue;
             }
 
-            $importedValue = $this->fieldHelper->getObjectValue($importedEntity, $propertyName);
-            $this->fieldHelper->setObjectValue($basicEntity, $propertyName, $importedValue);
+            $this->processImportedEntityProperty($basicEntity, $importedEntity, $propertyName);
         }
+    }
+
+    protected function processImportedEntityProperty(
+        object $targetEntity,
+        object $sourceEntity,
+        string $property
+    ): void {
+        $importedValue = $this->fieldHelper->getObjectValue($sourceEntity, $property);
+        $this->fieldHelper->setObjectValue($targetEntity, $property, $importedValue);
     }
 
     /**

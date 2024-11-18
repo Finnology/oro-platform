@@ -12,6 +12,9 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
+/**
+ * Controller to update schema
+ */
 class UpdateSchemaController implements Controller
 {
     /**
@@ -23,7 +26,7 @@ class UpdateSchemaController implements Controller
      * List of model namespaces
      * @var StatisticModelInterface[]
      */
-    private $models =[];
+    private $models = [];
 
     /**
      * @param Connection $connection
@@ -35,9 +38,7 @@ class UpdateSchemaController implements Controller
         $this->models = $models;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function configure(SymfonyCommand $command)
     {
         $command
@@ -50,9 +51,7 @@ class UpdateSchemaController implements Controller
         ;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function execute(InputInterface $input, OutputInterface $output)
     {
         if (!$input->getOption('update-statistic-schema')) {
@@ -74,7 +73,7 @@ class UpdateSchemaController implements Controller
         $queries = $schemaDiff->toSql($this->connection->getDatabasePlatform());
 
         foreach ($queries as $query) {
-            $this->connection->query($query);
+            $this->connection->executeQuery($query);
         }
 
         $this->connection->close();

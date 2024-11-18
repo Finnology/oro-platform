@@ -8,15 +8,8 @@ use Oro\Bundle\MigrationBundle\Migration\QueryBag;
 
 class OroEmailBundle implements Migration
 {
-    /**
-     * {@inheritdoc}
-     */
-    public function up(Schema $schema, QueryBag $queries)
-    {
-        static::oroEmailUserTable($schema);
-    }
-
-    public static function oroEmailUserTable(Schema $schema)
+    #[\Override]
+    public function up(Schema $schema, QueryBag $queries): void
     {
         $table = $schema->getTable('oro_email_user');
         if (!$table->hasColumn('unsyncedFlagCount')) {

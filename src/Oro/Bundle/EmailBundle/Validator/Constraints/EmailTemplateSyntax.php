@@ -11,10 +11,8 @@ class EmailTemplateSyntax extends Constraint
 {
     public string $message = 'The template for {{ field }} ({{ locale }}) has syntax error: {{ error }}';
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getTargets()
+    #[\Override]
+    public function getTargets(): string|array
     {
         return self::CLASS_CONSTRAINT;
     }

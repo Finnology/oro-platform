@@ -29,9 +29,7 @@ class OroEntityBundle extends Bundle
         TransactionWatcherConfigurator::registerConnectionProxies($kernel->getCacheDir());
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function build(ContainerBuilder $container): void
     {
         parent::build($container);
@@ -39,6 +37,7 @@ class OroEntityBundle extends Bundle
         $container->addCompilerPass(new Compiler\DatabaseCheckerCompilerPass());
         $container->addCompilerPass(new Compiler\QueryHintResolverPass());
         $container->addCompilerPass(new Compiler\EntityFieldHandlerPass());
+        $container->addCompilerPass(new Compiler\EntityValidationLoaderCompilerPass());
         $container->addCompilerPass(new Compiler\CustomGridFieldValidatorCompilerPass());
         $container->addCompilerPass(new Compiler\ManagerRegistryCompilerPass());
         $container->addCompilerPass(new Compiler\DataCollectorCompilerPass());
@@ -64,7 +63,7 @@ class OroEntityBundle extends Bundle
 
         if ('test' === $container->getParameter('kernel.environment')) {
             $container->addCompilerPass(
-                DoctrineOrmMappingsPass::createAnnotationMappingDriver(
+                DoctrineOrmMappingsPass::createAttributeMappingDriver(
                     ['Oro\Bundle\EntityBundle\Tests\Functional\Environment\Entity'],
                     [$this->getPath() . '/Tests/Functional/Environment/Entity']
                 )

@@ -10,26 +10,15 @@ use Oro\Bundle\MigrationBundle\Migration\Migration;
 use Oro\Bundle\MigrationBundle\Migration\QueryBag;
 use Oro\Bundle\MigrationBundle\Migration\SqlMigrationQuery;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\DependencyInjection\ContainerAwareTrait;
 
 class AddEmailVisibilities implements Migration, DatabasePlatformAwareInterface, ContainerAwareInterface
 {
     use DatabasePlatformAwareTrait;
+    use ContainerAwareTrait;
 
-    private ContainerInterface $container;
-
-    /**
-     * {@inheritDoc}
-     */
-    public function setContainer(ContainerInterface $container = null)
-    {
-        $this->container = $container;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function up(Schema $schema, QueryBag $queries)
+    #[\Override]
+    public function up(Schema $schema, QueryBag $queries): void
     {
         $visibilityTableCreated = $this->addEmailAddressVisibilityTable($schema);
         $this->addIsPrivateColumnToEmailUserTable($schema);

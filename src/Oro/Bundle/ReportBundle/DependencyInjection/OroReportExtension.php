@@ -11,9 +11,7 @@ use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 
 class OroReportExtension extends Extension
 {
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function load(array $configs, ContainerBuilder $container): void
     {
         $config = $this->processConfiguration($this->getConfiguration($configs, $container), $configs);
@@ -25,6 +23,10 @@ class OroReportExtension extends Extension
         $loader->load('commands.yml');
         $loader->load('controllers.yml');
         $loader->load('controllers_api.yml');
+
+        if ('test' === $container->getParameter('kernel.environment')) {
+            $loader->load('services_test.yml');
+        }
 
         if (isset($config['dbal']['connection']) && $config['dbal']['connection']) {
             $container->setParameter(

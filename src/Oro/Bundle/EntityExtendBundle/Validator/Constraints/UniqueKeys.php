@@ -8,10 +8,8 @@ class UniqueKeys extends Constraint
 {
     public $message = 'Name and keys combination should be unique.';
 
-    /**
-     * {@inheritdoc}
-     */
-    public function validatedBy()
+    #[\Override]
+    public function validatedBy(): string
     {
         return 'oro_entity_extend.validator.unique_keys';
     }

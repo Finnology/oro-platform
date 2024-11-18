@@ -1,9 +1,13 @@
 <?php
+
 namespace Oro\Component\MessageQueue\Consumption\Extension;
 
 use Oro\Component\MessageQueue\Consumption\AbstractExtension;
 use Oro\Component\MessageQueue\Consumption\Context;
 
+/**
+ * Interrupts consumption if the message limit reached
+ */
 class LimitConsumedMessagesExtension extends AbstractExtension
 {
     /**
@@ -32,18 +36,14 @@ class LimitConsumedMessagesExtension extends AbstractExtension
         $this->messageConsumed = 0;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function onBeforeReceive(Context $context)
     {
         // this is added here to handle an edge case. when a user sets zero as limit.
         $this->checkMessageLimit($context);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function onPostReceived(Context $context)
     {
         $this->messageConsumed++;

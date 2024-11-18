@@ -40,9 +40,7 @@ class SetAllowedMimeTypesForImageFieldQuery extends ParametrizedMigrationQuery
         $this->mimeTypes = $mimeTypes;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getDescription()
     {
         $logger = new ArrayLogger();
@@ -51,9 +49,7 @@ class SetAllowedMimeTypesForImageFieldQuery extends ParametrizedMigrationQuery
         return $logger->getMessages();
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function execute(LoggerInterface $logger)
     {
         $this->doExecute($logger);
@@ -95,7 +91,7 @@ class SetAllowedMimeTypesForImageFieldQuery extends ParametrizedMigrationQuery
         $parameters = [$this->className, $this->fieldName];
         $this->logQuery($logger, $sql);
 
-        return $this->connection->fetchAssoc($sql, $parameters);
+        return $this->connection->fetchAssociative($sql, $parameters);
     }
 
     /**
@@ -111,7 +107,7 @@ class SetAllowedMimeTypesForImageFieldQuery extends ParametrizedMigrationQuery
         $this->logQuery($logger, $sql, $parameters);
 
         if (!$dryRun) {
-            $this->connection->prepare($sql)->execute($parameters);
+            $this->connection->prepare($sql)->executeQuery($parameters);
         }
     }
 }

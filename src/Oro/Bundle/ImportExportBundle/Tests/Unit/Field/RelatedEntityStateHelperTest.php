@@ -26,6 +26,7 @@ class RelatedEntityStateHelperTest extends \PHPUnit\Framework\TestCase
     /** @var RelatedEntityStateHelper */
     private $helper;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->fieldHelper = $this->createMock(FieldHelper::class);
@@ -105,6 +106,9 @@ class RelatedEntityStateHelperTest extends \PHPUnit\Framework\TestCase
             ->willReturn($uow);
         $uow->expects($this->once())
             ->method('removeFromIdentityMap')
+            ->with($businessUnit);
+        $uow->expects($this->once())
+            ->method('cancelOrphanRemoval')
             ->with($businessUnit);
 
         $this->helper->rememberAlteredCollectionsItems($organization);

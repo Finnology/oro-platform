@@ -4,6 +4,7 @@ namespace Oro\Bundle\TestFrameworkBundle\Tests\Unit\Stub;
 
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
 use Symfony\Component\HttpKernel\Bundle\BundleInterface;
 
 class TestBundle implements BundleInterface
@@ -12,7 +13,7 @@ class TestBundle implements BundleInterface
     protected $name;
 
     /** @var string */
-    protected $path;
+    protected $path = 'foo/bar';
 
     /**
      * @param string $name
@@ -22,53 +23,38 @@ class TestBundle implements BundleInterface
         $this->name = $name;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getName()
+    #[\Override]
+    public function getName(): string
     {
         return $this->name;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getNamespace()
+    #[\Override]
+    public function getNamespace(): string
     {
         return $this->name;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function boot()
     {
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function shutdown()
     {
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function build(ContainerBuilder $container)
     {
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getContainerExtension()
+    #[\Override]
+    public function getContainerExtension(): ?ExtensionInterface
     {
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getParent()
     {
     }
@@ -81,17 +67,13 @@ class TestBundle implements BundleInterface
         $this->path = $path;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getPath()
+    #[\Override]
+    public function getPath(): string
     {
         return $this->path;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function setContainer(ContainerInterface $container = null)
     {
     }

@@ -15,7 +15,6 @@ class AttributeFamilyVoter extends AbstractEntityVoter implements ServiceSubscri
 {
     const ATTRIBUTE_DELETE = 'delete';
 
-    /** {@inheritDoc} */
     protected $supportedAttributes = [self::ATTRIBUTE_DELETE];
 
     private ContainerInterface $container;
@@ -26,19 +25,15 @@ class AttributeFamilyVoter extends AbstractEntityVoter implements ServiceSubscri
         $this->container = $container;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public static function getSubscribedServices()
+    #[\Override]
+    public static function getSubscribedServices(): array
     {
         return [
             'oro_entity_config.manager.attribute_family_manager' => AttributeFamilyManager::class
         ];
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     protected function getPermissionForAttribute($class, $identifier, $attribute)
     {
         return $this->getAttributeFamilyManager()->isAttributeFamilyDeletable($identifier) ?

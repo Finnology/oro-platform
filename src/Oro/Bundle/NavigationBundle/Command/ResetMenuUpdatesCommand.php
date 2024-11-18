@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\NavigationBundle\Command;
@@ -39,6 +40,7 @@ class ResetMenuUpdatesCommand extends Command
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     public function configure()
     {
         $this
@@ -72,7 +74,8 @@ HELP
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
-    public function execute(InputInterface $input, OutputInterface $output)
+    #[\Override]
+    public function execute(InputInterface $input, OutputInterface $output): int
     {
         $menu = $input->getOption('menu');
         $user = null;
@@ -97,7 +100,7 @@ HELP
             if (!$helper->ask($input, $output, $question)) {
                 $output->writeln('<error>Command aborted</error>');
 
-                return 1;
+                return Command::FAILURE;
             }
         }
 
@@ -119,7 +122,7 @@ HELP
 
         $output->writeln($message);
 
-        return 0;
+        return Command::SUCCESS;
     }
 
     private function resetMenuUpdates(?User $user = null, ?string $menuName = null): void

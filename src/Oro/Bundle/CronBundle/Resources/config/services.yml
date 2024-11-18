@@ -50,7 +50,8 @@ services:
     oro_cron.engine.command_runner:
         class: Oro\Bundle\CronBundle\Engine\CommandRunner
         arguments:
-            - '@kernel'
+            - "@=service('kernel').getProjectDir()"
+            - "@=service('kernel').getEnvironment()"
 
     oro_cron.async.command_runner_processor:
         class: Oro\Bundle\CronBundle\Async\CommandRunnerProcessor
@@ -109,6 +110,11 @@ services:
         class: Oro\Bundle\CronBundle\Form\Type\ScheduleIntervalsCollectionType
         tags:
             - { name: form.type, alias: oro_cron_schedule_intervals_collection }
+
+    oro_cron.twig.schedule:
+        class: Oro\Bundle\CronBundle\Twig\ScheduleExtension
+        tags:
+            - { name: twig.extension }
 
     oro_cron.checker.schedule_interval_checker:
         class: Oro\Bundle\CronBundle\Checker\ScheduleIntervalChecker

@@ -28,12 +28,13 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  */
 class DateRangeFilterTest extends OrmTestCase
 {
-    /** @var \PHPUnit\Framework\MockObject\MockObject|FormFactoryInterface */
+    /** @var FormFactoryInterface|\PHPUnit\Framework\MockObject\MockObject */
     private $formFactory;
 
     /** @var DateRangeFilter */
     private $filter;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->formFactory = $this->createMock(FormFactoryInterface::class);
@@ -95,7 +96,7 @@ class DateRangeFilterTest extends OrmTestCase
             ->willReturnCallback(function ($name) use (&$paramIndex) {
                 $paramIndex++;
 
-                return \sprintf('%s%d', $name, $paramIndex);
+                return sprintf('%s%d', $name, $paramIndex);
             });
         $ds->expects(self::once())
             ->method('setParameter')
@@ -132,7 +133,7 @@ class DateRangeFilterTest extends OrmTestCase
             ->willReturnCallback(function ($name) use (&$paramIndex) {
                 $paramIndex++;
 
-                return \sprintf('%s%d', $name, $paramIndex);
+                return sprintf('%s%d', $name, $paramIndex);
             });
         $ds->expects(self::once())
             ->method('setParameter')

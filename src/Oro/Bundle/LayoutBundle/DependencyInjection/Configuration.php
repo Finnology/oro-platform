@@ -11,10 +11,8 @@ class Configuration implements ConfigurationInterface
 {
     private const DEFAULT_LAYOUT_TWIG_RESOURCE = '@OroLayout/Layout/div_layout.html.twig';
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getConfigTreeBuilder()
+    #[\Override]
+    public function getConfigTreeBuilder(): TreeBuilder
     {
         $treeBuilder = new TreeBuilder('oro_layout');
         $rootNode    = $treeBuilder->getRootNode();
@@ -36,8 +34,8 @@ class Configuration implements ConfigurationInterface
                 ->arrayNode('view')
                     ->addDefaultsIfNotSet()
                     ->children()
-                        ->booleanNode('annotations')
-                            ->info('Defines whether @Layout annotation can be used in controllers')
+                        ->booleanNode('attributes')
+                            ->info('Defines whether #[Layout()] attribute can be used in controllers')
                             ->defaultTrue()
                         ->end()
                     ->end()

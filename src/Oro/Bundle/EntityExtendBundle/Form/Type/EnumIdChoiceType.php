@@ -4,7 +4,7 @@ namespace Oro\Bundle\EntityExtendBundle\Form\Type;
 
 use Doctrine\ORM\EntityManager;
 use Doctrine\Persistence\ManagerRegistry;
-use Oro\Bundle\EntityExtendBundle\Tools\ExtendHelper;
+use Oro\Bundle\EntityExtendBundle\Entity\EnumOption;
 use Oro\Bundle\FormBundle\Form\DataTransformer\EntitiesToIdsTransformer;
 use Oro\Bundle\FormBundle\Form\DataTransformer\EntityToIdTransformer;
 use Symfony\Component\Form\AbstractType;
@@ -12,6 +12,9 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\ReversedTransformer;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
+/**
+ * Enum id choice type.
+ */
 class EnumIdChoiceType extends AbstractType
 {
     const NAME = 'oro_enum_id_choice';
@@ -24,12 +27,10 @@ class EnumIdChoiceType extends AbstractType
         $this->registry = $registry;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $className = ExtendHelper::buildEnumValueClassName($options['enum_code']);
+        $className = EnumOption::class;
         /** @var EntityManager $em */
         $em = $this->registry->getManagerForClass($className);
 
@@ -40,35 +41,26 @@ class EnumIdChoiceType extends AbstractType
         $builder->addModelTransformer(new ReversedTransformer($transformer));
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setRequired(['enum_code']);
         $resolver->setDefaults(['multiple' => true]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getParent()
+    #[\Override]
+    public function getParent(): ?string
     {
         return EnumChoiceType::class;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getName()
     {
         return $this->getBlockPrefix();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return static::NAME;
     }

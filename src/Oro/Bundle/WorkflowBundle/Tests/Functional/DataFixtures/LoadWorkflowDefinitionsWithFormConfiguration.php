@@ -11,11 +11,9 @@ class LoadWorkflowDefinitionsWithFormConfiguration extends LoadWorkflowDefinitio
     const WFC_TRANSITION = 'transition_1';
     const WFC_STEP_NAME = 'step1';
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function getWorkflowConfiguration()
     {
-        return Yaml::parse(file_get_contents(__DIR__ . '/config/oro/workflows_with_form_configuration.yml')) ? : [];
+        return Yaml::parse(file_get_contents(__DIR__ . '/config/oro/workflows_with_form_configuration.yml')) ?: [];
     }
 }

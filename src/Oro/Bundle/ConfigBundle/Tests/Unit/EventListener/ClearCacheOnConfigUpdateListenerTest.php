@@ -12,6 +12,7 @@ class ClearCacheOnConfigUpdateListenerTest extends \PHPUnit\Framework\TestCase
 
     private ClearCacheOnConfigUpdateListener $listener;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->listener = new ClearCacheOnConfigUpdateListener(self::SAMPLE_CONFIG_PARAMETER);
@@ -21,7 +22,7 @@ class ClearCacheOnConfigUpdateListenerTest extends \PHPUnit\Framework\TestCase
     {
         $this->expectNotToPerformAssertions();
 
-        $event = new ConfigUpdateEvent([self::SAMPLE_CONFIG_PARAMETER => 'sample_value']);
+        $event = new ConfigUpdateEvent([self::SAMPLE_CONFIG_PARAMETER => 'sample_value'], 'global', 0);
 
         $this->listener->onUpdateAfter($event);
     }
@@ -33,7 +34,7 @@ class ClearCacheOnConfigUpdateListenerTest extends \PHPUnit\Framework\TestCase
             ->method(self::anything());
 
         $this->listener->addCacheToClear($cacheToClear);
-        $this->listener->onUpdateAfter(new ConfigUpdateEvent([]));
+        $this->listener->onUpdateAfter(new ConfigUpdateEvent([], 'global', 0));
     }
 
     public function testOnUpdateAfter(): void
@@ -43,6 +44,8 @@ class ClearCacheOnConfigUpdateListenerTest extends \PHPUnit\Framework\TestCase
             ->method('clear');
 
         $this->listener->addCacheToClear($cacheToClear);
-        $this->listener->onUpdateAfter(new ConfigUpdateEvent([self::SAMPLE_CONFIG_PARAMETER => 'sample_value']));
+        $this->listener->onUpdateAfter(
+            new ConfigUpdateEvent([self::SAMPLE_CONFIG_PARAMETER => 'sample_value'], 'global', 0)
+        );
     }
 }

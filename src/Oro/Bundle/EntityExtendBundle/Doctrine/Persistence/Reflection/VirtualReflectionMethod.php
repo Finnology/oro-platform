@@ -2,14 +2,21 @@
 
 namespace Oro\Bundle\EntityExtendBundle\Doctrine\Persistence\Reflection;
 
+use Oro\Bundle\EntityExtendBundle\EntityPropertyInfo;
+
 /**
- * Emulates extend entity virtual methods as ReflectionMethod/
+ * Emulates extend entity virtual methods as ReflectionMethod
  */
 class VirtualReflectionMethod extends \ReflectionMethod
 {
     protected const DONOR_METHOD_NAME = 'get';
-    private string $virtualMethod = '';
+    private string $virtualMethod;
     private bool $isRealMethod = false;
+
+    /**
+     * When method belongs to a parent class, $this->class can't be used to know the original object class name
+     */
+    private string $objectClass;
 
     public function __construct(object|string $objectOrMethod, ?string $method = null)
     {
@@ -21,9 +28,10 @@ class VirtualReflectionMethod extends \ReflectionMethod
             $this->isRealMethod = true;
         } catch (\ReflectionException $exception) {
             // If it is not possible to create a reflection method, we try to create a virtual method
+            $this->virtualMethod = $method;
+            parent::__construct($objectOrMethod, static::DONOR_METHOD_NAME);
+            $this->objectClass = is_string($objectOrMethod) ? $objectOrMethod : $objectOrMethod::class;
         }
-        $this->virtualMethod = $method;
-        parent::__construct($objectOrMethod, static::DONOR_METHOD_NAME);
     }
 
     public static function create(object|string $objectOrMethod, string $method): self
@@ -31,6 +39,7 @@ class VirtualReflectionMethod extends \ReflectionMethod
         return new static($objectOrMethod, $method);
     }
 
+    #[\Override]
     public function getName(): string
     {
         if ($this->isRealMethod) {
@@ -40,6 +49,7 @@ class VirtualReflectionMethod extends \ReflectionMethod
         return $this->virtualMethod;
     }
 
+    #[\Override]
     public function isPublic(): bool
     {
         if ($this->isRealMethod) {
@@ -49,20 +59,35 @@ class VirtualReflectionMethod extends \ReflectionMethod
         return true;
     }
 
+    #[\Override]
     public function getNumberOfRequiredParameters(): int
     {
         if ($this->isRealMethod) {
             return parent::getNumberOfRequiredParameters();
         }
 
-        return str_starts_with($this->virtualMethod, 'get') ? 0 : 1;
+        $isGetMethod = str_starts_with($this->virtualMethod, 'get');
+        if ($isGetMethod) {
+            return 0;
+        }
+        if (str_starts_with($this->virtualMethod, 'remove') || str_starts_with($this->virtualMethod, 'add')) {
+            return 1;
+        }
+        $methodInfo = EntityPropertyInfo::getExtendedMethodInfo($this->objectClass, $this->virtualMethod);
+        if (empty($methodInfo)) {
+            return 1;
+        }
+
+        return $methodInfo['is_nullable'] ? 0 : 1;
     }
 
+    #[\Override]
     public function invoke($object, mixed ...$args): mixed
     {
         return $this->invokeArgs($object, $args);
     }
 
+    #[\Override]
     public function invokeArgs(?object $object, array $args): mixed
     {
         if ($this->isRealMethod) {

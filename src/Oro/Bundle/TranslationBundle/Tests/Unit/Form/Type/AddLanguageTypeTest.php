@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\TranslationBundle\Tests\Unit\Form\Type;
@@ -28,6 +29,7 @@ class AddLanguageTypeTest extends FormIntegrationTestCase
     /** @var AddLanguageType */
     private $formType;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->repository = $this->createMock(LanguageRepository::class);
@@ -118,6 +120,7 @@ class AddLanguageTypeTest extends FormIntegrationTestCase
         );
     }
 
+    #[\Override]
     protected function getExtensions(): array
     {
         $choiceType = $this->getMockBuilder(OroChoiceType::class)

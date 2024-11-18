@@ -24,10 +24,8 @@ class WorkflowValidationLoader extends AbstractLoader implements ServiceSubscrib
         $this->container = $container;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public static function getSubscribedServices()
+    #[\Override]
+    public static function getSubscribedServices(): array
     {
         return [
             'oro_workflow.database_checker'    => DatabaseChecker::class,
@@ -36,10 +34,8 @@ class WorkflowValidationLoader extends AbstractLoader implements ServiceSubscrib
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function loadClassMetadata(ClassMetadata $metadata)
+    #[\Override]
+    public function loadClassMetadata(ClassMetadata $metadata): bool
     {
         if (!$this->getDatabaseChecker()->checkDatabase()) {
             return false;

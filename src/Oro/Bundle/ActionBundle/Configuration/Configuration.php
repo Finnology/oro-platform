@@ -9,16 +9,14 @@ use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 
 /**
- * Provides schema for configuration that is loaded from "Resources/config/oro/actions.yml" files.
+ * Provides a schema for configuration that is loaded from "Resources/config/oro/actions.yml" files.
  */
 class Configuration implements ConfigurationInterface
 {
     public const ROOT_NODE = 'actions';
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getConfigTreeBuilder()
+    #[\Override]
+    public function getConfigTreeBuilder(): TreeBuilder
     {
         $treeBuilder = new TreeBuilder(self::ROOT_NODE);
         $rootNode = $treeBuilder->getRootNode();
@@ -32,29 +30,53 @@ class Configuration implements ConfigurationInterface
 
     protected function appendActionGroups(NodeBuilder $builder)
     {
-        $children = $builder
-            ->arrayNode('action_groups')
-                ->useAttributeAsKey('name')
-                ->prototype('array')
-                    ->children();
-
-        $children
-            ->variableNode('acl_resource')->end()
-            ->arrayNode('parameters')
-                ->useAttributeAsKey('name')
-                ->prototype('array')
-                    ->children()
-                        ->scalarNode('type')->end()
-                        ->scalarNode('message')->end()
-                        ->variableNode('default')->end()
+        $builder->arrayNode('action_groups')
+            ->useAttributeAsKey('name')
+            ->prototype('array')
+                ->children()
+                    ->variableNode('acl_resource')->end()
+                    ->variableNode('service')->end()
+                    ->variableNode('method')->end()
+                    ->variableNode('return_value_name')->end()
+                    ->arrayNode('parameters')
+                        ->useAttributeAsKey('name')
+                        ->prototype('array')
+                            ->children()
+                                ->scalarNode('type')->end()
+                                ->scalarNode('message')->end()
+                                ->scalarNode('service_argument_name')->end()
+                                ->variableNode('default')->end()
+                            ->end()
+                        ->end()
+                    ->end()
+                    ->arrayNode('conditions')
+                        ->prototype('variable')->end()
+                    ->end()
+                    ->arrayNode('actions')
+                        ->prototype('variable')->end()
                     ->end()
                 ->end()
-            ->end()
-            ->arrayNode('conditions')
-                ->prototype('variable')->end()
-            ->end()
-            ->arrayNode('actions')
-                ->prototype('variable')->end()
+                ->validate()
+                    ->always(function ($config) {
+                        if (!empty($config['return_value_name']) && empty($config['service'])) {
+                            throw new \Exception(
+                                '"return_value_name" can be used only with "service" parameter'
+                            );
+                        }
+
+                        if (!empty($config['parameters'])) {
+                            foreach ((array)$config['parameters'] as $parameter) {
+                                if (!empty($parameter['service_argument_name']) && empty($config['service'])) {
+                                    throw new \Exception(
+                                        '"service_argument_name" can be used only with "service" parameter'
+                                    );
+                                }
+                            }
+                        }
+
+                        return $config;
+                    })
+                ->end()
             ->end()
         ->end();
     }
@@ -114,7 +136,7 @@ class Configuration implements ConfigurationInterface
             ->integerNode('order')
                 ->defaultValue(0)
             ->end()
-            ->booleanNode('enabled')
+            ->variableNode('enabled')
                 ->defaultTrue()
             ->end()
             ->booleanNode('page_reload')
@@ -214,6 +236,7 @@ class Configuration implements ConfigurationInterface
                     ->prototype('variable')->end()
                 ->end()
                 ->arrayNode('data')
+                    ->normalizeKeys(false)
                     ->prototype('variable')->end()
                 ->end()
             ->end();

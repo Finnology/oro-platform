@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\TranslationBundle\Command;
@@ -28,6 +29,7 @@ class OroTranslationDumpCommand extends Command
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     protected function configure()
     {
         $this
@@ -52,7 +54,8 @@ HELP
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    #[\Override]
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
 
@@ -65,6 +68,6 @@ HELP
             $io->text('<info>[file+]</info> ' . $translationFile);
         }
 
-        return 0;
+        return Command::SUCCESS;
     }
 }

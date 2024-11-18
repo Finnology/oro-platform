@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\CronBundle\Command;
@@ -11,6 +12,7 @@ use Oro\Bundle\CronBundle\Tools\CronHelper;
 use Oro\Bundle\MaintenanceBundle\Maintenance\MaintenanceModeState;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Command\LazyCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -50,6 +52,7 @@ class CronCommand extends Command
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     protected function configure()
     {
         $this
@@ -74,9 +77,11 @@ HELP
 
     /**
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      * @noinspection PhpMissingParentCallCommonInspection
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    #[\Override]
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         // check for maintenance mode - do not run cron jobs if it is switched on
         if ($this->maintenanceMode->isOn()) {
@@ -85,7 +90,7 @@ HELP
             $output->writeln(sprintf('<error>%s</error>', $message));
             $this->logger->error($message);
 
-            return 1;
+            return Command::FAILURE;
         }
 
         $schedules = $this->doctrine->getRepository(Schedule::class)->findAll();
@@ -109,6 +114,9 @@ HELP
             }
 
             $command = $this->getApplication()->get($schedule->getCommand());
+            if ($command instanceof LazyCommand) {
+                $command = $command->getCommand();
+            }
             if (($command instanceof CronCommandActivationInterface && !$command->isActive())
                 || !$command->isEnabled()
             ) {
@@ -144,7 +152,7 @@ HELP
 
         $output->writeln('All commands scheduled', OutputInterface::VERBOSITY_DEBUG);
 
-        return 0;
+        return Command::SUCCESS;
     }
 
     /**

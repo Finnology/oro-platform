@@ -23,6 +23,7 @@ class EmailAddressValidatorTest extends \PHPUnit\Framework\TestCase
     /** @var EmailAddressHelper */
     private $emailAddressHelper;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->constraint = new EmailAddress();
@@ -46,6 +47,13 @@ class EmailAddressValidatorTest extends \PHPUnit\Framework\TestCase
         $this->context->expects($this->never())
             ->method('addViolation');
         $this->getValidator()->validate('testname <test@mail.com>', $this->constraint);
+    }
+
+    public function testValidateNullValue()
+    {
+        $this->context->expects($this->never())
+            ->method('addViolation');
+        $this->getValidator()->validate(null, $this->constraint);
     }
 
     public function testValidateEmptyValue()

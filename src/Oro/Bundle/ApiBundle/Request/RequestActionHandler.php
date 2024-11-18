@@ -57,11 +57,11 @@ abstract class RequestActionHandler
         $context = $processor->createContext();
         $this->preparePrimaryContext($context, $request);
         $context->setId($this->getRequestParameter($request, 'id'));
-        $context->setFilterValues($this->getRequestFilters($request));
+        $context->setFilterValues($this->getRequestFilters($request, $context->getAction()));
 
         $processor->process($context);
 
-        return $this->buildResponse($context);
+        return $this->buildResponse($context, $request);
     }
 
     /**
@@ -74,11 +74,11 @@ abstract class RequestActionHandler
         /** @var GetListContext $context */
         $context = $processor->createContext();
         $this->preparePrimaryContext($context, $request);
-        $context->setFilterValues($this->getRequestFilters($request));
+        $context->setFilterValues($this->getRequestFilters($request, $context->getAction()));
 
         $processor->process($context);
 
-        return $this->buildResponse($context);
+        return $this->buildResponse($context, $request);
     }
 
     /**
@@ -95,7 +95,7 @@ abstract class RequestActionHandler
 
         $processor->process($context);
 
-        return $this->buildResponse($context);
+        return $this->buildResponse($context, $request);
     }
 
     /**
@@ -108,11 +108,11 @@ abstract class RequestActionHandler
         /** @var DeleteListContext $context */
         $context = $processor->createContext();
         $this->preparePrimaryContext($context, $request);
-        $context->setFilterValues($this->getRequestFilters($request));
+        $context->setFilterValues($this->getRequestFilters($request, $context->getAction()));
 
         $processor->process($context);
 
-        return $this->buildResponse($context);
+        return $this->buildResponse($context, $request);
     }
 
     /**
@@ -125,11 +125,12 @@ abstract class RequestActionHandler
         /** @var CreateContext $context */
         $context = $processor->createContext();
         $this->preparePrimaryContext($context, $request);
+        $context->setFilterValues($this->getRequestFilters($request, $context->getAction()));
         $context->setRequestData($this->getRequestData($request));
 
         $processor->process($context);
 
-        return $this->buildResponse($context);
+        return $this->buildResponse($context, $request);
     }
 
     /**
@@ -142,12 +143,15 @@ abstract class RequestActionHandler
         /** @var UpdateContext $context */
         $context = $processor->createContext();
         $this->preparePrimaryContext($context, $request);
-        $context->setId($this->getRequestParameter($request, 'id'));
+        $context->setFilterValues($this->getRequestFilters($request, $context->getAction()));
+        $id = $this->getRequestParameter($request, 'id');
+        $context->setId($id);
+        $context->setRequestId($id);
         $context->setRequestData($this->getRequestData($request));
 
         $processor->process($context);
 
-        return $this->buildResponse($context);
+        return $this->buildResponse($context, $request);
     }
 
     /**
@@ -164,7 +168,7 @@ abstract class RequestActionHandler
 
         $processor->process($context);
 
-        return $this->buildResponse($context);
+        return $this->buildResponse($context, $request);
     }
 
     /**
@@ -179,11 +183,11 @@ abstract class RequestActionHandler
         /** @var GetSubresourceContext $context */
         $context = $processor->createContext();
         $this->prepareSubresourceContext($context, $request);
-        $context->setFilterValues($this->getRequestFilters($request));
+        $context->setFilterValues($this->getRequestFilters($request, $context->getAction()));
 
         $processor->process($context);
 
-        return $this->buildResponse($context);
+        return $this->buildResponse($context, $request);
     }
 
     /**
@@ -199,11 +203,12 @@ abstract class RequestActionHandler
         /** @var ChangeSubresourceContext $context */
         $context = $processor->createContext();
         $this->prepareSubresourceContext($context, $request);
+        $context->setFilterValues($this->getRequestFilters($request, $context->getAction()));
         $context->setRequestData($this->getRequestData($request));
 
         $processor->process($context);
 
-        return $this->buildResponse($context);
+        return $this->buildResponse($context, $request);
     }
 
     /**
@@ -219,11 +224,12 @@ abstract class RequestActionHandler
         /** @var ChangeSubresourceContext $context */
         $context = $processor->createContext();
         $this->prepareSubresourceContext($context, $request);
+        $context->setFilterValues($this->getRequestFilters($request, $context->getAction()));
         $context->setRequestData($this->getRequestData($request));
 
         $processor->process($context);
 
-        return $this->buildResponse($context);
+        return $this->buildResponse($context, $request);
     }
 
     /**
@@ -243,7 +249,7 @@ abstract class RequestActionHandler
 
         $processor->process($context);
 
-        return $this->buildResponse($context);
+        return $this->buildResponse($context, $request);
     }
 
     /**
@@ -258,11 +264,11 @@ abstract class RequestActionHandler
         /** @var GetRelationshipContext $context */
         $context = $processor->createContext();
         $this->prepareSubresourceContext($context, $request);
-        $context->setFilterValues($this->getRequestFilters($request));
+        $context->setFilterValues($this->getRequestFilters($request, $context->getAction()));
 
         $processor->process($context);
 
-        return $this->buildResponse($context);
+        return $this->buildResponse($context, $request);
     }
 
     /**
@@ -281,7 +287,7 @@ abstract class RequestActionHandler
 
         $processor->process($context);
 
-        return $this->buildResponse($context);
+        return $this->buildResponse($context, $request);
     }
 
     /**
@@ -298,7 +304,7 @@ abstract class RequestActionHandler
 
         $processor->process($context);
 
-        return $this->buildResponse($context);
+        return $this->buildResponse($context, $request);
     }
 
     /**
@@ -315,7 +321,7 @@ abstract class RequestActionHandler
 
         $processor->process($context);
 
-        return $this->buildResponse($context);
+        return $this->buildResponse($context, $request);
     }
 
     /**
@@ -333,7 +339,7 @@ abstract class RequestActionHandler
 
         $processor->process($context);
 
-        return $this->buildResponse($context);
+        return $this->buildResponse($context, $request);
     }
 
     /**
@@ -350,7 +356,7 @@ abstract class RequestActionHandler
 
         $processor->process($context);
 
-        return $this->buildResponse($context);
+        return $this->buildResponse($context, $request);
     }
 
     /**
@@ -367,7 +373,7 @@ abstract class RequestActionHandler
 
         $processor->process($context);
 
-        return $this->buildResponse($context);
+        return $this->buildResponse($context, $request);
     }
 
     /**
@@ -384,7 +390,7 @@ abstract class RequestActionHandler
 
         $processor->process($context);
 
-        return $this->buildResponse($context);
+        return $this->buildResponse($context, $request);
     }
 
     /**
@@ -400,7 +406,7 @@ abstract class RequestActionHandler
 
         $processor->process($context);
 
-        return $this->buildResponse($context);
+        return $this->buildResponse($context, $request);
     }
 
     /**
@@ -416,7 +422,7 @@ abstract class RequestActionHandler
 
         $processor->process($context);
 
-        return $this->buildResponse($context);
+        return $this->buildResponse($context, $request);
     }
 
     /**
@@ -432,7 +438,7 @@ abstract class RequestActionHandler
 
         $processor->process($context);
 
-        return $this->buildResponse($context);
+        return $this->buildResponse($context, $request);
     }
 
     /**
@@ -448,7 +454,7 @@ abstract class RequestActionHandler
 
         $processor->process($context);
 
-        return $this->buildResponse($context);
+        return $this->buildResponse($context, $request);
     }
 
     /**
@@ -466,7 +472,7 @@ abstract class RequestActionHandler
 
         $processor->process($context);
 
-        return $this->buildResponse($context);
+        return $this->buildResponse($context, $request);
     }
 
     protected function getProcessor(string $action): ActionProcessorInterface
@@ -522,7 +528,7 @@ abstract class RequestActionHandler
 
     abstract protected function getRequestHeaders(Request $request): AbstractParameterBag;
 
-    abstract protected function getRequestFilters(Request $request): FilterValueAccessorInterface;
+    abstract protected function getRequestFilters(Request $request, string $action): FilterValueAccessorInterface;
 
-    abstract protected function buildResponse(Context $context): Response;
+    abstract protected function buildResponse(Context $context, Request $request): Response;
 }

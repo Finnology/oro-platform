@@ -2,6 +2,7 @@
 
 namespace Oro\Bundle\AttachmentBundle;
 
+use Doctrine\Bundle\DoctrineBundle\DependencyInjection\Compiler\DoctrineOrmMappingsPass;
 use Liip\ImagineBundle\DependencyInjection\LiipImagineExtension;
 use Oro\Bundle\AttachmentBundle\DependencyInjection\Compiler\AddSupportedFieldTypesCompilerPass;
 use Oro\Bundle\AttachmentBundle\DependencyInjection\Compiler\AttachmentProcessorsCompilerPass;
@@ -13,11 +14,12 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 use Symfony\Component\Mime\MimeTypes;
 
+/**
+ * Oro Attachment Bundle root configuration.
+ */
 class OroAttachmentBundle extends Bundle
 {
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function boot(): void
     {
         parent::boot();
@@ -27,9 +29,7 @@ class OroAttachmentBundle extends Bundle
         $mimeTypes->registerGuesser(new MimeTypeExtensionGuesser());
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function build(ContainerBuilder $container): void
     {
         parent::build($container);
@@ -41,5 +41,14 @@ class OroAttachmentBundle extends Bundle
         /** @var LiipImagineExtension $extension */
         $extension = $container->getExtension('liip_imagine');
         $extension->addResolverFactory(new GaufretteResolverFactory());
+
+        if ('test' === $container->getParameter('kernel.environment')) {
+            $container->addCompilerPass(
+                DoctrineOrmMappingsPass::createAttributeMappingDriver(
+                    ['Oro\Bundle\AttachmentBundle\Tests\Functional\Environment\Entity'],
+                    [$this->getPath() . '/Tests/Functional/Environment/Entity']
+                )
+            );
+        }
     }
 }

@@ -23,19 +23,15 @@ class ReminderListener implements EventSubscriber, ServiceSubscriberInterface
         $this->container = $container;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public static function getSubscribedServices()
+    #[\Override]
+    public static function getSubscribedServices(): array
     {
         return [
             'oro_reminder.entity.manager' => ReminderManager::class
         ];
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getSubscribedEvents()
     {
         return [
@@ -49,7 +45,7 @@ class ReminderListener implements EventSubscriber, ServiceSubscriberInterface
      */
     public function postLoad(LifecycleEventArgs $args)
     {
-        $entity = $args->getEntity();
+        $entity = $args->getObject();
         if ($entity instanceof RemindableInterface) {
             $this->getReminderManager()->loadReminders($entity);
         }
@@ -60,7 +56,7 @@ class ReminderListener implements EventSubscriber, ServiceSubscriberInterface
      */
     public function postPersist(LifecycleEventArgs $event)
     {
-        $entity = $event->getEntity();
+        $entity = $event->getObject();
         if ($entity instanceof RemindableInterface) {
             $this->getReminderManager()->saveReminders($entity);
         }

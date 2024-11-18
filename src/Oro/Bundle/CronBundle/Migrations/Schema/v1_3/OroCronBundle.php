@@ -2,31 +2,18 @@
 
 namespace Oro\Bundle\CronBundle\Migrations\Schema\v1_3;
 
-use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Schema\Comparator;
 use Doctrine\DBAL\Schema\Schema;
 use Oro\Bundle\MigrationBundle\Migration\Extension\DatabasePlatformAwareInterface;
+use Oro\Bundle\MigrationBundle\Migration\Extension\DatabasePlatformAwareTrait;
 use Oro\Bundle\MigrationBundle\Migration\Migration;
 use Oro\Bundle\MigrationBundle\Migration\QueryBag;
 
 class OroCronBundle implements Migration, DatabasePlatformAwareInterface
 {
-    /**
-     * @var AbstractPlatform
-     */
-    protected $platform;
+    use DatabasePlatformAwareTrait;
 
-    /**
-     * {@inheritdoc}
-     */
-    public function setDatabasePlatform(AbstractPlatform $platform)
-    {
-        $this->platform = $platform;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function up(Schema $schema, QueryBag $queries)
     {
         $preSchema = clone $schema;

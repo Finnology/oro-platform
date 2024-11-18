@@ -1,4 +1,5 @@
 <?php
+
 namespace Oro\Bundle\EntityBundle\Tests\Unit\Provider;
 
 use Oro\Bundle\EntityBundle\Configuration\EntityConfiguration;
@@ -14,6 +15,7 @@ class ConfigVirtualRelationProviderTest extends \PHPUnit\Framework\TestCase
     /** @var array */
     private $virtualRelationsConfig;
 
+    #[\Override]
     protected function setUp(): void
     {
         $hierarchy = [

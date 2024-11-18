@@ -10,15 +10,14 @@ use Oro\Bundle\ImapBundle\Provider\OAuthProviderInterface;
  */
 class GmailAccessTokenController extends AbstractAccessTokenController
 {
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     protected function getOAuthProvider(): OAuthProviderInterface
     {
-        return $this->get(GoogleOAuthProvider::class);
+        return $this->container->get(GoogleOAuthProvider::class);
     }
 
-    public static function getSubscribedServices()
+    #[\Override]
+    public static function getSubscribedServices(): array
     {
         return array_merge(
             parent::getSubscribedServices(),

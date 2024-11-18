@@ -28,6 +28,7 @@ use Oro\Bundle\TestFrameworkBundle\Behat\Element\TableRow;
 use Oro\Bundle\TestFrameworkBundle\Tests\Behat\Context\OroMainContext;
 use Oro\Bundle\TestFrameworkBundle\Tests\Behat\Context\PageObjectDictionary;
 use Symfony\Component\DomCrawler\Crawler;
+use WebDriver\Exception\NoSuchElement;
 
 /**
  * @SuppressWarnings(PHPMD.TooManyMethods)
@@ -204,6 +205,38 @@ class GridContext extends OroFeatureContext implements OroPageObjectAware
     }
 
     /**
+     * Inline edit field
+     * Example: When I edit Status as "Open"
+     * Example: Given I edit Probability as "30"
+     *
+     * @When /^(?:|I )edit (?P<field>[^"]+) as "(?P<value>.*)" DE$/
+     * @When /^(?:|I )edit "(?P<entityTitle>[^"]+)" (?P<field>.+) as "(?P<value>.*)" DE$/
+     */
+    public function inlineEditFieldDE($field, $value, $entityTitle = null)
+    {
+        $row = $this->getGridRow($entityTitle);
+
+        $row->setCellValueAndSave($field, $value);
+        $this->oroMainContext->iShouldSeeFlashMessage('Datensatz wurde erfolgreich aktualisiert');
+    }
+
+    /**
+     * Inline edit field
+     * Example: When I edit Status as "Open"
+     * Example: Given I edit Probability as "30"
+     *
+     * @When /^(?:|I )edit (?P<field>[^"]+) as "(?P<value>.*)" FR$/
+     * @When /^(?:|I )edit "(?P<entityTitle>[^"]+)" "(?P<field>.+)" as "(?P<value>.*)" FR$/
+     */
+    public function inlineEditFieldFR($field, $value, $entityTitle = null)
+    {
+        $row = $this->getGridRow($entityTitle);
+
+        $row->setCellValueAndSave($field, $value);
+        $this->oroMainContext->iShouldSeeFlashMessage('Mise à jour réussie');
+    }
+
+    /**
      * Inline edit field and don't save
      * Example: When I edit Status as "Open" without saving
      * Example: Given I edit Probability as "30" without saving
@@ -266,10 +299,33 @@ class GridContext extends OroFeatureContext implements OroPageObjectAware
                 self::assertEquals(
                     $value,
                     $cellValue,
-                    sprintf('Unexpected value at %d row "%s" column in grid', $rowNumber, $columnTitle)
+                    sprintf(
+                        'Unexpected value "%s" at %d row "%s" column in grid. Actual value: "%s".',
+                        $this->normalizeValue($value),
+                        $rowNumber,
+                        $columnTitle,
+                        $this->normalizeValue($cellValue),
+                    )
                 );
             }
         }
+    }
+
+    private function normalizeValue(mixed $value): string
+    {
+        if ($value instanceof \DateTimeInterface) {
+            return $value->format('c');
+        }
+
+        if (is_array($value)) {
+            return implode(', ', $value);
+        }
+
+        if (is_object($value)) {
+            return serialize($value);
+        }
+
+        return (string) $value;
     }
 
     /**
@@ -406,7 +462,6 @@ class GridContext extends OroFeatureContext implements OroPageObjectAware
         self::assertGreaterThan(0, $this->getGridPaginator($grid)->getTotalRecordsCount());
     }
 
-
     /**
      * Example: Then number of pages should be 3
      * Example: Then number of pages should be 15
@@ -450,9 +505,6 @@ class GridContext extends OroFeatureContext implements OroPageObjectAware
      * @When /^(?:|I )check records in grid:$/
      * @When /^(?:|I )check records in "(?P<gridName>[^"]+)":$/
      * @When /^(?:|I )check records in "(?P<gridName>[^"]+)" grid:$/
-     *
-     * @param TableNode $table
-     * @param string $gridName
      */
     public function iCheckRecordsInGrid(TableNode $table, ?string $gridName = null)
     {
@@ -694,9 +746,29 @@ class GridContext extends OroFeatureContext implements OroPageObjectAware
     public function sortGridBy($field, $gridName = null)
     {
         $grid = $this->getGrid($gridName);
-        $grid->getElement($grid->getMappedChildElementName('GridHeader'))
-            ->findElementContains($grid->getMappedChildElementName('GridHeaderLink'), $field)
-            ->click();
+        $element = $grid->getElement($grid->getMappedChildElementName('GridHeader'))
+            ->findElementContains($grid->getMappedChildElementName('GridHeaderLink'), $field);
+        $element->focus();
+        $element->click();
+    }
+
+    /**
+     * Sort grid by column strictly
+     * Example: When sort grid by Created at strictly
+     * Example: But when I sort grid by First Name again strictly
+     * Example: When I sort "Quotes Grid" by Updated At strictly
+     *
+     * @When /^(?:|when )(?:|I )sort grid by (?P<field>(?:|[\w\s]*(?<!again)))(?:| again) strictly$/
+     * @When /^(?:|when )(?:|I )sort "(?P<gridName>[^"]+)" by (?P<field>(?:|[\w\s]*(?<!again)))(?:| again) strictly$/
+     * @When /^(?:|I )sort "(?P<gridName>[^"]+)" by "(?P<field>.*)"(?:| again) strictly$/
+     * @When /^(?:|I )sort grid by "(?P<field>.*)"(?:| again) strictly$/
+     */
+    public function sortGridStrictlyBy($field, $gridName = null)
+    {
+        $grid = $this->getGrid($gridName);
+        $element = $grid->getElement($grid->getMappedChildElementName('GridHeader'))->getElement($field);
+        $element->focus();
+        $element->click();
     }
 
     //@codingStandardsIgnoreStart
@@ -993,6 +1065,7 @@ class GridContext extends OroFeatureContext implements OroPageObjectAware
         // does not need set value if use filter 'is empty' or 'is not empty'
         if (!in_array($type, ['is empty', 'is not empty'])) {
             $filterItem->setFilterValue($value);
+            $filterItem->submit();
         }
     }
 
@@ -1081,11 +1154,15 @@ class GridContext extends OroFeatureContext implements OroPageObjectAware
      * Example: And filter Name as is equal to "User"
      *
      * @When /^(?:|I )filter (?P<filterName>[\w\s]+) as (?P<type>(?:|is empty|is not empty))$/
+     * @When /^(?:|I )filter (?P<filterName>[\w\s]+) as (?P<type>(?:|is empty|is not empty)) in "(?P<filterGridName>[\w\s]+)" grid$$/
      * @When /^(?:|I )filter (?P<filterName>[\w\s]+) as (?P<type>[\w\s\=\<\>]+) "(?P<value>(?:[^"]|\\")*)"$/
      * @When /^(?:|I )filter "(?P<filterName>.+)" as (?P<type>[\w\s\=\<\>]+) "(?P<value>(?:[^"]|\\")*)"$/
      * @When /^(?:|I )filter (?P<filterName>[\w\s]+) as (?P<type>[\w\s\=\<\>]+) "(?P<value>(?:[^"]|\\")*)" in "(?P<filterGridName>[\w\s]+)"$/
      * @When /^(?:|I )filter (?P<filterName>[\w\s]+) as (?P<type>[\w\s\=\<\>]+) "(?P<value>(?:[^"]|\\")*)" in "(?P<filterGridName>[\w\s]+)" grid$/
      * @When /^(?:|I )filter (?P<filterName>.+) as (?P<type>[\w\s\=\<\>]+) "(?P<value>(?:[^"]|\\")*)" in "(?P<filterGridName>[\w\s]+)" grid ?(?P<strictly>strictly)$/
+     *
+     * Use these steps for UTF-8 chars
+     * @When /^(?:|I )filter "(?P<filterName>.+)" as "(?P<type>.+)" value "(?P<value>(?:[^"]|\\")*)"$/
      *
      * @param string $filterName
      * @param string $type
@@ -1213,6 +1290,7 @@ class GridContext extends OroFeatureContext implements OroPageObjectAware
 
         $filterItem->open();
         $filterItem->selectType($type);
+        $this->waitForAjax();
         $filterItem->setFilterValue($value);
         $filterItem->submit();
     }
@@ -1288,19 +1366,31 @@ class GridContext extends OroFeatureContext implements OroPageObjectAware
      * @When /^(?:|I )filter "?(?P<filterName>[^"]+)"? as (?P<type>(?:|equals|not equals)) "(?P<start>[^"]+)" as single value$/
      * @When /^(?:|when )(?:|I )filter "?(?P<filterName>[^"]+)"? as (?P<type>(?:|between|not between)) "(?P<start>[^"]+)" and "(?P<end>[^"]+)"$/
      * @When /^(?:|when )(?:|I )filter "?(?P<filterName>[^"]+)"? as (?P<type>(?:|between|not between)) "(?P<start>[^"]+)" and "(?P<end>[^"]+)" in "(?P<filterGridName>[^"]+)"$/
+     * @When /^(?:|when )(?:|I )filter "?(?P<filterName>[^"]+)"? as (?P<type>(?:|between|not between)) "(?P<start>[^"]+)" and "(?P<end>[^"]+)" in "(?P<filterGridName>[^"]+)" grid ?(?P<strictly>strictly)$/
      *
      * @param string $filterName
      * @param string $type
      * @param string $start
      * @param string $end
      * @param string $filterGridName
+     * @param string $strictly
      */
     //@codingStandardsIgnoreEnd
-    public function applyDateTimeFilter($filterName, $type, $start, $end = null, $filterGridName = 'Grid')
-    {
-        $filterItem = $this->spin(function () use ($filterGridName, $filterName, $type) {
+    public function applyDateTimeFilter(
+        $filterName,
+        $type,
+        $start,
+        $end = null,
+        $filterGridName = 'Grid',
+        $strictly = ''
+    ) {
+        $filterItem = $this->spin(function () use ($filterGridName, $filterName, $type, $strictly) {
             /** @var GridFilterDateTimeItem $filterItem */
-            $filterItem = $this->getGridFilters($filterGridName)->getFilterItem('GridFilterDateTimeItem', $filterName);
+            $filterItem = $this->getGridFilters($filterGridName)->getFilterItem(
+                'GridFilterDateTimeItem',
+                $filterName,
+                $strictly === 'strictly'
+            );
             $filterItem->open();
             $filterItem->selectType($type);
 
@@ -1513,12 +1603,18 @@ class GridContext extends OroFeatureContext implements OroPageObjectAware
         $hints = array_filter(
             array_map(
                 function ($item) {
-                    $label = trim($this->createElement('FrontendGridFilterHintLabel', $item)->getText());
+                    $labelElement = $this->createElement('FrontendGridFilterHintLabel', $item);
                     $text = trim($this->createElement('FrontendGridFilterHint', $item)->getText());
+
+                    if (!$labelElement->isIsset()) {
+                        return $text;
+                    }
+
+                    $label = trim($labelElement->getText());
 
                     return $label && $text ? sprintf('%s %s', $label, $text) : '';
                 },
-                $this->getGridFilters($gridName)->findAll('css', 'span.filter-criteria-hint-item')
+                $this->getGridFilters($gridName, false)->findAll('css', 'span.filter-criteria-hint-item')
             )
         );
 
@@ -1576,6 +1672,19 @@ class GridContext extends OroFeatureContext implements OroPageObjectAware
     }
 
     /**
+     * @When /^(?:|I )check all visible on page in grid$/
+     * @When /^(?:|I )check all visible on page in "(?P<gridName>[^"]+)"$/
+     * @When /^(?:|I )check all visible on page in "(?P<gridName>[^"]+)" grid$/
+     *
+     * @param string $gridName
+     */
+    public function iCheckAllVisibleOnPageInGrid($gridName = null)
+    {
+        $grid = $this->getGrid($gridName);
+        $grid->massVisibleOnPageCheck();
+    }
+
+    /**
      * @When /^(?:|I )check all records in grid$/
      * @When /^(?:|I )check all records in "(?P<gridName>[^"]+)"$/
      * @When /^(?:|I )check all records in "(?P<gridName>[^"]+)" grid$/
@@ -1624,6 +1733,7 @@ class GridContext extends OroFeatureContext implements OroPageObjectAware
 
     /**
      * Click on row action. Row will founded by it's content
+     * The search string should match the contents of the string as closely as possible
      * Example: And click view Charlie in grid
      * Example: When I click edit Call to Jennyfer in grid
      * Example: And I click delete Sign a contract with Charlie in grid
@@ -1632,6 +1742,9 @@ class GridContext extends OroFeatureContext implements OroPageObjectAware
      * @Given /^(?:|I )click (?P<action>(?:|Clone|(?!\bon)\w)*) (?P<content>(?:[^"]|\\")*) in grid$/
      * @Given /^(?:|I )click (?P<action>(?:|Clone|(?!\bon)\w)*) (?P<content>(?:[^"]|\\")*) in "(?P<gridName>[^"]+)"$/
      * @Given /^(?:|I )click (?P<action>(?:|Clone|(?!\bon)\w)*) "(?P<content>.+)" in grid$/
+     * Use these steps for UTF-8 chars
+     * @Given /^(?:|I )click "(?P<action>.+)" "(?P<content>.+)" in grid$/
+     *
      * @Given /^(?:|I )click (?P<action>(?:|Clone|(?!\bon)\w)*) "(?P<content>.+)" in "(?P<gridName>[^"]+)"$/
      * @Given /^(?:|I )click "(?P<action>[^"]*)" on row "(?P<content>[^"]*)" in grid$/
      * @Given /^(?:|I )click "(?P<action>[^"]*)" on row "(?P<content>[^"]*)" in "(?P<gridName>[^"]+)"$/
@@ -2040,6 +2153,80 @@ TEXT;
         }
     }
 
+    //@codingStandardsIgnoreStart
+    /**
+     *  Example: Then I should see in row #1 column "Values" contains items in "TestGrid" grid:
+     *             | [attribute_1: attribute_1 "Option1", attribute_1: attribute_1 "Option2"] |
+     *             | [attribute_2: attribute_2 "Option1", attribute_2: attribute_2 "Option2"] |
+     *
+     * @Then /^(?:|I )should see in row #(?P<rowNumber>\d+) column "(?P<columnName>(?:[^"]|\\")*)" contains items in "(?P<gridName>[^"]+)" grid:$/
+     */
+    //@codingStandardsIgnoreEnd
+    public function iShouldSeeInRowColumnContainsItemsInGrid(
+        TableNode $table,
+        $rowNumber,
+        $columnName,
+        $gridName
+    ) {
+        $grid = $this->getGrid($gridName);
+        $header = $grid->getHeader();
+
+        self::assertCount(
+            1,
+            $table->getRow(0),
+            "You can't use more then one column in this method"
+        );
+
+        self::assertTrue(
+            $header->hasColumn($columnName),
+            sprintf('"%s" column is not in grid "%s"', $columnName, $gridName)
+        );
+
+        $columnNumber = $header->getColumnNumber($columnName);
+
+        $row = $grid->getRowByNumber($rowNumber);
+        $cell = $row->getCellByNumber($columnNumber);
+
+        $crawler = new Crawler($cell->getHtml());
+
+        $normalizeValue = function (string $value): array {
+            if (str_starts_with($value, '[')) {
+                $value = trim($value, '[]');
+                $value = explode(',', $value);
+                $value = array_map('trim', $value);
+            }
+
+            if (is_string($value)) {
+                $value = [$value];
+            }
+
+            return $value;
+        };
+
+        foreach ($table->getRows() as $row) {
+            $value = current($row);
+            $rowValues = $normalizeValue($value);
+
+            foreach ($rowValues as $value) {
+                $countMatches = $crawler
+                    ->filter('li')
+                    ->filterXPath(sprintf("//*[contains(text(), '%s')]", $value))
+                    ->count();
+
+                self::assertTrue(
+                    $countMatches > 0,
+                    sprintf(
+                        'Value "%s" not found in #%s row "%s" cell in "%s" grid',
+                        $value,
+                        $rowNumber,
+                        $columnNumber,
+                        $gridName
+                    )
+                );
+            }
+        }
+    }
+
     /**
      * Check column is not present in grid
      * Example: Then I shouldn't see Example column in grid
@@ -2075,49 +2262,49 @@ TEXT;
     }
 
     /**
-     * Check filter is not present in grid
+     * Check filter is present in grid
      * Example: Then I should see Example filter in grid
      *
      * @Then /^(?:|I )should see "(?P<filterName>(?:[^"]|\\")*)" filter in grid$/
      * @Then /^(?:|I )should see "(?P<filterName>(?:[^"]|\\")*)" filter in "(?P<gridName>[^"]+)"$/
-     * @param string $filterName
-     * @param null|string $gridName
      */
-    public function iShouldSeeFilterInGrid($filterName, $gridName = 'Grid')
+    public function iShouldSeeFilterInGrid(string $filterName, ?string $gridName = 'Grid'): void
     {
-        self::assertTrue(
-            $this->getGridFilters($gridName)
-                ->hasFilterItem($gridName . 'FilterItem', $filterName),
-            sprintf('"%s" filter is in grid', $filterName)
-        );
+        $msg = sprintf('"%s" filter is not present in grid', $filterName);
+        $filters = $this->getGridFilters($gridName);
+        if ($filters->hasFilterItem($gridName . 'FilterItem', $filterName)) {
+            $filter = $filters->getFilterItem($gridName . 'FilterItem', $filterName);
+            self::assertTrue($filter->isVisible(), $msg);
+        } else {
+            self::fail($msg);
+        }
     }
 
     /**
-     * Check filter is present in grid
+     * Check filter is not present in grid
      * Example: Then I should not see Example filter in grid
      *
      * @Then /^(?:|I )should not see "(?P<filterName>(?:[^"]|\\")*)" filter in grid$/
      * @Then /^(?:|I )should not see "(?P<filterName>(?:[^"]|\\")*)" filter in "(?P<gridName>[^"]+)"$/
-     * @param string $filterName
-     * @param null|string $gridName
      */
-    public function iShouldNotSeeFilterInGrid($filterName, $gridName = 'Grid')
+    public function iShouldNotSeeFilterInGrid(string $filterName, ?string $gridName = 'Grid'): void
     {
-        self::assertFalse(
-            $this->getGridFilters($gridName)
-                ->hasFilterItem($gridName . 'FilterItem', $filterName),
-            sprintf('"%s" filter is in grid', $filterName)
-        );
+        $msg = sprintf('"%s" filter is present in grid', $filterName);
+        $filters = $this->getGridFilters($gridName);
+        if ($filters->hasFilterItem($gridName . 'FilterItem', $filterName)) {
+            $filter = $filters->getFilterItem($gridName . 'FilterItem', $filterName);
+            self::assertFalse($filter->isVisible(), $msg);
+        }
     }
 
     /**
      * Check visibility checkbox for specified column
      * Show this column in grid
      *
-     * @Given /^(?:|I) show column (?P<columnName>(?:[^"]|\\")*) in grid$/
-     * @Given /^(?:|I) show column (?P<columnName>(?:[^"]|\\")*) in "(?P<gridName>[^"]+)"/
-     * @Given /^(?:|I) mark as visible column (?P<columnName>(?:[^"]|\\")*) in grid$/
-     * @Given /^(?:|I) mark as visible column (?P<columnName>(?:[^"]|\\")*) in "(?P<gridName>[^"]+)"/
+     * @Given /^(?:|I )show column (?P<columnName>(?:[^"]|\\")*) in grid$/
+     * @Given /^(?:|I )show column (?P<columnName>(?:[^"]|\\")*) in "(?P<gridName>[^"]+)"/
+     * @Given /^(?:|I )mark as visible column (?P<columnName>(?:[^"]|\\")*) in grid$/
+     * @Given /^(?:|I )mark as visible column (?P<columnName>(?:[^"]|\\")*) in "(?P<gridName>[^"]+)"/
      */
     public function iShowColumnInGrid($columnName, $gridName = null)
     {
@@ -2132,10 +2319,10 @@ TEXT;
      * Uncheck visibility checkbox for specified column
      * Hide this column in grid
      *
-     * @Given /^(?:|I) hide column (?P<columnName>(?:[^"]|\\")*) in grid$/
-     * @Given /^(?:|I) hide column (?P<columnName>(?:[^"]|\\")*) in "(?P<gridName>[^"]+)"/
-     * @Given /^(?:|I) mark as not visible column (?P<columnName>(?:[^"]|\\")*) in grid$/
-     * @Given /^(?:|I) mark as not visible column (?P<columnName>(?:[^"]|\\")*) in "(?P<gridName>[^"]+)"/
+     * @Given /^(?:|I )hide column (?P<columnName>(?:[^"]|\\")*) in grid$/
+     * @Given /^(?:|I )hide column (?P<columnName>(?:[^"]|\\")*) in "(?P<gridName>[^"]+)"/
+     * @Given /^(?:|I )mark as not visible column (?P<columnName>(?:[^"]|\\")*) in grid$/
+     * @Given /^(?:|I )mark as not visible column (?P<columnName>(?:[^"]|\\")*) in "(?P<gridName>[^"]+)"/
      */
     public function iHideColumnInGrid($columnName, $gridName = null)
     {
@@ -2149,10 +2336,10 @@ TEXT;
     /**
      * Hide all columns in grid except mentioned
      *
-     * @When /^(?:|I) hide all columns in grid except (?P<exceptions>(?:[^"]|\\")*)$/
-     * @When /^(?:|I) hide all columns in "(?P<gridName>[^"]+)" except (?P<exceptions>(?:[^"]|\\")*)$/
-     * @When /^(?:|I) hide all columns in grid$/
-     * @When /^(?:|I) hide all columns in "(?P<gridName>[^"]+)"$/
+     * @When /^(?:|I )hide all columns in grid except (?P<exceptions>(?:[^"]|\\")*)$/
+     * @When /^(?:|I )hide all columns in "(?P<gridName>[^"]+)" except (?P<exceptions>(?:[^"]|\\")*)$/
+     * @When /^(?:|I )hide all columns in grid$/
+     * @When /^(?:|I )hide all columns in "(?P<gridName>[^"]+)"$/
      *
      * @param string $exceptions
      * @param string|null $gridName
@@ -2172,10 +2359,10 @@ TEXT;
     /**
      * Show all columns in grid except mentioned
      *
-     * @When /^(?:|I) show all columns in grid except (?P<exceptions>(?:[^"]|\\")*)$/
-     * @When /^(?:|I) show all columns in "(?P<gridName>[^"]+)" except (?P<exceptions>(?:[^"]|\\")*)$/
-     * @When /^(?:|I) show all columns in grid$/
-     * @When /^(?:|I) show all columns in "(?P<gridName>[^"]+)"$/
+     * @When /^(?:|I )show all columns in grid except (?P<exceptions>(?:[^"]|\\")*)$/
+     * @When /^(?:|I )show all columns in "(?P<gridName>[^"]+)" except (?P<exceptions>(?:[^"]|\\")*)$/
+     * @When /^(?:|I )show all columns in grid$/
+     * @When /^(?:|I )show all columns in "(?P<gridName>[^"]+)"$/
      *
      * @param string $exceptions
      * @param string|null $gridName
@@ -2249,15 +2436,41 @@ TEXT;
     public function iResetGrid($gridName = null)
     {
         $grid = $this->getGrid($gridName);
+
         $refreshButton = $grid->getElement($grid->getMappedChildElementName('GridToolbarActionReset'));
-        $refreshButton->click();
+
+        if ($refreshButton && $refreshButton->isIsset()) {
+            return $refreshButton->click();
+        }
+
+        $this->spin(function () use ($grid) {
+            try {
+                $refreshButton = $this->getPage()->find(
+                    'css',
+                    sprintf(
+                        'div[data-group^="external-toolbar-%s"] .reset-action',
+                        $grid->getAttribute('data-page-component-name')
+                    )
+                );
+
+                if ($refreshButton && $refreshButton->isVisible()) {
+                    $refreshButton->click();
+                }
+
+                return true;
+            } catch (NoSuchElement $exception) {
+                return false;
+            }
+
+            return true;
+        });
     }
 
     /**
      * Show specified filter for grid
      *
-     * @Given /^(?:|I) show filter "(?P<filter>(?:[^"]|\\")*)" in grid$/
-     * @Given /^(?:|I) show filter "(?P<filter>(?:[^"]|\\")*)" in "(?P<gridName>[^"]+)" grid$/
+     * @Given /^(?:|I )show filter "(?P<filter>(?:[^"]|\\")*)" in grid$/
+     * @Given /^(?:|I )show filter "(?P<filter>(?:[^"]|\\")*)" in "(?P<gridName>[^"]+)" grid$/
      */
     public function iShowFilterInGrid(string $filter, string $gridName = null)
     {
@@ -2297,7 +2510,7 @@ TEXT;
     /**
      * Hide specified filter for grid
      *
-     * @Given /^(?:|I) hide filter "(?P<filter>(?:[^"]|\\")*)" in "(?P<gridName>[^"]+)" grid$/
+     * @Given /^(?:|I )hide filter "(?P<filter>(?:[^"]|\\")*)" in "(?P<gridName>[^"]+)" grid$/
      *
      * @param string $filter
      * @param string $gridName
@@ -2610,19 +2823,20 @@ TEXT;
 
     /**
      * @param string $gridName
+     * @param boolean $openFilters
      * @return GridFilters|Element
      */
-    private function getGridFilters($gridName)
+    private function getGridFilters($gridName, $openFilters = true)
     {
         $filters = $this->elementFactory->createElement($gridName . 'Filters');
         if (!$filters->isVisible()) {
             $gridToolbarActions = $this->elementFactory->createElement($gridName . 'ToolbarActions');
-            if ($gridToolbarActions->isVisible()) {
+            if ($gridToolbarActions->isVisible() && $openFilters) {
                 $gridToolbarActions->getActionByTitle('Filter Toggle')->click();
             }
 
             $filterState = $this->elementFactory->createElement($gridName . 'FiltersState');
-            if ($filterState->isValid() && $filterState->isVisible()) {
+            if ($filterState->isValid() && $filterState->isVisible() && $openFilters) {
                 $filterState->click();
             }
         }
@@ -2810,7 +3024,13 @@ TEXT;
             $columnTitle = trim(substr($columnTitle, 0, $metadataPos));
         }
 
-        $cellValue = $grid->getRowByNumber($rowNumber)->getCellValue($columnTitle);
+        $gridRow = $grid->getRowByNumber($rowNumber);
+        if (!$gridRow->hasCellByHeader($columnTitle)) {
+            // Prevents failures caused by missing cells due to cell colspan.
+            return ['', '', $columnTitle];
+        }
+
+        $cellValue = $gridRow->getCellValue($columnTitle);
         if ($metadata && array_key_exists('type', $metadata) && $metadata['type'] === 'array') {
             $separator = $metadata['separator'] ?? ',';
             $value = explode($separator, $value);

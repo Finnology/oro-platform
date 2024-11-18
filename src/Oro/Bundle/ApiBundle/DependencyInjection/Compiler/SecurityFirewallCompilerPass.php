@@ -21,9 +21,7 @@ class SecurityFirewallCompilerPass implements CompilerPassInterface
 {
     private array $contextListeners = [];
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function process(ContainerBuilder $container): void
     {
         // configure the firewall map service to be able to disable listeners if API feature is disabled
@@ -33,6 +31,9 @@ class SecurityFirewallCompilerPass implements CompilerPassInterface
             ->addArgument(new Reference('oro_featuretoggle.checker.feature_checker'))
             ->addArgument(new Reference('oro_api.security.firewall.feature_access_listener'))
             ->addArgument($config['api_firewalls']);
+
+        $container->getDefinition('oro_api.security.authenticator.feature_checker')
+            ->replaceArgument(1, $config['api_firewalls']);
 
         $securityConfigs = $container->getExtensionConfig('security');
         if (empty($securityConfigs[0]['firewalls'])) {

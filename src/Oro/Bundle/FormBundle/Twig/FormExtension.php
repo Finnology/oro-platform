@@ -40,9 +40,7 @@ class FormExtension extends AbstractExtension implements ServiceSubscriberInterf
         $this->defaultOptions = $defaultOptions;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getFunctions()
     {
         return [
@@ -154,10 +152,8 @@ class FormExtension extends AbstractExtension implements ServiceSubscriberInterf
         return $options;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedServices()
+    #[\Override]
+    public static function getSubscribedServices(): array
     {
         return [
             'twig.form.renderer' => FormRendererInterface::class,

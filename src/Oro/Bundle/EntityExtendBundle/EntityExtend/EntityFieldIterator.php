@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\EntityExtendBundle\EntityExtend;
@@ -12,9 +13,7 @@ class EntityFieldIterator implements EntityFieldIteratorInterface
     {
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getExtensions(): iterable
     {
         return $this->extensions;

@@ -12,10 +12,8 @@ class NotDangerousProtocol extends Constraint
     public $validator = 'oro_security.validator.constraints.not_dangerous_protocol';
     public $message = 'oro.security.validator.not_dangerous_protocol.message';
 
-    /**
-     * {@inheritdoc}
-     */
-    public function validatedBy()
+    #[\Override]
+    public function validatedBy(): string
     {
         return $this->validator;
     }

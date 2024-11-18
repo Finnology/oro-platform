@@ -12,6 +12,7 @@ class EntityMetadataTest extends \PHPUnit\Framework\TestCase
     /** @var EntityMetadata */
     private $classMetadata;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->classMetadata = new EntityMetadata(DemoEntity::class);
@@ -40,9 +41,6 @@ class EntityMetadataTest extends \PHPUnit\Framework\TestCase
         $metadata->routeView = 'test_route_view';
         $metadata->routeName = 'test_route_name';
         $metadata->routeCreate = 'test_route_create';
-        $metadata->routeEdit = 'test_route_edit';
-        $metadata->routeDelete = 'test_route_delete';
-        $metadata->routeTest = null;
         $metadata->routes = ['custom' => 'test_route_custom', 'emtpy' => null];
 
         $this->assertEquals(
@@ -63,8 +61,6 @@ class EntityMetadataTest extends \PHPUnit\Framework\TestCase
         $metadata->routeView = 'test_route_view';
         $metadata->routeName = 'test_route_name';
         $metadata->routeCreate = 'test_route_create';
-        $metadata->routeEdit = 'test_route_edit';
-        $metadata->routeDelete = 'test_route_delete';
         $metadata->routes = ['custom' => 'test_route_custom'];
 
         $this->assertEquals('test_route_view', $metadata->getRoute());

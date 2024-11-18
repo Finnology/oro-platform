@@ -13,9 +13,7 @@ class LocalizationParentSelectType extends AbstractType
 {
     const NAME = 'oro_localization_parent_select';
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults(
@@ -30,9 +28,7 @@ class LocalizationParentSelectType extends AbstractType
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function buildView(FormView $view, FormInterface $form, array $options)
     {
         $parentData = $form->getParent()->getData();
@@ -43,26 +39,19 @@ class LocalizationParentSelectType extends AbstractType
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getParent()
+    #[\Override]
+    public function getParent(): ?string
     {
         return OroEntitySelectOrCreateInlineType::class;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getName()
     {
         return $this->getBlockPrefix();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return self::NAME;
     }

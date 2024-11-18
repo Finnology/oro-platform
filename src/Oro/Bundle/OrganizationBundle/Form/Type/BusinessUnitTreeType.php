@@ -1,4 +1,5 @@
 <?php
+
 namespace Oro\Bundle\OrganizationBundle\Form\Type;
 
 use Oro\Bundle\OrganizationBundle\Entity\Manager\BusinessUnitManager;
@@ -9,6 +10,9 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
+/**
+ * Form type for business unit tree
+ */
 class BusinessUnitTreeType extends AbstractType
 {
     /** @var BusinessUnitManager */
@@ -19,42 +23,31 @@ class BusinessUnitTreeType extends AbstractType
         $this->businessUnitManager = $businessUnitManager;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $transformer = new BusinessUnitTreeTransformer($this->businessUnitManager);
         $builder->addModelTransformer($transformer);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getParent()
+    #[\Override]
+    public function getParent(): ?string
     {
         return ChoiceType::class;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getName()
     {
         return $this->getBlockPrefix();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return 'oro_business_unit_tree';
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults([

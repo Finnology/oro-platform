@@ -38,10 +38,8 @@ class FormExtension implements FormExtensionInterface
         $this->guessers = $guessers;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function getType($name)
+    #[\Override]
+    public function getType(string $name): FormTypeInterface
     {
         if (!\array_key_exists($name, $this->types)) {
             throw new InvalidArgumentException(sprintf(
@@ -72,18 +70,14 @@ class FormExtension implements FormExtensionInterface
         return $this->container->get($serviceId);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function hasType($name)
+    #[\Override]
+    public function hasType(string $name): bool
     {
         return \array_key_exists($name, $this->types);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function getTypeExtensions($name)
+    #[\Override]
+    public function getTypeExtensions(string $name): array
     {
         $extensions = [];
 
@@ -108,18 +102,14 @@ class FormExtension implements FormExtensionInterface
         return $extensions;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function hasTypeExtensions($name)
+    #[\Override]
+    public function hasTypeExtensions(string $name): bool
     {
         return isset($this->typeExtensions[$name]);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function getTypeGuesser()
+    #[\Override]
+    public function getTypeGuesser(): ?FormTypeGuesserInterface
     {
         if (!$this->guesserLoaded) {
             $this->guesserLoaded = true;

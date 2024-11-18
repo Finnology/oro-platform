@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\InstallerBundle\Command;
@@ -29,6 +30,7 @@ class RunScriptsCommand extends Command
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     protected function configure()
     {
         $this
@@ -47,10 +49,11 @@ HELP
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    #[\Override]
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $commandExecutor = new CommandExecutor(
-            $input->hasOption('env') ? $input->getOption('env') : null,
+            $input,
             $output,
             $this->getApplication(),
             $this->getContainer()->get('oro_cache.oro_data_cache_manager')
@@ -65,7 +68,7 @@ HELP
             $scriptExecutor->runScript($scriptFile);
         }
 
-        return 0;
+        return Command::SUCCESS;
     }
 
     private function getContainer(): ContainerInterface

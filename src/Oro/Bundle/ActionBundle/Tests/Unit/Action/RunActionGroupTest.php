@@ -24,6 +24,7 @@ class RunActionGroupTest extends \PHPUnit\Framework\TestCase
     /** @var RunActionGroup */
     private $actionGroup;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->actionGroupRegistry = $this->createMock(ActionGroupRegistry::class);
@@ -150,7 +151,6 @@ class RunActionGroupTest extends \PHPUnit\Framework\TestCase
             ->method('execute')
             ->with($arguments)
             ->willReturn($returnVal);
-
 
         //during initialize
         $this->actionGroupRegistry->expects(self::once())

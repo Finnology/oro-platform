@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\EntityExtendBundle\EntityExtend;
@@ -42,12 +43,14 @@ class EntityFieldProcessTransport
         return $this->class;
     }
 
-    public function setClass(string $class): void
+    public function setClass(string $class): static
     {
         $this->class = CachedClassUtils::getRealClass($class);
+
+        return $this;
     }
 
-    public function getStorage(): \ArrayAccess
+    public function getStorage(): ?\ArrayAccess
     {
         return $this->storage;
     }
@@ -59,9 +62,6 @@ class EntityFieldProcessTransport
         return $this;
     }
 
-    /**
-     * @return array
-     */
     public function getFieldsMetadata(): array
     {
         return $this->metadataProvider->getExtendEntityFieldsMetadata($this->class);
@@ -108,9 +108,11 @@ class EntityFieldProcessTransport
         return $this->value;
     }
 
-    public function setValue(mixed $value): void
+    public function setValue(mixed $value): static
     {
         $this->value = $value;
+
+        return $this;
     }
 
     public function getArguments(): array

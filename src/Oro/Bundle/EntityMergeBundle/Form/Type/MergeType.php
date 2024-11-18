@@ -14,9 +14,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class MergeType extends AbstractType
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         /** @var EntityMetadata $metadata */
@@ -64,9 +62,7 @@ class MergeType extends AbstractType
         });
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setRequired(
@@ -86,18 +82,13 @@ class MergeType extends AbstractType
         $resolver->setAllowedTypes('entities', 'array');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getName()
     {
         return $this->getBlockPrefix();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return 'oro_entity_merge';
     }

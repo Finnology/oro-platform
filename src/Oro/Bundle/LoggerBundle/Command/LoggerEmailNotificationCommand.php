@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\LoggerBundle\Command;
@@ -31,12 +32,14 @@ class LoggerEmailNotificationCommand extends Command
         parent::__construct();
     }
 
+    #[\Override]
     public function isEnabled(): bool
     {
         return (bool) $this->configManager;
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     protected function configure()
     {
         $this
@@ -66,7 +69,8 @@ HELP
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    #[\Override]
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
 
@@ -79,32 +83,32 @@ HELP
             if (!$this->configManager->get($recipientsConfigKey)) {
                 $io->text("Error logs notification already disabled.");
 
-                return 0;
+                return Command::SUCCESS;
             }
             $this->configManager->reset($recipientsConfigKey);
             $io->text("Error logs notification successfully disabled.");
             $this->configManager->flush();
 
-            return 0;
+            return Command::SUCCESS;
         }
         if ($recipients) {
             $errors = $this->validateRecipients($recipients);
             if (!empty($errors)) {
                 $io->error($errors);
 
-                return 1;
+                return Command::FAILURE;
             }
             $this->configManager->set($recipientsConfigKey, $recipients);
             $io->text(["Error logs notification will be sent to listed email addresses:", $recipients]);
 
             $this->configManager->flush();
 
-            return 0;
+            return Command::SUCCESS;
         }
 
         $io->error('Please provide --recipients or add --disable flag to the command.');
 
-        return 1;
+        return Command::FAILURE;
     }
 
     protected function validateRecipients(string $recipients): array
@@ -112,7 +116,7 @@ HELP
         $emails = explode(';', $recipients);
         $errors = [];
         foreach ($emails as $email) {
-            $violations = $this->validator->validate($email, new Email);
+            $violations = $this->validator->validate($email, new Email());
             if (0 !== count($violations)) {
                 foreach ($violations as $violation) {
                     $errors[] = sprintf('%s - %s', $email, $violation->getMessage());

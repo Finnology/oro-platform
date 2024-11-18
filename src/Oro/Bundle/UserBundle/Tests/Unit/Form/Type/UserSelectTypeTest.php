@@ -1,4 +1,5 @@
 <?php
+
 namespace Oro\Bundle\UserBundle\Tests\Unit\Form\Type;
 
 use Oro\Bundle\FormBundle\Form\Type\OroEntitySelectOrCreateInlineType;
@@ -10,6 +11,7 @@ class UserSelectTypeTest extends \PHPUnit\Framework\TestCase
     /** @var UserSelectType */
     private $type;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->type = new UserSelectType();

@@ -2,9 +2,9 @@
 
 namespace Oro\Bundle\SyncBundle\WebSocket;
 
-use Gos\Bundle\WebSocketBundle\Command\WebsocketServerCommand;
 use Gos\Bundle\WebSocketBundle\Server\App\Registry\ServerRegistry;
 use Gos\Bundle\WebSocketBundle\Server\ServerLauncherInterface;
+use Oro\Bundle\SyncBundle\Command\WebsocketServerCommand;
 
 /**
  * Gos websocket command factory
@@ -19,7 +19,7 @@ class WebsocketServerCommandFactory
         return new WebsocketServerCommand(
             $entryPoint,
             $dsnParameters->getHost(),
-            $dsnParameters->getPort(),
+            (int)$dsnParameters->getPort(),
             $serverRegistry
         );
     }

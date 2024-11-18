@@ -72,7 +72,7 @@ class ImpersonateUserCommandTest extends \PHPUnit\Framework\TestCase
 
         $this->assertProducedError(
             $commandTester,
-            \sprintf('User with username "%s" does not exist.', self::USERNAME)
+            sprintf('User with username "%s" does not exist.', self::USERNAME)
         );
     }
 
@@ -84,10 +84,11 @@ class ImpersonateUserCommandTest extends \PHPUnit\Framework\TestCase
 
         $this->assertProducedError(
             $commandTester,
-            \sprintf('Unsupported user type, the user "%s" cannot be impersonated.', self::USERNAME)
+            sprintf('Unsupported user type, the user "%s" cannot be impersonated.', self::USERNAME)
         );
     }
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->userManager = $this->createMock(UserManager::class);
@@ -112,16 +113,20 @@ class ImpersonateUserCommandTest extends \PHPUnit\Framework\TestCase
         if (null === $userStub && true !== $nullUserStub) {
             $userStub = $this->getMockBuilder($userClass ?? User::class)
                 ->disableOriginalConstructor()
-                ->onlyMethods(['isEnabled'])
+                ->onlyMethods(['isEnabled', 'getUserIdentifier'])
                 ->addMethods(['getAuthStatus'])
                 ->getMock();
             $userStub->expects(self::any())
                 ->method('isEnabled')
                 ->willReturn($userEnabled ?? true);
             $userStub->expects(self::any())
+                ->method('getUserIdentifier')
+                ->willReturn(self::USERNAME);
+            $userStub->expects(self::any())
                 ->method('getAuthStatus')
                 ->willReturn(new TestEnumValue(
-                    $authStatusId ?? UserManager::STATUS_ACTIVE,
+                    UserManager::AUTH_STATUS_ENUM_CODE,
+                    'Test',
                     $authStatusId ?? UserManager::STATUS_ACTIVE
                 ));
         }

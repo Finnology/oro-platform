@@ -8,6 +8,7 @@ use Oro\Bundle\UserBundle\Entity\User;
 use Oro\Bundle\UserBundle\Tests\Unit\Stub\AbstractUserStub;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
+use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Http\Event\InteractiveLoginEvent;
 
 class LoginListenerTest extends \PHPUnit\Framework\TestCase
@@ -18,6 +19,7 @@ class LoginListenerTest extends \PHPUnit\Framework\TestCase
     /** @var LoginListener */
     private $listener;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->syncCredentialsManager = $this->createMock(SyncCredentialsIssueManager::class);
@@ -27,7 +29,7 @@ class LoginListenerTest extends \PHPUnit\Framework\TestCase
 
     public function testOnLoginWithAnonUser()
     {
-        $token = new UsernamePasswordToken('anon', '', 'key', ['anon']);
+        $token = new UsernamePasswordToken($this->createMock(UserInterface::class), 'test');
         $event = new InteractiveLoginEvent($this->createMock(Request::class), $token);
 
         $this->syncCredentialsManager->expects($this->never())
@@ -39,7 +41,7 @@ class LoginListenerTest extends \PHPUnit\Framework\TestCase
     public function testOnLoginWithNonUserExtendsUserInToken()
     {
         $user = new AbstractUserStub();
-        $token = new UsernamePasswordToken($user, '', 'key', ['user']);
+        $token = new UsernamePasswordToken($user, 'key', ['user']);
         $event = new InteractiveLoginEvent($this->createMock(Request::class), $token);
 
         $this->syncCredentialsManager->expects($this->never())
@@ -51,7 +53,7 @@ class LoginListenerTest extends \PHPUnit\Framework\TestCase
     public function testOnLoginWitUserInToken()
     {
         $user = new User();
-        $token = new UsernamePasswordToken($user, '', 'key', ['user']);
+        $token = new UsernamePasswordToken($user, 'key', ['user']);
         $event = new InteractiveLoginEvent($this->createMock(Request::class), $token);
 
         $this->syncCredentialsManager->expects($this->once())

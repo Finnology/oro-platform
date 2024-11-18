@@ -53,9 +53,7 @@ class UserType extends AbstractType
         $this->choicesForUserProvider = $choicesForUserProvider;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $this->addEntityFields($builder);
@@ -86,7 +84,6 @@ class UserType extends AbstractType
                     'multiple'      => true,
                     'expanded'      => true,
                     'required'      => !$this->isMyProfilePage,
-                    'disabled'      => $this->isMyProfilePage,
                     'translatable_options' => false,
                     'attr' => $attr
                 ]
@@ -103,7 +100,6 @@ class UserType extends AbstractType
                     'multiple'  => true,
                     'expanded'  => true,
                     'required'  => false,
-                    'disabled'  => $this->isMyProfilePage,
                     'translatable_options' => false,
                     'attr' => $attr
                 ]
@@ -182,30 +178,23 @@ class UserType extends AbstractType
         $form->add('plainPassword', RepeatedType::class, $passwordOptions);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'data_class'         => User::class,
             'csrf_token_id'      => 'user',
-            'validation_groups'  => ['Roles', 'Default'],
+            'validation_groups'  => ['Roles', 'UserForm', 'Default'],
             'ownership_disabled' => $this->isMyProfilePage
         ]);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function getName(): string
     {
         return $this->getBlockPrefix();
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getBlockPrefix(): string
     {
         return 'oro_user_user';

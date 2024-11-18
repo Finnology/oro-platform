@@ -6,18 +6,14 @@ use Oro\Bundle\EntityBundle\Form\Type\EntityChoiceType;
 
 class ReportEntityChoiceType extends EntityChoiceType
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getName()
     {
         return $this->getBlockPrefix();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return 'oro_report_entity_choice';
     }

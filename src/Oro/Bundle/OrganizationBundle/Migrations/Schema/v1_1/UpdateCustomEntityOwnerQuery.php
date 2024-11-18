@@ -13,9 +13,7 @@ class UpdateCustomEntityOwnerQuery extends ParametrizedMigrationQuery
     const NEW_OWNER_LABEL = 'oro.custom_entity.owner.label';
     const NEW_OWNER_DESCRIPTION = 'oro.custom_entity.owner.description';
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getDescription()
     {
         $logger = new ArrayLogger();
@@ -24,9 +22,7 @@ class UpdateCustomEntityOwnerQuery extends ParametrizedMigrationQuery
         return $logger->getMessages();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function execute(LoggerInterface $logger)
     {
         $this->migrateConfigs($logger);
@@ -50,7 +46,7 @@ class UpdateCustomEntityOwnerQuery extends ParametrizedMigrationQuery
         $updateQueries = [];
 
         // prepare update queries
-        $rows = $this->connection->fetchAll($query, $params, $types);
+        $rows = $this->connection->fetchAllAssociative($query, $params, $types);
         foreach ($rows as $row) {
             if (!str_starts_with($row['class_name'], 'Extend\\Entity\\')) {
                 continue;

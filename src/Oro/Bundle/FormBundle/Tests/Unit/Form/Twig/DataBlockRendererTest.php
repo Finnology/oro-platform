@@ -100,6 +100,7 @@ class DataBlockRendererTest extends \PHPUnit\Framework\TestCase
         ],
     ];
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->renderer = new DataBlockRenderer();
@@ -117,6 +118,9 @@ class DataBlockRendererTest extends \PHPUnit\Framework\TestCase
 
     public function testRender()
     {
+        $this->environment->setLoader(new ArrayLoader([
+            '@OroForm/Form/data_block_item.html.twig' => '',
+        ]));
         $options = [
             'block_config' =>
                 [
@@ -156,7 +160,9 @@ class DataBlockRendererTest extends \PHPUnit\Framework\TestCase
             ->method('get')
             ->with(FormRenderer::class)
             ->willReturn($formRenderer);
-        $result = $this->renderer->render($this->environment, ['form' => $formView], $formView);
+
+        $formVariableName = 'form';
+        $result = $this->renderer->render($this->environment, ['form' => $formView], $formView, $formVariableName);
 
         $this->assertEquals($this->testFormConfig, $result);
     }

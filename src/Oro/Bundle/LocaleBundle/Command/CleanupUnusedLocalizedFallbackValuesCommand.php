@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\LocaleBundle\Command;
@@ -30,6 +31,7 @@ class CleanupUnusedLocalizedFallbackValuesCommand extends Command
         parent::__construct();
     }
 
+    #[\Override]
     protected function configure()
     {
         $this->setHelp(
@@ -47,7 +49,8 @@ HELP
         );
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    #[\Override]
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
 

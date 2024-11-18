@@ -18,17 +18,13 @@ class LoadCommandUserCreateUpdateData extends AbstractFixture implements Contain
      */
     protected $container;
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function setContainer(ContainerInterface $container = null)
     {
         $this->container = $container;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function load(ObjectManager $manager)
     {
         $businessUnitName = 'bu1';
@@ -65,7 +61,7 @@ class LoadCommandUserCreateUpdateData extends AbstractFixture implements Contain
             ->addUserRole($role)
             ->setEnabled(true);
         $userManager->updateUser($user, false);
-        $this->setReference($user->getUsername(), $user);
+        $this->setReference($user->getUserIdentifier(), $user);
 
         $manager->flush();
     }

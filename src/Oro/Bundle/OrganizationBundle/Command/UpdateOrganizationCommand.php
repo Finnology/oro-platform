@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\OrganizationBundle\Command;
@@ -27,6 +28,7 @@ class UpdateOrganizationCommand extends Command
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     protected function configure()
     {
         $this
@@ -63,7 +65,8 @@ HELP
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    #[\Override]
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
         try {
@@ -90,6 +93,6 @@ HELP
             return $e->getCode() ?: 1;
         }
 
-        return 0;
+        return Command::SUCCESS;
     }
 }

@@ -50,6 +50,11 @@ services:
 
     oro_api.processor_iterator_factory.ungrouped:
         class: Oro\Component\ChainProcessor\ProcessorIteratorFactory
+        arguments:
+            -
+                - 'customize_loaded_data.identifier_only'
+                - 'customize_loaded_data.item'
+                - 'customize_loaded_data.collection'
 
     oro_api.processor_applicable_checker_factory:
         class: Oro\Bundle\ApiBundle\Processor\ProcessorApplicableCheckerFactory
@@ -72,6 +77,7 @@ services:
             - '@oro_api.criteria_normalizer'
             - '@oro_api.criteria_placeholders_resolver'
             - '@oro_api.query.expression_visitor_factory'
+            - '@oro_api.query.field_dql_expression_provider'
             - '@oro_entity.orm.entity_class_resolver'
 
     oro_api.criteria_normalizer:
@@ -80,6 +86,7 @@ services:
             - '@oro_api.doctrine_helper'
             - '@oro_api.query.require_joins_field_visitor_factory'
             - '@oro_api.query.optimize_joins_field_visitor_factory'
+            - '@oro_entity_config.config_manager'
 
     oro_api.criteria_placeholders_resolver:
         class: Oro\Bundle\ApiBundle\Util\CriteriaPlaceholdersResolver
@@ -100,6 +107,11 @@ services:
     oro_api.query.optimize_joins_decision_maker:
         class: Oro\Bundle\ApiBundle\Util\OptimizeJoinsDecisionMaker
 
+    oro_api.query.field_dql_expression_provider:
+        class: Oro\Bundle\ApiBundle\Util\FieldDqlExpressionProvider
+        arguments:
+            - '@oro_entity_config.config_manager'
+
     oro_api.doctrine_helper:
         class: Oro\Bundle\ApiBundle\Util\DoctrineHelper
         arguments:
@@ -118,13 +130,27 @@ services:
     oro_api.entity_loader:
         class: Oro\Bundle\ApiBundle\Util\EntityLoader
         arguments:
-            - '@doctrine'
+            - '@oro_api.doctrine_helper'
+            - '@oro_entity.query_hint_resolver'
+
+    oro_api.acl_protected_entity_loader:
+        class: Oro\Bundle\ApiBundle\Util\AclProtectedEntityLoader
+        arguments:
+            - '@oro_api.doctrine_helper'
+            - '@oro_api.entity_id_helper'
+            - '@oro_api.query_acl_helper'
+            - '@oro_entity.query_hint_resolver'
 
     oro_api.entity_accessor:
         class: Oro\Bundle\ApiBundle\Util\EntityDataAccessor
 
     oro_api.entity_id_helper:
         class: Oro\Bundle\ApiBundle\Util\EntityIdHelper
+
+    oro_api.upsert_criteria_builder:
+        class: Oro\Bundle\ApiBundle\Util\UpsertCriteriaBuilder
+        arguments:
+            - '@oro_api.value_normalizer'
 
     oro_api.entity_metadata_factory:
         class: Oro\Bundle\ApiBundle\Metadata\EntityMetadataFactory
@@ -202,6 +228,14 @@ services:
             - '@oro_api.data_transformer_registry'
         tags:
             - { name: oro.api.object_normalizer, class: DateTimeInterface }
+
+    oro_api.system.cache_warmer:
+        class: Oro\Component\Config\Cache\ConfigCacheWarmer
+        arguments:
+            - '@oro_api.config_cache_warmer'
+            - false
+        tags:
+            - { name: kernel.cache_warmer }
 
     oro_api.entity_alias.cache_warmer:
         class: Oro\Component\Config\Cache\ConfigCacheWarmer
@@ -299,6 +333,18 @@ services:
         tags:
             - { name: kernel.event_listener, event: oro.entity_extend.entity.schema.update, method: clearCache }
             - { name: kernel.event_listener, event: oro_featuretoggle.features.change, method: onFeaturesChange }
+            - { name: kernel.event_listener, event: oro.entity_config.post_flush, method: onEntityConfigPostFlush }
+
+    oro_api.listener.api_source.open_api:
+        class: Oro\Bundle\ApiBundle\EventListener\OpenApiSourceListener
+        arguments:
+            - '@doctrine'
+            - '@oro_message_queue.client.message_producer'
+            - !abstract '$excludedFeatures defined in Oro\Bundle\ApiBundle\DependencyInjection\Compiler\ApiDocCompilerPass'
+        tags:
+            - { name: kernel.event_listener, event: oro.entity_extend.entity.schema.update, method: renewOpenApiSpecifications }
+            - { name: kernel.event_listener, event: oro_featuretoggle.features.change, method: onFeaturesChange }
+            - { name: kernel.event_listener, event: oro.entity_config.post_flush, method: onEntityConfigPostFlush }
 
     oro_api.config_extension_registry:
         class: Oro\Bundle\ApiBundle\Config\Extension\ConfigExtensionRegistry
@@ -367,10 +413,7 @@ services:
     oro_api.cache_manager:
         class: Oro\Bundle\ApiBundle\Provider\CacheManager
         arguments:
-            - [] # config keys. They are set by Oro\Bundle\ApiBundle\DependencyInjection\OroApiExtension
             - [] # api doc views. They are set by Oro\Bundle\ApiBundle\DependencyInjection\OroApiExtension
-            - '@oro_api.request_expression_matcher'
-            - '@oro_api.config_cache_factory'
             - '@oro_api.config_cache_warmer'
             - '@oro_api.entity_alias_resolver_registry'
             - '@oro_api.resources.cache_warmer'
@@ -552,12 +595,22 @@ services:
             - !abstract '$container defined in Oro\Bundle\ApiBundle\DependencyInjection\Compiler\EntityIdResolverCompilerPass'
             - '@oro_api.request_expression_matcher'
 
-    oro_api.rest.entity_id_transformer:
+    oro_api.rest.entity_id_transformer.rest_json_api:
         class: Oro\Bundle\ApiBundle\Request\Rest\EntityIdTransformer
         arguments:
             - '@oro_api.value_normalizer'
+            - ['rest', 'json_api']
+            - true
         tags:
-            - { name: oro.api.entity_id_transformer, requestType: rest }
+            - { name: oro.api.entity_id_transformer, requestType: json_api&rest }
+
+    oro_api.rest.entity_id_transformer.rest_plain:
+        class: Oro\Bundle\ApiBundle\Request\Rest\EntityIdTransformer
+        arguments:
+            - '@oro_api.value_normalizer'
+            - ['rest']
+        tags:
+            - { name: oro.api.entity_id_transformer, requestType: '!json_api&rest' }
 
     oro_api.exception_text_extractor:
         class: Oro\Bundle\ApiBundle\Request\ChainExceptionTextExtractor
@@ -646,11 +699,11 @@ services:
     oro_api.rest.cors_settings:
         class: Oro\Bundle\ApiBundle\Request\Rest\CorsSettings
         arguments:
-            - 0 # preflightMaxAge. It is set by Oro\Bundle\FrontendBundle\DependencyInjection\OroFrontendExtension
-            - [] # allowedOrigins. They are set by Oro\Bundle\FrontendBundle\DependencyInjection\OroFrontendExtension
-            - false # isCredentialsAllowed. It is set by Oro\Bundle\FrontendBundle\DependencyInjection\OroFrontendExtension
-            - [] # allowedHeaders. They are set by Oro\Bundle\FrontendBundle\DependencyInjection\OroFrontendExtension
-            - [] # exposableHeaders. They are set by Oro\Bundle\FrontendBundle\DependencyInjection\OroFrontendExtension
+            - 0 # preflightMaxAge. It is set by Oro\Bundle\ApiBundle\DependencyInjection\OroApiExtension
+            - [] # allowedOrigins. They are set by Oro\Bundle\ApiBundle\DependencyInjection\OroApiExtension
+            - false # isCredentialsAllowed. It is set by Oro\Bundle\ApiBundle\DependencyInjection\OroApiExtension
+            - [] # allowedHeaders. They are set by Oro\Bundle\ApiBundle\DependencyInjection\OroApiExtension
+            - [] # exposableHeaders. They are set by Oro\Bundle\ApiBundle\DependencyInjection\OroApiExtension
 
     oro_api.rest.routes_registry:
         class: Oro\Bundle\ApiBundle\Request\Rest\RestRoutesRegistry
@@ -927,12 +980,12 @@ services:
         class: Oro\Bundle\ApiBundle\ApiDoc\Parser\MarkdownApiDocParser
         abstract: true
         arguments:
-            - '@file_locator'
+            - '@oro_api.file_locator_decorator'
 
     oro_api.resource_doc_parser.default:
         class: Oro\Bundle\ApiBundle\ApiDoc\Parser\MarkdownApiDocParser
         arguments:
-            - '@file_locator'
+            - '@oro_api.file_locator_decorator'
         tags:
             - { name: oro.api.resource_doc_parser, requestType: rest&json_api, priority: -10 }
             - { name: oro.api.resource_doc_parser, requestType: rest, priority: -20 }
@@ -1069,6 +1122,16 @@ services:
         tags:
             - { name: 'oro_message_queue.client.message_processor' }
 
+    oro_api.async.delete_async_operation:
+        class: Oro\Bundle\ApiBundle\Async\DeleteAsyncOperationMessageProcessor
+        arguments:
+            - '@doctrine'
+            - '@oro_entity.delete_handler_registry'
+            - '@logger'
+        tags:
+            - { name: 'oro_message_queue.client.message_processor' }
+            - { name: monolog.logger, channel: api }
+
     oro_api.batch.job_event_listener:
         class: Oro\Bundle\ApiBundle\Batch\EventListener\JobListener
         arguments:
@@ -1146,10 +1209,18 @@ services:
     oro_api.batch.chunk_size_provider:
         class: Oro\Bundle\ApiBundle\Batch\ChunkSizeProvider
         arguments:
-            - 1 # injected the value of the "oro_api.batch_api.chunk_size" configuration option
-            - [] # injected the value of the "oro_api.batch_api.chunk_size_per_entity" configuration option
-            - 1 # injected the value of the "oro_api.batch_api.included_data_chunk_size" configuration option
-            - [] # injected the value of the "oro_api.batch_api.included_data_chunk_size_per_entity" configuration option
+            - !abstract '$defaultChunkSize defined in Oro\Bundle\ApiBundle\DependencyInjection\Compiler\ChunkSizeProviderCompilerPass'
+            - !abstract '$entityChunkSizes defined in Oro\Bundle\ApiBundle\DependencyInjection\Compiler\ChunkSizeProviderCompilerPass'
+            - !abstract '$defaultIncludedDataChunkSize defined in Oro\Bundle\ApiBundle\DependencyInjection\Compiler\ChunkSizeProviderCompilerPass'
+            - !abstract '$entityIncludedDataChunkSizes defined in Oro\Bundle\ApiBundle\DependencyInjection\Compiler\ChunkSizeProviderCompilerPass'
+
+    oro_api.batch.sync_processing_limit_provider:
+        class: Oro\Bundle\ApiBundle\Batch\SyncProcessingLimitProvider
+        arguments:
+            - !abstract '$defaultLimit defined in Oro\Bundle\ApiBundle\DependencyInjection\Compiler\SyncProcessingCompilerPass'
+            - !abstract '$entityLimits defined in Oro\Bundle\ApiBundle\DependencyInjection\Compiler\SyncProcessingCompilerPass'
+            - !abstract '$defaultIncludedDataLimit defined in Oro\Bundle\ApiBundle\DependencyInjection\Compiler\SyncProcessingCompilerPass'
+            - !abstract '$entityIncludedDataLimits defined in Oro\Bundle\ApiBundle\DependencyInjection\Compiler\SyncProcessingCompilerPass'
 
     oro_api.batch.file_splitter_registry:
         class: Oro\Bundle\ApiBundle\Batch\Splitter\FileSplitterRegistry
@@ -1162,6 +1233,7 @@ services:
         class: Oro\Bundle\ApiBundle\Batch\Splitter\JsonPartialFileSplitter
         calls:
             - [ setHeaderSectionName, [ 'jsonapi' ] ]
+            - [ setPrimarySectionName, [ 'data' ] ]
             - [ setSectionNamesToSplit, [ ['data', 'included'] ] ]
             # it is replaced with a value returned by oro_api.batch.chunk_size_provider::getIncludedDataChunkSize()
             - [ setChunkSizePerSection, [ {'included': 1000} ] ]
@@ -1227,3 +1299,82 @@ services:
         arguments:
             - '@security.http_utils'
             - '@oro_api.rest.doc_url_generator'
+
+    oro_api.security.authenticator.feature_checker:
+        class: Oro\Bundle\ApiBundle\Security\FeatureDependAuthenticatorChecker
+        arguments:
+            - '@oro_featuretoggle.checker.feature_checker'
+            - ~ # SecurityFirewallCompilerPass
+
+    oro_api.open_api_specification_archive:
+        class: Oro\Bundle\ApiBundle\Util\OpenApiSpecificationArchive
+
+    oro_api.open_api_choices_provider:
+        class: Oro\Bundle\ApiBundle\Provider\OpenApiChoicesProvider
+        public: true
+        arguments:
+            - '@translator'
+            - '@oro_api.api_doc.open_api.generator_registry'
+            - '@oro_api.api_doc.open_api.formatter_registry'
+            - '@oro_api.api_doc.open_api.name_provider'
+
+    oro_api.open_api_specification_datagrid_helper:
+        class: Oro\Bundle\ApiBundle\Datagrid\OpenApiSpecificationDatagridHelper
+        public: true
+
+    oro_api.open_api_specification_status_filter:
+        class: Oro\Bundle\ApiBundle\Datagrid\OpenApiSpecificationStatusFilter
+        arguments:
+            - '@form.factory'
+            - '@oro_filter.filter_utility'
+        tags:
+            - { name: oro_filter.extension.orm_filter.filter, type: oro_openapi_specification_status }
+
+    oro_api.twig.open_api_specification:
+        class: Oro\Bundle\ApiBundle\Twig\OpenApiSpecificationExtension
+        arguments:
+            - '@oro_platform.twig.service_locator'
+        tags:
+            - { name: twig.extension }
+
+    oro_api.event_listener.open_api_specification_form:
+        class: Oro\Bundle\ApiBundle\EventListener\OpenApiSpecificationEventListener
+        arguments:
+            - '@oro_message_queue.client.message_producer'
+        tags:
+            - { name: kernel.event_listener, event: oro.form.update_handler.before_entity_flush.oro_openapi_specification, method: beforeFlush }
+            - { name: kernel.event_listener, event: oro.form.update_handler.after_entity_flush.oro_openapi_specification, method: afterFlush }
+            - { name: kernel.event_listener, event: oro.form.update_handler.after_entity_flush.oro_openapi_specification_clone, method: afterFlush }
+
+    oro_api.autocomplete.search_handler.open_api_specification_entity:
+        class: Oro\Bundle\ApiBundle\Autocomplete\OpenApiSpecificationEntitySearchHandler
+        arguments:
+            - '@oro_api.autocomplete.open_api_specification_entity_provider'
+        tags:
+            - { name: oro_form.autocomplete.search_handler, alias: openapi_specification_entities, acl_resource: oro_openapi_specification_view }
+
+    oro_api.autocomplete.open_api_specification_entity_provider:
+        class: Oro\Bundle\ApiBundle\Autocomplete\OpenApiSpecificationEntityProvider
+        arguments:
+            - '@oro_api.resources_provider'
+            - '@oro_api.value_normalizer'
+            - '@oro_api.entity_name_provider'
+            - '@oro_api.rest.doc_view_detector'
+
+    oro_api.async.create_open_api_specification:
+        class: Oro\Bundle\ApiBundle\Async\CreateOpenApiSpecificationMessageProcessor
+        arguments:
+            - '@doctrine'
+            - '@oro_api.api_doc.open_api.renderer'
+            - '@oro_api.open_api_specification_archive'
+            - '@logger'
+        tags:
+            - { name: 'oro_message_queue.client.message_processor' }
+            - { name: monolog.logger, channel: api }
+
+    oro_api.file_locator_decorator:
+        class: Oro\Bundle\ApiBundle\Decorator\OroFileLocatorDecorator
+        public: false
+        arguments:
+            $decorated: '@file_locator'
+            $projectDir: '%kernel.project_dir%'

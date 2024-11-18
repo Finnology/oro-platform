@@ -34,10 +34,8 @@ class MailboxProcessTriggerListener extends MailboxEmailListener implements
         $this->container = $container;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public static function getSubscribedServices()
+    #[\Override]
+    public static function getSubscribedServices(): array
     {
         return [
             'oro_email.mailbox.process_storage' => MailboxProcessStorage::class,
@@ -46,9 +44,7 @@ class MailboxProcessTriggerListener extends MailboxEmailListener implements
         ];
     }
 
-    /**
-     * {@inheritdoc} In addition it filters out emails which are part of thread
-     */
+    #[\Override]
     public function onFlush(OnFlushEventArgs $args)
     {
         parent::onFlush($args);
@@ -74,7 +70,7 @@ class MailboxProcessTriggerListener extends MailboxEmailListener implements
         $emailBodies = $this->emailBodies;
         $this->emailBodies = [];
 
-        $em = $args->getEntityManager();
+        $em = $args->getObjectManager();
         $processRepository = $em->getRepository(ProcessDefinition::class);
         $processStorage = $this->container->get('oro_email.mailbox.process_storage');
         $handler = $this->container->get('oro_workflow.process.process_handler');

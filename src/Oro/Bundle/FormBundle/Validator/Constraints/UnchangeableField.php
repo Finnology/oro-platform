@@ -12,10 +12,8 @@ class UnchangeableField extends Constraint
 {
     public $message = 'Field cannot be changed once set';
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getTargets()
+    #[\Override]
+    public function getTargets(): string|array
     {
         return self::PROPERTY_CONSTRAINT;
     }

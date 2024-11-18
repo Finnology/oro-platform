@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\TranslationBundle\Action;
@@ -39,6 +40,7 @@ class GetLanguageTranslationMetricsAction extends AbstractLanguageResultAction
         $this->translationMetricsProvider = $translationMetricsProvider;
     }
 
+    #[\Override]
     protected function executeAction($context): void
     {
         $metrics = null;

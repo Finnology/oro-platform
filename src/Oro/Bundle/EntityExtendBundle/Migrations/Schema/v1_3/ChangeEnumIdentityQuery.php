@@ -11,9 +11,7 @@ class ChangeEnumIdentityQuery extends ParametrizedMigrationQuery
     const FIELD_FROM = 'name';
     const FIELD_TO   = 'id';
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getDescription()
     {
         $logger = new ArrayLogger();
@@ -22,9 +20,7 @@ class ChangeEnumIdentityQuery extends ParametrizedMigrationQuery
         return $logger->getMessages();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function execute(LoggerInterface $logger)
     {
         $this->doExecute($logger);
@@ -57,7 +53,7 @@ class ChangeEnumIdentityQuery extends ParametrizedMigrationQuery
         $sql = 'SELECT id, data FROM oro_entity_config';
         $this->logQuery($logger, $sql);
 
-        $rows = $this->connection->fetchAll($sql);
+        $rows = $this->connection->fetchAllAssociative($sql);
 
         $entities = [];
 
@@ -91,7 +87,7 @@ class ChangeEnumIdentityQuery extends ParametrizedMigrationQuery
 
         $this->logQuery($logger, $sql, $params);
 
-        $rows = $this->connection->fetchAll($sql, $params);
+        $rows = $this->connection->fetchAllAssociative($sql, $params);
 
         $entities = [];
 

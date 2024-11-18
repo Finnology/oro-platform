@@ -25,9 +25,7 @@ class SetPasswordType extends AbstractType
         $this->optionsProvider = $optionsProvider;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder->add(
@@ -46,18 +44,13 @@ class SetPasswordType extends AbstractType
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getName()
     {
         return $this->getBlockPrefix();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return 'oro_set_password';
     }
@@ -65,14 +58,13 @@ class SetPasswordType extends AbstractType
     /**
      * @return string
      */
-    public function getParent()
+    #[\Override]
+    public function getParent(): ?string
     {
         return TextType::class;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults([

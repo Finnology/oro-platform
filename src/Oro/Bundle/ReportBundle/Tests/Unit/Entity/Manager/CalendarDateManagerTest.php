@@ -2,7 +2,7 @@
 
 namespace Oro\Bundle\ReportBundle\Tests\Unit\Entity\Manager;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
 use Oro\Bundle\LocaleBundle\Model\LocaleSettings;
 use Oro\Bundle\ReportBundle\Entity\CalendarDate;
@@ -20,6 +20,7 @@ class CalendarDateManagerTest extends \PHPUnit\Framework\TestCase
     /** @var CalendarDateManager */
     private $calendarDateManager;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->doctrineHelper = $this->createMock(DoctrineHelper::class);
@@ -37,7 +38,7 @@ class CalendarDateManagerTest extends \PHPUnit\Framework\TestCase
     public function testHandleCalendarDatesWithoutAppending()
     {
         $timezone = new \DateTimeZone('UTC');
-        $entityManager = $this->createMock(EntityManager::class);
+        $entityManager = $this->createMock(EntityManagerInterface::class);
         $this->doctrineHelper->expects($this->once())
             ->method('getEntityManager')
             ->with(CalendarDate::class)
@@ -68,7 +69,7 @@ class CalendarDateManagerTest extends \PHPUnit\Framework\TestCase
             ->method('getDate')
             ->willReturn($calendarDate);
 
-        $entityManager = $this->createMock(EntityManager::class);
+        $entityManager = $this->createMock(EntityManagerInterface::class);
         $this->doctrineHelper->expects($this->once())
             ->method('getEntityManager')
             ->with(CalendarDate::class)
@@ -94,7 +95,7 @@ class CalendarDateManagerTest extends \PHPUnit\Framework\TestCase
             ->method('getDate')
             ->willReturn(null);
 
-        $entityManager = $this->createMock(EntityManager::class);
+        $entityManager = $this->createMock(EntityManagerInterface::class);
         $this->doctrineHelper->expects($this->once())
             ->method('getEntityManager')
             ->with(CalendarDate::class)

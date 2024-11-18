@@ -14,9 +14,7 @@ class WidgetRoleSelectType extends AbstractType
 {
     const NAME = 'oro_type_widget_role_select';
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         parent::configureOptions($resolver);
@@ -33,26 +31,19 @@ class WidgetRoleSelectType extends AbstractType
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getParent()
+    #[\Override]
+    public function getParent(): ?string
     {
         return WidgetEntityJquerySelect2HiddenType::class;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getName()
     {
         return $this->getBlockPrefix();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return self::NAME;
     }

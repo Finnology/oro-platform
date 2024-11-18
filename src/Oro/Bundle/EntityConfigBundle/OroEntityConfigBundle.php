@@ -11,14 +11,12 @@ use Symfony\Component\HttpKernel\Bundle\Bundle;
 
 class OroEntityConfigBundle extends Bundle
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function build(ContainerBuilder $container): void
     {
         parent::build($container);
 
-        $container->addCompilerPass(new Compiler\EntityConfigPass);
+        $container->addCompilerPass(new Compiler\EntityConfigPass());
         $container->addCompilerPass(new PriorityTaggedLocatorCompilerPass(
             'oro_entity_config.registry.attribute_type',
             'oro_entity_config.attribute_type',
@@ -26,14 +24,14 @@ class OroEntityConfigBundle extends Bundle
         ));
 
         $container->addCompilerPass(
-            DoctrineOrmMappingsPass::createAnnotationMappingDriver(
+            DoctrineOrmMappingsPass::createAttributeMappingDriver(
                 ['Oro\Bundle\EntityConfigBundle\Audit\Entity'],
                 [$this->getPath() . DIRECTORY_SEPARATOR . 'Audit' . DIRECTORY_SEPARATOR . 'Entity']
             )
         );
 
         $container->addCompilerPass(
-            DoctrineOrmMappingsPass::createAnnotationMappingDriver(
+            DoctrineOrmMappingsPass::createAttributeMappingDriver(
                 ['Oro\Bundle\EntityConfigBundle\Attribute\Entity'],
                 [$this->getPath() . DIRECTORY_SEPARATOR . 'Attribute' . DIRECTORY_SEPARATOR . 'Entity']
             )

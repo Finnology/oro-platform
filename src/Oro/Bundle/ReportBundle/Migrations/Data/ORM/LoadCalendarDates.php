@@ -3,29 +3,19 @@
 namespace Oro\Bundle\ReportBundle\Migrations\Data\ORM;
 
 use Doctrine\Common\DataFixtures\AbstractFixture;
-use Doctrine\ORM\EntityManager;
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\DependencyInjection\ContainerAwareTrait;
 
+/**
+ * Loads calendar dates.
+ */
 class LoadCalendarDates extends AbstractFixture implements ContainerAwareInterface
 {
-    /** @var ContainerInterface */
-    protected $container;
+    use ContainerAwareTrait;
 
-    /**
-     * {@inheritdoc}
-     */
-    public function setContainer(ContainerInterface $container = null)
-    {
-        $this->container = $container;
-    }
-
-    /**
-     * @param EntityManager $manager
-     * {@inheritdoc}
-     */
-    public function load(ObjectManager $manager)
+    #[\Override]
+    public function load(ObjectManager $manager): void
     {
         $calendarDateManager = $this->container->get('oro_report.calendar_date_manager');
         $calendarDateManager->handleCalendarDates();

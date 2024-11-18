@@ -6,10 +6,8 @@ use Symfony\Component\Security\Core\Exception\AccountStatusException;
 
 class OrganizationException extends AccountStatusException
 {
-    /**
-     * {@inheritdoc}
-     */
-    public function getMessageKey()
+    #[\Override]
+    public function getMessageKey(): string
     {
         return 'You don\'t have active organization assigned.';
     }

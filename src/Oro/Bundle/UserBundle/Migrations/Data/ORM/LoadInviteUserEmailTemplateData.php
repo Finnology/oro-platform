@@ -12,10 +12,8 @@ use Oro\Bundle\UserBundle\Entity\User;
  */
 class LoadInviteUserEmailTemplateData extends AbstractEmailFixture
 {
-    /**
-     * {@inheritdoc}
-     */
-    protected function findExistingTemplate(ObjectManager $manager, array $template)
+    #[\Override]
+    protected function findExistingTemplate(ObjectManager $manager, array $template): ?EmailTemplate
     {
         if (empty($template['params']['name'])) {
             return null;
@@ -23,22 +21,18 @@ class LoadInviteUserEmailTemplateData extends AbstractEmailFixture
 
         return $manager->getRepository(EmailTemplate::class)->findOneBy([
             'name' => $template['params']['name'],
-            'entityName' => User::class,
+            'entityName' => User::class
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function updateExistingTemplate(EmailTemplate $emailTemplate, array $template)
+    #[\Override]
+    protected function updateExistingTemplate(EmailTemplate $emailTemplate, array $template): void
     {
         // Skip if such template exists
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getEmailsDir()
+    #[\Override]
+    public function getEmailsDir(): string
     {
         return $this->container
             ->get('kernel')

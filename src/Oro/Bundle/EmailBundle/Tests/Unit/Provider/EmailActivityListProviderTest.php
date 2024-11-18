@@ -64,6 +64,7 @@ class EmailActivityListProviderTest extends \PHPUnit\Framework\TestCase
     /** @var EmailActivityListProvider */
     private $emailActivityListProvider;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->doctrineHelper = $this->createMock(DoctrineHelper::class);
@@ -126,7 +127,7 @@ class EmailActivityListProviderTest extends \PHPUnit\Framework\TestCase
         $this->assertCount(1, $activityOwnerArray);
         $owner = reset($activityOwnerArray);
         $this->assertEquals($organization->getName(), $owner->getOrganization()->getName());
-        $this->assertEquals($user->getUsername(), $owner->getUser()->getUsername());
+        $this->assertEquals($user->getUserIdentifier(), $owner->getUser()->getUserIdentifier());
     }
 
     public function testGetActivityOwnersForPrivateEmail(): void
@@ -203,7 +204,7 @@ class EmailActivityListProviderTest extends \PHPUnit\Framework\TestCase
         $this->assertCount(1, $activityOwnerArray);
         $owner = reset($activityOwnerArray);
         $this->assertEquals($organization2->getName(), $owner->getOrganization()->getName());
-        $this->assertEquals($user->getUsername(), $owner->getUser()->getUsername());
+        $this->assertEquals($user->getUserIdentifier(), $owner->getUser()->getUserIdentifier());
     }
 
     public function testFeatureToggleable()

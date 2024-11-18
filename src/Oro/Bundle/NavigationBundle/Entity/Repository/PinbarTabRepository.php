@@ -5,6 +5,7 @@ namespace Oro\Bundle\NavigationBundle\Entity\Repository;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr;
 use Doctrine\ORM\QueryBuilder;
+use Oro\Bundle\NavigationBundle\Entity\NavigationItem;
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
 use Oro\Bundle\OrganizationBundle\Entity\OrganizationInterface;
 use Oro\Bundle\UserBundle\Entity\AbstractUser;
@@ -15,9 +16,7 @@ use Oro\Bundle\UserBundle\Entity\User;
  */
 class PinbarTabRepository extends EntityRepository implements NavigationRepositoryInterface
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getNavigationItems($user, Organization $organization, $type = null, $options = array())
     {
         $qb = $this->createNavigationItemsQueryBuiler($user, $organization, $type);
@@ -64,7 +63,7 @@ class PinbarTabRepository extends EntityRepository implements NavigationReposito
      */
     protected function getNavigationItemClassName()
     {
-        return 'Oro\Bundle\NavigationBundle\Entity\NavigationItem';
+        return NavigationItem::class;
     }
 
     /**
@@ -94,7 +93,7 @@ class PinbarTabRepository extends EntityRepository implements NavigationReposito
 
     /**
      * @param AbstractUser|integer $user
-     * @param OrganizationInterface $organization|null
+     * @param OrganizationInterface|null $organization
      * @param string|null $type
      *
      * @return QueryBuilder

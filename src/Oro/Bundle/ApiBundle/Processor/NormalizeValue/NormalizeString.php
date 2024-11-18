@@ -9,45 +9,48 @@ namespace Oro\Bundle\ApiBundle\Processor\NormalizeValue;
  */
 class NormalizeString extends AbstractProcessor
 {
-    private const REQUIREMENT = '.+';
+    public const REQUIREMENT = '.+';
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function getDataTypeString(): string
     {
-        return 'string';
+        return true === $this->getOption('allow_empty') ? 'string' : 'not empty string';
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function getDataTypePluralString(): string
     {
-        return 'strings';
+        return true === $this->getOption('allow_empty') ? 'strings' : 'not empty strings';
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function getRequirement(): string
     {
         return self::REQUIREMENT;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function processRequirement(NormalizeValueContext $context): void
     {
         $context->setRequirement($this->getRequirement());
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function normalizeValue(mixed $value): mixed
     {
         return $value;
+    }
+
+    #[\Override]
+    protected function validateValue(string $value): void
+    {
+        parent::validateValue($value);
+        if (true !== $this->getOption('allow_empty') && '' === trim($value, ' ')) {
+            throw new \UnexpectedValueException(sprintf(
+                'Expected %s value. Given "%s".',
+                $this->getDataTypeString(),
+                $value
+            ));
+        }
     }
 }

@@ -4,7 +4,6 @@ namespace Oro\Bundle\ActivityListBundle\Provider;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Oro\Bundle\ActivityListBundle\Entity\ActivityList;
-use Oro\Bundle\ActivityListBundle\Entity\Factory\ActivityListFactory;
 use Oro\Bundle\ActivityListBundle\Model\ActivityListDateProviderInterface;
 use Oro\Bundle\ActivityListBundle\Model\ActivityListGroupProviderInterface;
 use Oro\Bundle\ActivityListBundle\Model\ActivityListProviderInterface;
@@ -57,14 +56,11 @@ class ActivityListChainProvider implements ResetInterface
         private ConfigManager $configManager,
         private TranslatorInterface $translator,
         private EntityRoutingHelper $routingHelper,
-        private TokenAccessorInterface $tokenAccessor,
-        private ActivityListFactory $activityListFactory
+        private TokenAccessorInterface $tokenAccessor
     ) {
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function reset()
     {
         $this->ownerActivityClasses = null;
@@ -435,7 +431,7 @@ class ActivityListChainProvider implements ResetInterface
         }
 
         if (null === $list) {
-            $list = $this->activityListFactory->createActivityList();
+            $list = new ActivityList();
         }
 
         $list->setSubject($provider->getSubject($entity));

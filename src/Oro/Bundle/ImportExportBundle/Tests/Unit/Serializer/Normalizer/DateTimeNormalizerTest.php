@@ -16,6 +16,7 @@ class DateTimeNormalizerTest extends \PHPUnit\Framework\TestCase
     /** @var LocaleSettings|\PHPUnit\Framework\MockObject\MockObject */
     private $localeSettings;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->localeSettings = $this->createMock(LocaleSettings::class);
@@ -59,7 +60,7 @@ class DateTimeNormalizerTest extends \PHPUnit\Framework\TestCase
                 true
             ],
             'not supports object' => [
-                new \stdClass,
+                new \stdClass(),
                 false
             ],
             'empty data'          => [
@@ -231,12 +232,6 @@ class DateTimeNormalizerTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @dataProvider denormalizeProvider
-     *
-     * @param \DateTime $expected
-     * @param string    $data
-     * @param string    $locale
-     * @param string    $timezone
-     * @param array     $context
      */
     public function testDenormalize(
         \DateTime $expected,

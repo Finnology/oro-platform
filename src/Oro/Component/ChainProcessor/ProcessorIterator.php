@@ -12,6 +12,7 @@ class ProcessorIterator implements \Iterator
     protected ContextInterface $context;
     protected ApplicableCheckerInterface $applicableChecker;
     protected ProcessorRegistryInterface $processorRegistry;
+    private ?ParameterBagInterface $applicableCache;
     protected int $index = -1;
     protected int $maxIndex;
 
@@ -19,12 +20,14 @@ class ProcessorIterator implements \Iterator
         array $processors,
         ContextInterface $context,
         ApplicableCheckerInterface $applicableChecker,
-        ProcessorRegistryInterface $processorRegistry
+        ProcessorRegistryInterface $processorRegistry,
+        ?ParameterBagInterface $applicableCache = null
     ) {
         $this->processors = $processors;
         $this->context = $context;
         $this->applicableChecker = $applicableChecker;
         $this->processorRegistry = $processorRegistry;
+        $this->applicableCache = $applicableCache;
     }
 
     /**
@@ -89,41 +92,31 @@ class ProcessorIterator implements \Iterator
         return $this->processors[$this->index][1];
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function current(): ProcessorInterface
     {
         return $this->processorRegistry->getProcessor($this->processors[$this->index][0]);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function next(): void
     {
         $this->nextApplicable();
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function key(): int
     {
         return $this->index;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function valid(): bool
     {
         return $this->index <= $this->maxIndex;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function rewind(): void
     {
         $this->index = -1;
@@ -138,14 +131,33 @@ class ProcessorIterator implements \Iterator
     {
         $this->index++;
         while ($this->index <= $this->maxIndex) {
-            $applicable = $this->applicableChecker->isApplicable(
-                $this->context,
-                $this->processors[$this->index][1]
-            );
-            if (ApplicableCheckerInterface::NOT_APPLICABLE !== $applicable) {
+            if (ApplicableCheckerInterface::NOT_APPLICABLE !== $this->isApplicable()) {
                 break;
             }
             $this->index++;
         }
+    }
+
+    /**
+     * Checks if the current processor is applicable to be executed.
+     */
+    protected function isApplicable(): int
+    {
+        $processorAttributes = $this->processors[$this->index][1];
+
+        if (null === $this->applicableCache) {
+            return $this->applicableChecker->isApplicable($this->context, $processorAttributes);
+        }
+
+        $cacheKey = $processorAttributes
+            ? $this->index . ':' . $this->context->getChecksum()
+            : '-:' . $this->context->getChecksum();
+        $applicable = $this->applicableCache->get($cacheKey);
+        if (null === $applicable) {
+            $applicable = $this->applicableChecker->isApplicable($this->context, $processorAttributes);
+            $this->applicableCache->set($cacheKey, $applicable);
+        }
+
+        return $applicable;
     }
 }

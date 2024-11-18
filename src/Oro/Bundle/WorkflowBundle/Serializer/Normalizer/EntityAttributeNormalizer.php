@@ -9,6 +9,9 @@ use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
 use Oro\Bundle\WorkflowBundle\Exception\SerializerException;
 use Oro\Bundle\WorkflowBundle\Model\Workflow;
 
+/**
+ * Normalizes entity attribute
+ */
 class EntityAttributeNormalizer implements AttributeNormalizer
 {
     /**
@@ -27,9 +30,7 @@ class EntityAttributeNormalizer implements AttributeNormalizer
         $this->doctrineHelper = $doctrineHelper;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function normalize(Workflow $workflow, ParameterInterface $attribute, $attributeValue)
     {
         if (null === $attributeValue) {
@@ -39,7 +40,7 @@ class EntityAttributeNormalizer implements AttributeNormalizer
         $this->validateAttributeValue($workflow, $attribute, $attributeValue);
 
         $identifier = $this->doctrineHelper->getEntityIdentifier($attributeValue);
-        return $identifier ? : null;
+        return $identifier ?: null;
     }
 
     /**
@@ -92,9 +93,7 @@ class EntityAttributeNormalizer implements AttributeNormalizer
         return $result;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function denormalize(Workflow $workflow, ParameterInterface $attribute, $attributeValue)
     {
         if (null === $attributeValue || !is_array($attributeValue)) {
@@ -104,17 +103,13 @@ class EntityAttributeNormalizer implements AttributeNormalizer
         return $em->getReference($attribute->getOption('class'), $attributeValue);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function supportsNormalization(Workflow $workflow, ParameterInterface $attribute, $attributeValue)
     {
         return $attribute->getType() == 'entity' && !$attribute->getOption('multiple');
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function supportsDenormalization(Workflow $workflow, ParameterInterface $attribute, $attributeValue)
     {
         return $attribute->getType() == 'entity' && !$attribute->getOption('multiple');

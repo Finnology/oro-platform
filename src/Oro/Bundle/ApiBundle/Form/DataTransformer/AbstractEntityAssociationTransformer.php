@@ -28,9 +28,7 @@ abstract class AbstractEntityAssociationTransformer extends AbstractAssociationT
         $this->metadata = $metadata;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     protected function getAcceptableEntityClassNames(): ?array
     {
         $acceptableClassNames = $this->metadata->getAcceptableTargetClassNames();
@@ -49,7 +47,6 @@ abstract class AbstractEntityAssociationTransformer extends AbstractAssociationT
                 'oro.api.form.not_manageable_entity'
             );
         }
-        $entity = null;
         try {
             $entity = $this->entityLoader->findEntity($entityClass, $entityId, $this->metadata->getTargetMetadata());
         } catch (ORMException $e) {

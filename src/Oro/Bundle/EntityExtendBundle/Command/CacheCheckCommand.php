@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\EntityExtendBundle\Command;
@@ -26,6 +27,7 @@ class CacheCheckCommand extends Command
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     public function configure()
     {
         $this
@@ -56,7 +58,8 @@ HELP
      * @noinspection PhpMissingParentCallCommonInspection
      * @throws \Exception
      */
-    public function execute(InputInterface $input, OutputInterface $output)
+    #[\Override]
+    public function execute(InputInterface $input, OutputInterface $output): int
     {
         $output->writeln('Check extended entity configs');
 
@@ -75,6 +78,6 @@ HELP
             }
         }
 
-        return 0;
+        return Command::SUCCESS;
     }
 }

@@ -6,27 +6,14 @@ use Doctrine\DBAL\Schema\Schema;
 use Oro\Bundle\MigrationBundle\Migration\Migration;
 use Oro\Bundle\MigrationBundle\Migration\QueryBag;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\DependencyInjection\ContainerAwareTrait;
 
 class OroSecurityBundle implements Migration, ContainerAwareInterface
 {
-    /**
-     * @var ContainerInterface
-     */
-    protected $container;
+    use ContainerAwareTrait;
 
-    /**
-     * @inheritdoc
-     */
-    public function setContainer(ContainerInterface $container = null)
-    {
-        $this->container = $container;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function up(Schema $schema, QueryBag $queries)
+    #[\Override]
+    public function up(Schema $schema, QueryBag $queries): void
     {
         //create symfony acl tables
         $this->container->get('security.acl.dbal.schema')->addToSchema($schema);

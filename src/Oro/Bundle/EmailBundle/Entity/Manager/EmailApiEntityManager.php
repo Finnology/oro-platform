@@ -30,9 +30,7 @@ class EmailApiEntityManager extends ApiEntityManager
         parent::__construct($class, $om);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getListQueryBuilder($limit = 10, $page = 1, $criteria = [], $orderBy = null, $joins = [])
     {
         $qb = parent::getListQueryBuilder($limit, $page, $criteria, $orderBy, $joins);
@@ -62,12 +60,10 @@ class EmailApiEntityManager extends ApiEntityManager
      */
     public function getEmailAttachmentRepository()
     {
-        return $this->getObjectManager()->getRepository('Oro\Bundle\EmailBundle\Entity\EmailAttachment');
+        return $this->getObjectManager()->getRepository(EmailAttachment::class);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function getSerializationConfig()
     {
         $config = [

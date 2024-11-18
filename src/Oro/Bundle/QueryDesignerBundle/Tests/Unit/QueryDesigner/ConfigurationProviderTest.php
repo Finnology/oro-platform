@@ -13,9 +13,9 @@ class ConfigurationProviderTest extends \PHPUnit\Framework\TestCase
 {
     use TempDirExtension;
 
-    /** @var ConfigurationProvider */
-    private $configurationProvider;
+    private ConfigurationProvider $configurationProvider;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->configurationProvider = new ConfigurationProvider(
@@ -97,6 +97,15 @@ class ConfigurationProviderTest extends \PHPUnit\Framework\TestCase
                             'option2' => 'val2'
                         ],
                         'init_module'    => 'module1'
+                    ],
+                    'short_money' => [
+                        'applicable'     => [
+                            ['type' => 'string'],
+                            ['type' => 'string']
+                        ],
+                        'type'           => 'string',
+                        'query_type'     => ['all', 'all'],
+                        'template_theme' => 'embedded'
                     ]
                 ]
             ],

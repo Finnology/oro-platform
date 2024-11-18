@@ -1,4 +1,5 @@
 <?php
+
 namespace Oro\Bundle\OrganizationBundle\Tests\Unit\Form\Type;
 
 use Oro\Bundle\OrganizationBundle\Form\Type\OwnershipType;
@@ -10,6 +11,7 @@ class OwnershipTypeTest extends \PHPUnit\Framework\TestCase
     /** @var OwnershipType */
     private $type;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->type = new OwnershipType();

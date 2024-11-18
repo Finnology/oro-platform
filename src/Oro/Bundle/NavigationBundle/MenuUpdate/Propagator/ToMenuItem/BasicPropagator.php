@@ -19,6 +19,7 @@ class BasicPropagator implements MenuUpdateToMenuItemPropagatorInterface
         $this->localizationHelper = $localizationHelper;
     }
 
+    #[\Override]
     public function isApplicable(ItemInterface $menuItem, MenuUpdateInterface $menuUpdate, string $strategy): bool
     {
         return in_array(
@@ -31,6 +32,7 @@ class BasicPropagator implements MenuUpdateToMenuItemPropagatorInterface
         );
     }
 
+    #[\Override]
     public function propagateFromMenuUpdate(
         ItemInterface $menuItem,
         MenuUpdateInterface $menuUpdate,
@@ -46,9 +48,6 @@ class BasicPropagator implements MenuUpdateToMenuItemPropagatorInterface
         }
 
         $menuItem->setDisplay($menuUpdate->isActive());
-
-        foreach ($menuUpdate->getLinkAttributes() as $key => $linkAttribute) {
-            $menuItem->setLinkAttribute($key, $linkAttribute);
-        }
+        $menuItem->setLinkAttributes($menuUpdate->getLinkAttributes());
     }
 }

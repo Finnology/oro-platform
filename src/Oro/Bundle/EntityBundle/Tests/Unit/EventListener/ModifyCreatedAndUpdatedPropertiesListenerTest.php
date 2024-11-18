@@ -14,6 +14,7 @@ use Oro\Bundle\EntityConfigBundle\Config\ConfigManager;
 use Oro\Bundle\UserBundle\Entity\User;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 class ModifyCreatedAndUpdatedPropertiesListenerTest extends \PHPUnit\Framework\TestCase
 {
@@ -26,6 +27,7 @@ class ModifyCreatedAndUpdatedPropertiesListenerTest extends \PHPUnit\Framework\T
     /** @var ModifyCreatedAndUpdatedPropertiesListener */
     private $listener;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->tokenStorage = $this->createMock(TokenStorageInterface::class);
@@ -168,7 +170,7 @@ class ModifyCreatedAndUpdatedPropertiesListenerTest extends \PHPUnit\Framework\T
                 'expectedCallSetUpdatedBy' => true
             ],
             'anotherUser' => [
-                'user' => new \stdClass(),
+                'user' => $this->createMock(UserInterface::class),
                 'expectedCallSetUpdatedBy' => false
             ],
         ];

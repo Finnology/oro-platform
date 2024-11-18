@@ -6,8 +6,12 @@ use Oro\Bundle\ApiBundle\Tests\Functional\RestJsonApiTestCase;
 use Oro\Bundle\OrganizationBundle\Entity\BusinessUnit;
 use Oro\Bundle\TestFrameworkBundle\Tests\Functional\DataFixtures\LoadBusinessUnit;
 
+/**
+ * @group search
+ */
 class BusinessUnitSearchTest extends RestJsonApiTestCase
 {
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

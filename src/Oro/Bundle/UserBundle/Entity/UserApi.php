@@ -2,47 +2,38 @@
 
 namespace Oro\Bundle\UserBundle\Entity;
 
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
+use Oro\Bundle\OrganizationBundle\Entity\OrganizationInterface;
+use Oro\Bundle\UserBundle\Entity\Repository\UserApiRepository;
 use Oro\Bundle\UserBundle\Security\UserApiKeyInterface;
 
 /**
  * The entity that represents API access keys for users.
- *
- * @ORM\Table(name="oro_user_api")
- * @ORM\Entity(repositoryClass="Oro\Bundle\UserBundle\Entity\Repository\UserApiRepository")
  */
+#[ORM\Entity(repositoryClass: UserApiRepository::class)]
+#[ORM\Table(name: 'oro_user_api')]
 class UserApi implements UserApiKeyInterface
 {
-    /**
-     * @ORM\Id
-     * @ORM\Column(type="integer")
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
-    protected $id;
+    #[ORM\Id]
+    #[ORM\Column(type: Types::INTEGER)]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
+    protected ?int $id = null;
 
-    /**
-     * @var User
-     *
-     * @ORM\ManyToOne(targetEntity="Oro\Bundle\UserBundle\Entity\User", inversedBy="apiKeys", fetch="LAZY")
-     * @ORM\JoinColumn(name="user_id", referencedColumnName="id", onDelete="CASCADE", nullable=false)
-     */
-    protected $user;
+    #[ORM\ManyToOne(targetEntity: User::class, fetch: 'LAZY', inversedBy: 'apiKeys')]
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
+    protected ?User $user = null;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="api_key", type="crypted_string", unique=true, length=255, nullable=false)
      */
+    #[ORM\Column(name: 'api_key', type: 'crypted_string', length: 255, unique: true, nullable: false)]
     protected $apiKey;
 
-    /**
-     * @var Organization
-     *
-     * @ORM\ManyToOne(targetEntity="Oro\Bundle\OrganizationBundle\Entity\Organization")
-     * @ORM\JoinColumn(name="organization_id", referencedColumnName="id", onDelete="SET NULL")
-     */
-    protected $organization;
+    #[ORM\ManyToOne(targetEntity: Organization::class)]
+    #[ORM\JoinColumn(name: 'organization_id', referencedColumnName: 'id', onDelete: 'SET NULL')]
+    protected ?OrganizationInterface $organization = null;
 
     /**
      * Gets unique identifier of this entity.
@@ -59,6 +50,7 @@ class UserApi implements UserApiKeyInterface
      *
      * @return bool
      */
+    #[\Override]
     public function isEnabled()
     {
         return $this->getUser()->isBelongToOrganization($this->getOrganization());
@@ -83,6 +75,7 @@ class UserApi implements UserApiKeyInterface
      *
      * @return string
      */
+    #[\Override]
     public function getApiKey()
     {
         return $this->apiKey;
@@ -107,6 +100,7 @@ class UserApi implements UserApiKeyInterface
      *
      * @return User
      */
+    #[\Override]
     public function getUser()
     {
         return $this->user;
@@ -125,7 +119,7 @@ class UserApi implements UserApiKeyInterface
     /**
      * Sets an organization this API key belongs to.
      *
-     * @param Organization $organization
+     * @param Organization|null $organization
      *
      * @return UserApi
      */
@@ -141,6 +135,7 @@ class UserApi implements UserApiKeyInterface
      *
      * @return Organization
      */
+    #[\Override]
     public function getOrganization()
     {
         return $this->organization;
@@ -149,6 +144,7 @@ class UserApi implements UserApiKeyInterface
     /**
      * @return string
      */
+    #[\Override]
     public function __toString()
     {
         return (string)$this->getId();

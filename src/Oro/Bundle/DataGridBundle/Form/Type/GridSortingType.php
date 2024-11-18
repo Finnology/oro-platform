@@ -9,9 +9,7 @@ use Symfony\Component\Form\FormBuilderInterface;
 
 class GridSortingType extends AbstractType
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
@@ -19,18 +17,13 @@ class GridSortingType extends AbstractType
             ->add('direction', SortingChoiceType::class);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getName()
     {
         return $this->getBlockPrefix();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return 'oro_datagrid_sorting';
     }

@@ -29,23 +29,20 @@ class NotificationAlertCleanupCronCommand extends Command implements CronCommand
         $this->doctrine = $doctrine;
     }
 
+    #[\Override]
     protected function configure(): void
     {
         $this->setDescription('Deletes resolved notification alerts that is older than 30 days.');
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getDefaultDefinition(): string
     {
         return  '0 0 * * */0' ; // Every Sunday at 00:00
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    #[\Override]
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         /** @var EntityRepository $entityRepository */
         $entityRepository = $this->doctrine->getRepository(NotificationAlert::class);
@@ -73,6 +70,6 @@ class NotificationAlertCleanupCronCommand extends Command implements CronCommand
             $symfonyStyle->note('There are no outdated notification alerts.');
         }
 
-        return 0;
+        return Command::SUCCESS;
     }
 }

@@ -19,9 +19,7 @@ class RoleReindex extends AbstractFixture implements ContainerAwareInterface
 {
     use ContainerAwareTrait;
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function load(ObjectManager $manager)
     {
         /** @var EntityManagerInterface $em */
@@ -61,9 +59,6 @@ class RoleReindex extends AbstractFixture implements ContainerAwareInterface
         return $this->container->get('oro_search.index');
     }
 
-    /**
-     * @return IndexerInterface
-     */
     private function getSearchIndexer(): IndexerInterface
     {
         return $this->container->get('oro_search.async.indexer');

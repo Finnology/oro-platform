@@ -19,9 +19,7 @@ class HTMLPurifier extends \HTMLPurifier implements TranslatorAwareInterface
      */
     private $filters = [];
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function purify($html, $config = null): string
     {
         $config = $config ? \HTMLPurifier_Config::create($config) : $this->config;
@@ -85,7 +83,7 @@ class HTMLPurifier extends \HTMLPurifier implements TranslatorAwareInterface
         }
 
         $html = \HTMLPurifier_Encoder::convertFromUTF8($html, $config, $context);
-        $this->context =& $context;
+        $this->context = & $context;
 
         return $html;
     }
@@ -109,7 +107,7 @@ class HTMLPurifier extends \HTMLPurifier implements TranslatorAwareInterface
                 continue;
             }
             $class = "HTMLPurifier_Filter_$filter";
-            $filters[] = new $class;
+            $filters[] = new $class();
         }
 
         foreach ($customFilters as $filter) {

@@ -12,9 +12,7 @@ use Psr\Log\LoggerInterface;
 
 class FixAssociationLabelsQuery extends ParametrizedMigrationQuery
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getDescription()
     {
         $logger = new ArrayLogger();
@@ -23,9 +21,7 @@ class FixAssociationLabelsQuery extends ParametrizedMigrationQuery
         return $logger->getMessages();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function execute(LoggerInterface $logger)
     {
         $this->doExecute($logger);
@@ -186,7 +182,7 @@ class FixAssociationLabelsQuery extends ParametrizedMigrationQuery
 
         $result = [];
 
-        $rows = $this->connection->fetchAll($sql);
+        $rows = $this->connection->fetchAllAssociative($sql);
         foreach ($rows as $row) {
             $data = $this->connection->convertToPHPValue($row['data'], 'array');
 
@@ -229,7 +225,7 @@ class FixAssociationLabelsQuery extends ParametrizedMigrationQuery
 
         $result = [];
 
-        $rows = $this->connection->fetchAll($sql, $params, $types);
+        $rows = $this->connection->fetchAllAssociative($sql, $params, $types);
         foreach ($rows as $row) {
             $result[] = [
                 'id'    => $row['id'],

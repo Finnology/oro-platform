@@ -12,10 +12,8 @@ class EntityExtendConfiguration implements ConfigurationInterface
 {
     public const ROOT_NODE = 'entity_extend';
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getConfigTreeBuilder()
+    #[\Override]
+    public function getConfigTreeBuilder(): TreeBuilder
     {
         $treeBuilder = new TreeBuilder(self::ROOT_NODE);
         $treeBuilder->getRootNode()

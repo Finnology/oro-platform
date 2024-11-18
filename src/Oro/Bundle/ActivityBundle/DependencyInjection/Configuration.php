@@ -7,10 +7,8 @@ use Symfony\Component\Config\Definition\ConfigurationInterface;
 
 class Configuration implements ConfigurationInterface
 {
-    /**
-     * {@inheritdoc}
-     */
-    public function getConfigTreeBuilder()
+    #[\Override]
+    public function getConfigTreeBuilder(): TreeBuilder
     {
         $treeBuilder = new TreeBuilder('oro_activity');
         $rootNode = $treeBuilder->getRootNode();

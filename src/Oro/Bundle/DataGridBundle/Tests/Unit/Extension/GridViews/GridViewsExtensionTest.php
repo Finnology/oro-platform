@@ -25,6 +25,9 @@ class GridViewsExtensionTest extends \PHPUnit\Framework\TestCase
 {
     use EntityTrait;
 
+    private const GRID_VIEW_ID_1 = 101;
+    private const GRID_VIEW_ID_2 = 202;
+
     /** @var EventDispatcherInterface|\PHPUnit\Framework\MockObject\MockObject */
     private $eventDispatcher;
 
@@ -40,6 +43,7 @@ class GridViewsExtensionTest extends \PHPUnit\Framework\TestCase
     /** @var GridViewsExtension */
     private $gridViewsExtension;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->eventDispatcher = $this->createMock(EventDispatcherInterface::class);
@@ -121,8 +125,8 @@ class GridViewsExtensionTest extends \PHPUnit\Framework\TestCase
         $user = $this->getEntity(User::class, ['id' => 42]);
         $grid1 = 'test_grid_1';
         $grid2 = 'test_grid_2';
-        $view1 = $this->getEntity(GridView::class, ['id' => 'view1']);
-        $view2 = $this->getEntity(GridView::class, ['id' => 'view2']);
+        $view1 = $this->getEntity(GridView::class, ['id' => self::GRID_VIEW_ID_1]);
+        $view2 = $this->getEntity(GridView::class, ['id' => self::GRID_VIEW_ID_2]);
 
         $this->tokenAccessor->expects($this->any())
             ->method('getUser')
@@ -140,10 +144,10 @@ class GridViewsExtensionTest extends \PHPUnit\Framework\TestCase
             ->method('getService')
             ->willReturn($gridViewManager);
 
-        $this->assertGridStateView($grid1, 'view1');
+        $this->assertGridStateView($grid1, self::GRID_VIEW_ID_1);
 
         // check local cache of grid view
-        $this->assertGridStateView($grid2, 'view2');
+        $this->assertGridStateView($grid2, self::GRID_VIEW_ID_2);
     }
 
     private function assertGridStateView(string $grid, string $expectedGridView = null): void

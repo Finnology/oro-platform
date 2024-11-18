@@ -6,19 +6,17 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * Represents entity which stores value and currency as price item
- * @ORM\Embeddable()
  */
+#[ORM\Embeddable]
 class Price implements CurrencyAwareInterface, \JsonSerializable
 {
-    const MAX_VALUE_SCALE = 4;
-
     use CurrencyAwareTrait;
+    const MAX_VALUE_SCALE = 4;
 
     /**
      * @var float
-     *
-     * @ORM\Column(name="value", type="money", nullable=true)
      */
+    #[ORM\Column(name: 'value', type: 'money', nullable: true)]
     protected $value;
 
     /**
@@ -55,9 +53,7 @@ class Price implements CurrencyAwareInterface, \JsonSerializable
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function jsonSerialize(): array
     {
         return [

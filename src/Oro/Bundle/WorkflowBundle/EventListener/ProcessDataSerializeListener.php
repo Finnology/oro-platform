@@ -29,7 +29,7 @@ class ProcessDataSerializeListener implements ServiceSubscriberInterface
      */
     public function onFlush(OnFlushEventArgs $args): void
     {
-        $uow = $args->getEntityManager()->getUnitOfWork();
+        $uow = $args->getObjectManager()->getUnitOfWork();
         $this->scheduleEntities($uow->getScheduledEntityInsertions());
         $this->scheduleEntities($uow->getScheduledEntityUpdates());
     }
@@ -40,7 +40,7 @@ class ProcessDataSerializeListener implements ServiceSubscriberInterface
             while ($processJob = array_shift($this->scheduledEntities)) {
                 $this->serialize($processJob);
             }
-            $args->getEntityManager()->flush();
+            $args->getObjectManager()->flush();
         }
     }
 
@@ -90,10 +90,8 @@ class ProcessDataSerializeListener implements ServiceSubscriberInterface
         return $entity instanceof ProcessJob;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public static function getSubscribedServices()
+    #[\Override]
+    public static function getSubscribedServices(): array
     {
         return [
             'oro_workflow.serializer.process.serializer' => SerializerInterface::class

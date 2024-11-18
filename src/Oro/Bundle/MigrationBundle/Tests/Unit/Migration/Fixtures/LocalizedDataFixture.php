@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\MigrationBundle\Tests\Unit\Migration\Fixtures;
@@ -22,6 +23,7 @@ class LocalizedDataFixture extends AbstractFixture implements LocalizationOption
         return $this->language;
     }
 
+    #[\Override]
     public function load(ObjectManager $manager): void
     {
         // do nothing

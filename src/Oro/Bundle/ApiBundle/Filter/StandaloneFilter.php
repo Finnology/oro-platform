@@ -73,6 +73,14 @@ class StandaloneFilter implements FilterInterface
     }
 
     /**
+     * Gets additional options that should be used during a value normalization.
+     */
+    public function getValueNormalizationOptions(): array
+    {
+        return [];
+    }
+
+    /**
      * Gets the filter description.
      */
     public function getDescription(): ?string
@@ -108,9 +116,7 @@ class StandaloneFilter implements FilterInterface
         $this->operators = $operators;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function apply(Criteria $criteria, FilterValue $value = null): void
     {
     }

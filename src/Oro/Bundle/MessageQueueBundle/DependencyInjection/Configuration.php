@@ -20,10 +20,8 @@ class Configuration implements ConfigurationInterface
         $this->environment = $environment;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getConfigTreeBuilder()
+    #[\Override]
+    public function getConfigTreeBuilder(): TreeBuilder
     {
         $builder = new TreeBuilder('oro_message_queue');
         $rootNode = $builder->getRootNode();

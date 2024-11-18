@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\IntegrationBundle\Command;
@@ -42,17 +43,13 @@ class CleanupCommand extends Command implements
         $this->nativeQueryExecutorHelper = $nativeQueryExecutorHelper;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getDefaultDefinition(): string
     {
         return '0 1 * * *';
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function isActive(): bool
     {
         $completedInterval = new \DateTime('now', new \DateTimeZone('UTC'));
@@ -66,10 +63,11 @@ class CleanupCommand extends Command implements
 
         $count = $qb->getQuery()->getSingleScalarResult();
 
-        return ($count>0);
+        return ($count > 0);
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     protected function configure()
     {
         $this
@@ -102,7 +100,8 @@ HELP
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    #[\Override]
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $interval = $input->getOption('interval');
 
@@ -120,15 +119,15 @@ HELP
         if (!count($iterator)) {
             $output->writeln('<info>There are no integration statuses eligible for clean up</info>');
 
-            return 0;
+            return Command::SUCCESS;
         }
         $output->writeln(sprintf('<comment>Integration statuses will be deleted:</comment> %d', count($iterator)));
 
-        $this->deleteRecords($iterator, 'OroIntegrationBundle:Status');
+        $this->deleteRecords($iterator, Status::class);
 
         $output->writeln('<info>Integration statuses history cleanup completed</info>');
 
-        return 0;
+        return Command::SUCCESS;
     }
 
     /**
@@ -234,7 +233,7 @@ SQL;
             Status::STATUS_COMPLETED,
             Status::STATUS_COMPLETED
         );
-        $data = $connection->fetchAll($selectQuery);
+        $data = $connection->fetchAllAssociative($selectQuery);
         $excludes = array_map(
             function ($item) {
                 return $item['id'];

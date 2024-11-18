@@ -28,9 +28,7 @@ class IntegrationExtension extends AbstractExtension implements ServiceSubscribe
         $this->container = $container;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getFunctions()
     {
         return [
@@ -80,10 +78,8 @@ class IntegrationExtension extends AbstractExtension implements ServiceSubscribe
         return EditModeUtils::isEditAllowed($editMode);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedServices()
+    #[\Override]
+    public static function getSubscribedServices(): array
     {
         return [
             EventDispatcherInterface::class,

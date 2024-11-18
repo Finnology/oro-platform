@@ -20,10 +20,8 @@ class UserApiSubscriber implements EventSubscriberInterface
         $this->factory = $factory;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedEvents()
+    #[\Override]
+    public static function getSubscribedEvents(): array
     {
         return array(FormEvents::PRE_SET_DATA => 'preSetData');
     }

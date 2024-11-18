@@ -11,6 +11,7 @@ class LocalizationSelectTypeTest extends \PHPUnit\Framework\TestCase
     /** @var LocalizationSelectType */
     private $type;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->type = new LocalizationSelectType();
@@ -29,7 +30,7 @@ class LocalizationSelectTypeTest extends \PHPUnit\Framework\TestCase
             ->method('setDefaults')
             ->with($this->isType('array'))
             ->willReturnCallback(
-                function (array $options) {
+                function (array $options) use ($resolver) {
                     $this->assertArrayHasKey('autocomplete_alias', $options);
                     $this->assertArrayHasKey('create_form_route', $options);
                     $this->assertArrayHasKey('configs', $options);
@@ -39,6 +40,8 @@ class LocalizationSelectTypeTest extends \PHPUnit\Framework\TestCase
                         ['placeholder' => 'oro.locale.localization.form.placeholder.choose'],
                         $options['configs']
                     );
+
+                    return $resolver;
                 }
             );
 

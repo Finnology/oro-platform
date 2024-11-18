@@ -9,10 +9,8 @@ use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 
 class QueryConfiguration implements ConfigurationInterface
 {
-    /**
-     * {@inheritDoc}
-     */
-    public function getConfigTreeBuilder()
+    #[\Override]
+    public function getConfigTreeBuilder(): TreeBuilder
     {
         $builder = new TreeBuilder('query');
 
@@ -68,8 +66,8 @@ class QueryConfiguration implements ConfigurationInterface
     /**
      * @param  string $name Join type ('left', 'inner')
      *
-     * @throws \Symfony\Component\Config\Definition\Exception\InvalidConfigurationException
-     * @return \Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition
+     * @throws InvalidConfigurationException
+     * @return ArrayNodeDefinition
      */
     protected function addJoinNode($name)
     {

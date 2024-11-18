@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\ApiBundle\Command;
@@ -43,12 +44,14 @@ class DocCacheClearCommand extends Command
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     public function isEnabled(): bool
     {
         return $this->cacheManager->isApiDocCacheEnabled() && parent::isEnabled();
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     protected function configure(): void
     {
         $this
@@ -83,6 +86,7 @@ HELP
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
@@ -97,6 +101,7 @@ HELP
         // warm up API caches
         if (!$noWarmup) {
             $io->comment('Warming up API cache...');
+            $this->cacheManager->warmUpConfigCache();
             $this->cacheManager->warmUpCaches();
         }
 
@@ -116,6 +121,6 @@ HELP
             $this->environment
         ));
 
-        return 0;
+        return Command::SUCCESS;
     }
 }

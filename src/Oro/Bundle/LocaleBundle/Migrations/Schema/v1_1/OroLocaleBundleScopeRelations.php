@@ -5,30 +5,16 @@ namespace Oro\Bundle\LocaleBundle\Migrations\Schema\v1_1;
 use Doctrine\DBAL\Schema\Schema;
 use Oro\Bundle\EntityExtendBundle\EntityConfig\ExtendScope;
 use Oro\Bundle\EntityExtendBundle\Extend\RelationType;
-use Oro\Bundle\EntityExtendBundle\Migration\Extension\ExtendExtension;
 use Oro\Bundle\EntityExtendBundle\Migration\Extension\ExtendExtensionAwareInterface;
+use Oro\Bundle\EntityExtendBundle\Migration\Extension\ExtendExtensionAwareTrait;
 use Oro\Bundle\MigrationBundle\Migration\Migration;
 use Oro\Bundle\MigrationBundle\Migration\QueryBag;
-use Oro\Bundle\ScopeBundle\Migrations\Schema\OroScopeBundleInstaller;
 
 class OroLocaleBundleScopeRelations implements Migration, ExtendExtensionAwareInterface
 {
-    /**
-     * @var ExtendExtension
-     */
-    private $extendExtension;
+    use ExtendExtensionAwareTrait;
 
-    /**
-     * {@inheritdoc}
-     */
-    public function setExtendExtension(ExtendExtension $extendExtension)
-    {
-        $this->extendExtension = $extendExtension;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function up(Schema $schema, QueryBag $queries)
     {
         $this->addRelationsToScope($schema);
@@ -38,7 +24,7 @@ class OroLocaleBundleScopeRelations implements Migration, ExtendExtensionAwareIn
     {
         $this->extendExtension->addManyToOneRelation(
             $schema,
-            OroScopeBundleInstaller::ORO_SCOPE,
+            'oro_scope',
             'localization',
             'oro_localization',
             'id',

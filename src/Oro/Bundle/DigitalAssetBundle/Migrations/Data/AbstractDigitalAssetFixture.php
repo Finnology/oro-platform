@@ -35,6 +35,7 @@ abstract class AbstractDigitalAssetFixture extends AbstractFixture implements Co
 
     abstract protected function getDataPath(): string;
 
+    #[\Override]
     public function setContainer(ContainerInterface $container = null): void
     {
         $this->container = $container;
@@ -47,6 +48,7 @@ abstract class AbstractDigitalAssetFixture extends AbstractFixture implements Co
         }
     }
 
+    #[\Override]
     public function load(ObjectManager $manager): void
     {
         $user = $this->getFirstUser($manager);
@@ -94,15 +96,12 @@ abstract class AbstractDigitalAssetFixture extends AbstractFixture implements Co
 
     protected function setSecurityContext(TokenStorageInterface $tokenStorage, User $user): void
     {
-        $tokenStorage->setToken(
-            new UsernamePasswordOrganizationToken(
-                $user,
-                $user->getUsername(),
-                'main',
-                $user->getOrganization(),
-                $user->getUserRoles()
-            )
-        );
+        $tokenStorage->setToken(new UsernamePasswordOrganizationToken(
+            $user,
+            'main',
+            $user->getOrganization(),
+            $user->getUserRoles()
+        ));
     }
 
     protected function createDigitalAsset(array $data, User $user): DigitalAsset

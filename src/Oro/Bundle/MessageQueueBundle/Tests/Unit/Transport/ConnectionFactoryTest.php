@@ -15,6 +15,7 @@ class ConnectionFactoryTest extends TestCase
 
     private ServiceLocator $locatorMock;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->transportParametersBagMock = self::createMock(DsnBasedParameters::class);
@@ -53,9 +54,6 @@ class ConnectionFactoryTest extends TestCase
         ConnectionFactory::create($this->locatorMock, $this->transportParametersBagMock);
     }
 
-    /**
-     * @return array
-     */
     public function wrongTransportConnectionInstancesProvider(): array
     {
         return ['scalar' => ['test string'], 'array' => [[]], 'object' => [new \StdClass()]];

@@ -28,6 +28,7 @@ services:
             - '@oro_api.resources_provider'
             - '@oro_api.subresources_provider'
             - '@oro_entity.entity_class_provider.orm'
+            - '@oro_api.config_provider'
         tags:
             - { name: console.command }
 
@@ -63,5 +64,19 @@ services:
             - ~ # operation timeout. It is set by Oro\Bundle\ApiBundle\DependencyInjection\Compiler\CleanupAsyncOperationCompilerPass
             - '@oro_entity.doctrine_helper'
             - '@oro_entity.delete_handler_registry'
+        tags:
+            - { name: console.command }
+
+    Oro\Bundle\ApiBundle\Command\OpenApiDumpCommand:
+        arguments:
+            - '@oro_api.api_doc.open_api.renderer'
+            - '@oro_api.open_api_choices_provider'
+        tags:
+            - { name: console.command }
+
+    Oro\Bundle\ApiBundle\Command\OpenApiScheduleRenewCommand:
+        arguments:
+            - '@doctrine'
+            - '@oro_message_queue.client.message_producer'
         tags:
             - { name: console.command }

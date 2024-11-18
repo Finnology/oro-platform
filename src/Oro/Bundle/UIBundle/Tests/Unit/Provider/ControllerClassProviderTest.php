@@ -39,6 +39,7 @@ class ControllerClassProviderTest extends \PHPUnit\Framework\TestCase
     /** @var string */
     private $cacheFile;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->cacheFile = $this->getTempFile('ControllerClassProvider');
@@ -179,7 +180,7 @@ class ControllerClassProviderTest extends \PHPUnit\Framework\TestCase
     {
         $this->routeCollection->add(
             'test_route',
-            new Route('test', ['_controller' => 'test_controller:someAction'])
+            new Route('test', ['_controller' => 'test_controller::someAction'])
         );
 
         $this->container->expects(self::once())
@@ -206,7 +207,7 @@ class ControllerClassProviderTest extends \PHPUnit\Framework\TestCase
     {
         $this->routeCollection->add(
             'test_route',
-            new Route('test', ['_controller' => 'test_controller:someAction'])
+            new Route('test', ['_controller' => 'test_controller::someAction'])
         );
 
         $service = $this->createMock(VirtualProxyInterface::class);
@@ -243,7 +244,7 @@ class ControllerClassProviderTest extends \PHPUnit\Framework\TestCase
     {
         $this->routeCollection->add(
             'test_route',
-            new Route('test', ['_controller' => 'test_controller:someAction'])
+            new Route('test', ['_controller' => 'test_controller::someAction'])
         );
 
         $service = $this->createMock(VirtualProxyInterface::class);
@@ -280,7 +281,7 @@ class ControllerClassProviderTest extends \PHPUnit\Framework\TestCase
     {
         $this->routeCollection->add(
             'test_route',
-            new Route('test', ['_controller' => 'test_controller:someAction'])
+            new Route('test', ['_controller' => 'test_controller::someAction'])
         );
 
         $this->container->expects(self::once())

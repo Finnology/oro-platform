@@ -8,9 +8,7 @@ use Psr\Log\LoggerInterface;
 
 class UpdateConfigFieldDatagridScopeQuery extends ParametrizedMigrationQuery
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getDescription()
     {
         $logger = new ArrayLogger();
@@ -19,9 +17,7 @@ class UpdateConfigFieldDatagridScopeQuery extends ParametrizedMigrationQuery
         return $logger->getMessages();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function execute(LoggerInterface $logger)
     {
         $this->doExecute($logger);
@@ -73,7 +69,7 @@ class UpdateConfigFieldDatagridScopeQuery extends ParametrizedMigrationQuery
         $sql = 'SELECT id, data FROM oro_entity_config_field';
         $this->logQuery($logger, $sql);
 
-        $rows = $this->connection->fetchAll($sql);
+        $rows = $this->connection->fetchAllAssociative($sql);
         foreach ($rows as $key => $row) {
             $rows[$key]['data'] = $this->connection->convertToPHPValue($row['data'], 'array');
         }

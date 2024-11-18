@@ -24,6 +24,7 @@ use Oro\Bundle\TestFrameworkBundle\Tests\Behat\Context\PageObjectDictionary;
  * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  * @SuppressWarnings(PHPMD.TooManyPublicMethods)
  * @SuppressWarnings(PHPMD.ExcessivePublicCount)
+ * @SuppressWarnings(PHPMD.ExcessiveClassLength)
  */
 class FormContext extends OroFeatureContext implements OroPageObjectAware
 {
@@ -450,6 +451,24 @@ class FormContext extends OroFeatureContext implements OroPageObjectAware
         $form->typeInField($locator, $value);
     }
 
+    /**
+     * Example: I clear text in "Price Calculation Quantity Expression Editor Content"
+     *
+     * @When /^(?:|I )clear text in "(?P<field>(?:[^"]|\\")*)"$/
+     * @When /^(?:|I )clear text in "(?P<field>(?:[^"]|\\")*)" from "(?P<formName>(?:[^"]|\\")*)"$/
+     * @throws ElementNotFoundException
+     */
+    public function iClearTextInBlock($locator, $formName = 'OroForm'): void
+    {
+        $locator = $this->fixStepArgument($locator);
+        $formName = $this->fixStepArgument($formName);
+
+        /** @var OroForm $form */
+        $form = $this->createElement($formName);
+
+        $form->setInnerHtmlForElement($locator, '');
+    }
+
     //@codingStandardsIgnoreStart
     /**
      * Type value in field chapter by chapter. Imitate real user input from keyboard
@@ -502,7 +521,7 @@ class FormContext extends OroFeatureContext implements OroPageObjectAware
      * Go to System/Configuration and see the fields with default checkboxes
      * Example: And uncheck "Use default" for "Position" field
      *
-     * @Given uncheck :checkbox for :label field
+     * @Given /^(?:|I )uncheck "(?P<checkbox>[^"]*)" for "(?P<label>[^"]*)" field$/
      */
     public function uncheckUseDefaultForField($label, $checkbox)
     {
@@ -752,6 +771,43 @@ class FormContext extends OroFeatureContext implements OroPageObjectAware
         }
     }
 
+    //@codingStandardsIgnoreStart
+    /**
+     * @Then /^(?:|I )should see the "(?P<elementName>[^"]*)" element in "(?P<fieldName>[^"]*)" select$/
+     * @Then /^(?:|I )should see the "(?P<elementName>[^"]*)" element in "(?P<fieldName>[^"]*)" select in form "(?P<formName>(?:[^"]|\\")*)"$/
+     *
+     * @param string $elementName
+     * @param string $fieldName
+     * @param string $formName
+     *
+     * @throws ElementNotFoundException
+     */
+    //@codingStandardsIgnoreEnd
+    public function shouldSeeTheFollowingElementInSelect(
+        string $elementName,
+        string $fieldName,
+        string $formName = 'OroForm'
+    ): void {
+        $fieldElement = $this->getFieldInForm($fieldName, $formName);
+        if ($fieldElement instanceof Select2Entity) {
+            $needleElement = null;
+            $suggestions = $fieldElement->getSuggestions();
+            if ($suggestions) {
+                $resultsContainer = $suggestions[0]->getParent();
+                $needleElement = $this->createElement($elementName, $resultsContainer);
+            }
+
+            self::assertTrue(
+                $needleElement?->isValid(),
+                sprintf('Element %s was not found in %s', $elementName, $fieldName)
+            );
+
+            $fieldElement->close();
+        } else {
+            self::fail(sprintf('Element %s is not supported', get_debug_type($fieldElement)));
+        }
+    }
+
     /**
      * @Then /^I should see "([^"]*)" for "([^"]*)" select$/
      * @param string $label
@@ -806,27 +862,65 @@ class FormContext extends OroFeatureContext implements OroPageObjectAware
     }
 
     /**
-     * @Then /^the "(?P<fieldName>(?:[^"]|\\")*)" field should be enabled$/
+     * @Then /^the "(?P<fieldName>(?:[^"]|\\")*)" field should be readonly$/
+     * @Then /^the "(?P<fieldName>(?:[^"]|\\")*)" field should be readonly in form "(?P<formElement>(?:[^"]|\\")*)"$/
+     *
+     * @throws ElementNotFoundException
      */
-    public function fieldShouldBeEnabled(string $fieldName): void
+    public function fieldShouldBeReadonly(string $fieldName, ?string $formElement = null): void
     {
-        $field = $this->getSession()->getPage()->findField($fieldName);
-        if (null === $field) {
-            $field = $this->getFieldInForm($fieldName, 'OroForm');
-        }
+        $field = $this->getFieldByFormName($fieldName, $formElement);
+
+        self::assertNotNull($field, sprintf('Field "%s" not found', $fieldName));
+        self::assertTrue(
+            $field->hasAttribute('readonly'),
+            sprintf('Field "%s" has readonly attribute', $fieldName)
+        );
+    }
+
+    //@codingStandardsIgnoreStart
+    /**
+     * @Then /^the "(?P<fieldName>(?:[^"]|\\")*)" field should not be readonly$/
+     * @Then /^the "(?P<fieldName>(?:[^"]|\\")*)" field should not be readonly in form "(?P<formElement>(?:[^"]|\\")*)"$/
+     *
+     * @throws ElementNotFoundException
+     */
+    //@codingStandardsIgnoreEnd
+    public function fieldShouldNotBeReadonly(string $fieldName, ?string $formElement = null): void
+    {
+        $field = $this->getFieldByFormName($fieldName, $formElement);
+
+        self::assertNotNull($field, sprintf('Field "%s" not found', $fieldName));
+        self::assertFalse(
+            $field->hasAttribute('readonly'),
+            sprintf("Field '%s' doesn't have readonly attribute", $fieldName)
+        );
+    }
+
+    /**
+     * @Then /^the "(?P<fieldName>(?:[^"]|\\")*)" field should be enabled$/
+     * @Then /^the "(?P<fieldName>(?:[^"]|\\")*)" field should be enabled$ in form "(?P<formElement>(?:[^"]|\\")*)"$/
+     *
+     * @throws ElementNotFoundException
+     */
+    public function fieldShouldBeEnabled(string $fieldName, ?string $formElement = null): void
+    {
+        $field = $this->getFieldByFormName($fieldName, $formElement);
+
         self::assertNotNull($field, sprintf('Field "%s" not found', $fieldName));
         self::assertFalse($field->hasAttribute('disabled'), sprintf('Field "%s" is disabled', $fieldName));
     }
 
     /**
      * @Then /^the "(?P<fieldName>(?:[^"]|\\")*)" field should be disabled$/
+     * @Then /^the "(?P<fieldName>(?:[^"]|\\")*)" field should be disabled in form "(?P<formElement>(?:[^"]|\\")*)"$/
+     *
+     * @throws ElementNotFoundException
      */
-    public function fieldShouldBeDisabled(string $fieldName): void
+    public function fieldShouldBeDisabled(string $fieldName, ?string $formElement = null): void
     {
-        $field = $this->getSession()->getPage()->findField($fieldName);
-        if (null === $field) {
-            $field = $this->getFieldInForm($fieldName, 'OroForm');
-        }
+        $field = $this->getFieldByFormName($fieldName, $formElement);
+
         self::assertNotNull($field, sprintf('Field "%s" not found', $fieldName));
         self::assertTrue($field->hasAttribute('disabled'), sprintf('Field "%s" is enabled', $fieldName));
     }
@@ -932,21 +1026,36 @@ class FormContext extends OroFeatureContext implements OroPageObjectAware
     }
 
     /**
-     * @param string $fieldName
-     * @param string $formName
-     * @return NodeElement|mixed|null|Element
      * @throws ElementNotFoundException
      */
-    protected function getFieldInForm($fieldName, $formName)
+    protected function getFieldByFormName(string $fieldName, ?string $formElement = null): ?NodeElement
+    {
+        if ($formElement === null) {
+            $field = $this->getSession()->getPage()->findField($fieldName);
+            if (null === $field) {
+                $field = $this->getFieldInForm($fieldName, 'OroForm');
+            }
+        } else {
+            $field = $this->getFieldInForm($fieldName, $formElement);
+        }
+
+        return $field;
+    }
+
+    /**
+     * @throws ElementNotFoundException
+     */
+    protected function getFieldInForm(string $fieldName, ?string $formName = null): NodeElement
     {
         /** @var Form $form */
         $form = $this->createElement($formName);
+        $mappingKey = strtolower($fieldName);
         $mapping = $form->getOption('mapping');
-        if ($mapping && isset($mapping[$fieldName])) {
-            $field = $form->findField($mapping[$fieldName]);
-            if (isset($mapping[$fieldName]['element'])) {
+        if (isset($mapping[$mappingKey])) {
+            $field = $form->findField($mapping[$mappingKey]);
+            if (isset($mapping[$mappingKey]['element'])) {
                 $field = $this->elementFactory->wrapElement(
-                    $mapping[$fieldName]['element'],
+                    $mapping[$mappingKey]['element'],
                     $field
                 );
             }
@@ -1016,5 +1125,27 @@ class FormContext extends OroFeatureContext implements OroPageObjectAware
     {
         $element = $this->getFieldInForm($fieldName, $formName);
         $element->setValue($this->locatePath($url));
+    }
+
+    /**
+     * Example: And I click button "Add" on "Work for you"
+     *
+     * @Given /^(?:|I )click button "(?P<action>[\w\s]*)" on "(?P<content>[\w\s]*)"$/
+     */
+    public function clickActionOnContent($action, $content)
+    {
+        $xpath = sprintf(
+            '//label[contains(translate(text(),"ABCDEFGHIJKLMNOPQRSTUVWXYZ","abcdefghijklmnopqrstuvwxyz"),"%s")]' .
+            '//ancestor::div[contains(@class, "control-group")]' .
+            '//button[contains(translate(text(),"ABCDEFGHIJKLMNOPQRSTUVWXYZ","abcdefghijklmnopqrstuvwxyz"),"%s")]',
+            strtolower($content),
+            strtolower($action)
+        );
+        $label = $this->getPage()->find('xpath', $xpath);
+        if ($label) {
+            $label->click();
+        } else {
+            self::fail(sprintf('There is no "%s" action for this "%s" content', $action, $content));
+        }
     }
 }

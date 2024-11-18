@@ -2,7 +2,7 @@
 
 namespace Oro\Bundle\DataGridBundle\Tests\Unit\Extension\InlineEditing\InlineEditColumnOptions;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Mapping\ClassMetadataInfo;
 use Oro\Bundle\DataGridBundle\Extension\InlineEditing\InlineEditColumnOptions\ChoicesGuesser;
@@ -20,6 +20,7 @@ class ChoicesGuesserTest extends \PHPUnit\Framework\TestCase
     /** @var ChoicesGuesser */
     private $guesser;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->doctrineHelper = $this->createMock(DoctrineHelper::class);
@@ -42,7 +43,7 @@ class ChoicesGuesserTest extends \PHPUnit\Framework\TestCase
         $targetMetadata = new ClassMetadata('\oro\target');
         $targetMetadata->identifier = ['id'];
 
-        $em = $this->createMock(EntityManager::class);
+        $em = $this->createMock(EntityManagerInterface::class);
 
         $this->doctrineHelper->expects($this->once())
             ->method('getEntityManager')
@@ -100,7 +101,7 @@ class ChoicesGuesserTest extends \PHPUnit\Framework\TestCase
         $targetMetadata = new ClassMetadata('\oro\target');
         $targetMetadata->identifier = ['id'];
 
-        $em = $this->createMock(EntityManager::class);
+        $em = $this->createMock(EntityManagerInterface::class);
 
         $this->doctrineHelper->expects($this->once())
             ->method('getEntityManager')

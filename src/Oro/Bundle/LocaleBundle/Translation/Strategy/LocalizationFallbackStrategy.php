@@ -27,25 +27,19 @@ class LocalizationFallbackStrategy implements TranslationStrategyInterface, Cach
         $this->cacheProvider = $cacheProvider;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function isApplicable(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getName(): string
     {
         return 'oro_localization_fallback_strategy';
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getLocaleFallbacks(): array
     {
         return $this->cacheProvider->get(self::CACHE_KEY, function () {
@@ -58,10 +52,8 @@ class LocalizationFallbackStrategy implements TranslationStrategyInterface, Cach
         $this->cacheProvider->delete(self::CACHE_KEY);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function warmUp($cacheDir): void
+    #[\Override]
+    public function warmUp($cacheDir): array
     {
         try {
             $this->clearCache();
@@ -70,11 +62,10 @@ class LocalizationFallbackStrategy implements TranslationStrategyInterface, Cach
             // Cache warming can be used during upgrade from the app version where not all required columns yet exist.
             // Silently skips warming of locale fallbacks in this case, considering as not an error.
         }
+        return [];
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function isOptional(): bool
     {
         return true;

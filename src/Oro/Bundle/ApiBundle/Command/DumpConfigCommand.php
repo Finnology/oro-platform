@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\ApiBundle\Command;
@@ -20,6 +21,7 @@ use Oro\Bundle\ApiBundle\Request\Version;
 use Oro\Bundle\ApiBundle\Util\ConfigUtil;
 use Oro\Component\ChainProcessor\ProcessorBagInterface;
 use ProxyManager\Proxy\VirtualProxyInterface;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -59,6 +61,7 @@ class DumpConfigCommand extends AbstractDebugCommand
         $this->configProvider = $configProvider;
     }
 
+    #[\Override]
     protected function configure(): void
     {
         $this
@@ -129,6 +132,7 @@ HELP
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $requestType = $this->getRequestType($input);
@@ -160,7 +164,7 @@ HELP
             $this->dumpConfig($output, $config);
         }
 
-        return 0;
+        return Command::SUCCESS;
     }
 
     protected function getConfigExtras(InputInterface $input): array
@@ -198,7 +202,7 @@ HELP
 
             if (EntityDefinitionConfigExtra::class === $extraClassName) {
                 $action = $input->getOption('action');
-                $result[] = new $extraClassName($action);
+                $result[] = new EntityDefinitionConfigExtra($action, $this->isCollection($action));
             } else {
                 $result[] = new $extraClassName();
             }

@@ -16,6 +16,9 @@ use Oro\Bundle\ActionBundle\Model\OperationRegistry;
 use Oro\Bundle\ActionBundle\Provider\RouteProviderInterface;
 use Oro\Bundle\ActionBundle\Resolver\OptionsResolver;
 
+/**
+ * Connects Action and Button
+ */
 class OperationButtonProviderExtension implements ButtonProviderExtensionInterface
 {
     /** @var OperationRegistry */
@@ -36,18 +39,14 @@ class OperationButtonProviderExtension implements ButtonProviderExtensionInterfa
     public function __construct(
         OperationRegistry $operationRegistry,
         ContextHelper $contextHelper,
-        RouteProviderInterface $routeProvider,
-        OptionsResolver $optionsResolver
+        RouteProviderInterface $routeProvider
     ) {
         $this->operationRegistry = $operationRegistry;
         $this->contextHelper = $contextHelper;
         $this->routeProvider = $routeProvider;
-        $this->optionsResolver = $optionsResolver;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function find(ButtonSearchContext $buttonSearchContext)
     {
         $operations = $this->getOperations($buttonSearchContext);
@@ -69,9 +68,9 @@ class OperationButtonProviderExtension implements ButtonProviderExtensionInterfa
     }
 
     /**
-     * {@inheritdoc}
      * @param OperationButton $button
      */
+    #[\Override]
     public function isAvailable(
         ButtonInterface $button,
         ButtonSearchContext $buttonSearchContext,
@@ -104,21 +103,15 @@ class OperationButtonProviderExtension implements ButtonProviderExtensionInterfa
             $result = false;
         }
 
-        $definition = $button->getOperation()->getDefinition();
-        $definition->setFrontendOptions(
-            $this->optionsResolver->resolveOptions($actionData, $definition->getFrontendOptions())
-        )->setButtonOptions(
-            $this->optionsResolver->resolveOptions($actionData, $definition->getButtonOptions())
-        );
+        $button->getButtonContext()
+            ->setEnabled($button->getOperation()->getDefinition()->getEnabled());
 
         $button->setData($actionData);
 
         return $result;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function supports(ButtonInterface $button)
     {
         return $button instanceof OperationButton;

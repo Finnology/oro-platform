@@ -3,7 +3,7 @@
 namespace Oro\Bundle\NavigationBundle\Menu;
 
 use Knp\Menu\ItemInterface;
-use Knp\Menu\Matcher\Matcher;
+use Knp\Menu\Matcher\MatcherInterface;
 use Knp\Menu\Provider\MenuProviderInterface;
 use Knp\Menu\Util\MenuManipulator;
 
@@ -13,7 +13,7 @@ use Knp\Menu\Util\MenuManipulator;
 class BreadcrumbManager implements BreadcrumbManagerInterface
 {
     /**
-     * @var Matcher
+     * @var MatcherInterface
      */
     protected $matcher;
 
@@ -22,13 +22,13 @@ class BreadcrumbManager implements BreadcrumbManagerInterface
      */
     protected $provider;
 
-    public function __construct(MenuProviderInterface $provider, Matcher $matcher)
+    public function __construct(MenuProviderInterface $provider, MatcherInterface $matcher)
     {
         $this->matcher = $matcher;
         $this->provider = $provider;
     }
 
-    /** {@inheritdoc} */
+    #[\Override]
     public function getBreadcrumbs($menuName, $isInverse = true, $route = null)
     {
         $menu = $this->getMenu($menuName);
@@ -45,7 +45,7 @@ class BreadcrumbManager implements BreadcrumbManagerInterface
         return null;
     }
 
-    /** {@inheritdoc} */
+    #[\Override]
     public function getMenu($menu, array $pathName = [], array $options = [])
     {
         if (!$menu instanceof ItemInterface) {
@@ -61,7 +61,7 @@ class BreadcrumbManager implements BreadcrumbManagerInterface
         return $menu;
     }
 
-    /** {@inheritdoc} */
+    #[\Override]
     public function getCurrentMenuItem($menu)
     {
         foreach ($menu as $item) {
@@ -106,7 +106,7 @@ class BreadcrumbManager implements BreadcrumbManagerInterface
         return null;
     }
 
-    /** {@inheritdoc} */
+    #[\Override]
     public function getBreadcrumbArray($menuName, $item, $isInverse = true)
     {
         $manipulator = new MenuManipulator();
@@ -122,7 +122,7 @@ class BreadcrumbManager implements BreadcrumbManagerInterface
         return $breadcrumbs;
     }
 
-    /** {@inheritdoc} */
+    #[\Override]
     public function getBreadcrumbLabels($menu, $route)
     {
         $labels = [];
@@ -178,7 +178,7 @@ class BreadcrumbManager implements BreadcrumbManagerInterface
         }
     }
 
-    /** {@inheritdoc} */
+    #[\Override]
     public function supports($route = null)
     {
         return true;

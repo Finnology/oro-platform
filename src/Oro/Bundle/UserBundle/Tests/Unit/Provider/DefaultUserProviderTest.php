@@ -20,6 +20,7 @@ class DefaultUserProviderTest extends \PHPUnit\Framework\TestCase
     /** @var DefaultUserProvider */
     private $provider;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->configManager = $this->createMock(ConfigManager::class);
@@ -114,7 +115,6 @@ class DefaultUserProviderTest extends \PHPUnit\Framework\TestCase
 
         self::assertSame($user, $this->provider->getDefaultUser('alias.key'));
     }
-
 
     public function testGetDefaultUserWhenItIsSetInConfigAndDoesNotExistInDatabaseAndAnotherDefaultUserNotFound(): void
     {

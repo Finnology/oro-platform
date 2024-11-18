@@ -3,6 +3,7 @@
 namespace Oro\Bundle\ApiBundle\Tests\Unit\DependencyInjection\Compiler;
 
 use Oro\Bundle\ApiBundle\DependencyInjection\Compiler\SecurityFirewallCompilerPass;
+use Oro\Bundle\ApiBundle\Security\FeatureDependAuthenticatorChecker;
 use Oro\Bundle\ApiBundle\Security\FeatureDependedFirewallMap;
 use Oro\Bundle\ApiBundle\Security\Http\Firewall\ContextListener;
 use Oro\Bundle\ApiBundle\Security\Http\Firewall\ExceptionListener;
@@ -23,6 +24,7 @@ class SecurityFirewallCompilerPassTest extends \PHPUnit\Framework\TestCase
     /** @var ContainerBuilder */
     private $container;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->container = new ContainerBuilder();
@@ -30,6 +32,12 @@ class SecurityFirewallCompilerPassTest extends \PHPUnit\Framework\TestCase
 
         $this->container->register('security.firewall.map', FirewallMap::class)
             ->addArgument(new Reference('service_container'))
+            ->addArgument([]);
+        $this->container->register(
+            'oro_api.security.authenticator.feature_checker',
+            FeatureDependAuthenticatorChecker::class
+        )
+            ->addArgument(new Reference('oro_featuretoggle.checker.feature_checker'))
             ->addArgument([]);
         DependencyInjectionUtil::setConfig(
             $this->container,
@@ -170,9 +178,11 @@ class SecurityFirewallCompilerPassTest extends \PHPUnit\Framework\TestCase
     {
         $this->container->prependExtensionConfig(
             'security',
-            ['firewalls' => [
-                'testFirewall' => ['stateless' => true, 'context' => 'main', 'organization-remember-me' =>[]]
-            ]]
+            [
+                'firewalls' => [
+                    'testFirewall' => ['stateless' => true, 'context' => 'main', 'organization-remember-me' => []]
+                ]
+            ]
         );
         $exceptionListener = new Reference('exceptionListener');
         $exceptionListenerDefinition = new Definition(BaseExceptionListener::class, []);

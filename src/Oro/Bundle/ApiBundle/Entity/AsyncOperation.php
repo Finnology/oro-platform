@@ -2,151 +2,91 @@
 
 namespace Oro\Bundle\ApiBundle\Entity;
 
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Oro\Bundle\EntityConfigBundle\Metadata\Annotation\Config;
+use Oro\Bundle\EntityConfigBundle\Metadata\Attribute\Config;
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
 use Oro\Bundle\UserBundle\Entity\User;
 
 /**
  * An entity to store details of asynchronous operations.
- *
- * @ORM\Table(name="oro_api_async_operation")
- * @ORM\Entity()
- * @ORM\HasLifecycleCallbacks()
- * @Config(
- *      defaultValues={
- *          "ownership"={
- *              "owner_type"="USER",
- *              "owner_field_name"="owner",
- *              "owner_column_name"="user_owner_id",
- *              "organization_field_name"="organization",
- *              "organization_column_name"="organization_id"
- *          },
- *          "security"={
- *              "type"="ACL",
- *              "group_name"="",
- *              "category"="",
- *              "permissions"="VIEW;CREATE"
- *          }
- *      }
- * )
  */
+#[ORM\Entity]
+#[ORM\Table(name: 'oro_api_async_operation')]
+#[ORM\HasLifecycleCallbacks]
+#[Config(
+    defaultValues: [
+        'ownership' => [
+            'owner_type'               => 'USER',
+            'owner_field_name'         => 'owner',
+            'owner_column_name'        => 'user_owner_id',
+            'organization_field_name'  => 'organization',
+            'organization_column_name' => 'organization_id'
+        ],
+        'security'  => ['type' => 'ACL', 'group_name' => '', 'category' => '', 'permissions' => 'VIEW;CREATE']
+    ]
+)]
 class AsyncOperation
 {
-    public const STATUS_NEW       = 'new';
-    public const STATUS_RUNNING   = 'running';
-    public const STATUS_SUCCESS   = 'success';
-    public const STATUS_FAILED    = 'failed';
+    public const STATUS_NEW = 'new';
+    public const STATUS_RUNNING = 'running';
+    public const STATUS_SUCCESS = 'success';
+    public const STATUS_FAILED = 'failed';
     public const STATUS_CANCELLED = 'cancelled';
 
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
-    private $id;
+    #[ORM\Column(name: 'id', type: Types::INTEGER)]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
+    private ?int $id = null;
 
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="status", type="string", length=10)
-     */
-    private $status;
+    #[ORM\Column(name: 'status', type: Types::STRING, length: 10)]
+    private ?string $status = null;
 
-    /**
-     * @var float|null
-     *
-     * @ORM\Column(name="progress", type="percent", nullable=true)
-     */
-    private $progress;
+    #[ORM\Column(name: 'progress', type: 'percent', nullable: true)]
+    private ?float $progress = null;
 
-    /**
-     * @var int|null
-     *
-     * @ORM\Column(name="job_id", type="integer", nullable=true)
-     */
-    private $jobId;
+    #[ORM\Column(name: 'job_id', type: Types::INTEGER, nullable: true)]
+    private ?int $jobId = null;
 
-    /**
-     * @var User|null
-     *
-     * @ORM\ManyToOne(targetEntity="Oro\Bundle\UserBundle\Entity\User")
-     * @ORM\JoinColumn(name="user_owner_id", referencedColumnName="id", onDelete="SET NULL")
-     */
-    private $owner;
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(name: 'user_owner_id', referencedColumnName: 'id', onDelete: 'SET NULL')]
+    private ?User $owner = null;
 
-    /**
-     * @var Organization|null
-     *
-     * @ORM\ManyToOne(targetEntity="Oro\Bundle\OrganizationBundle\Entity\Organization")
-     * @ORM\JoinColumn(name="organization_id", referencedColumnName="id", onDelete="SET NULL")
-     */
-    private $organization;
+    #[ORM\ManyToOne(targetEntity: Organization::class)]
+    #[ORM\JoinColumn(name: 'organization_id', referencedColumnName: 'id', onDelete: 'SET NULL')]
+    private ?Organization $organization = null;
 
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="created_at", type="datetime")
-     */
-    private $createdAt;
+    #[ORM\Column(name: 'created_at', type: Types::DATETIME_MUTABLE)]
+    private ?\DateTimeInterface $createdAt = null;
 
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="updated_at", type="datetime")
-     */
-    private $updatedAt;
+    #[ORM\Column(name: 'updated_at', type: Types::DATETIME_MUTABLE)]
+    private ?\DateTimeInterface $updatedAt = null;
 
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="elapsed_time", type="integer")
-     */
-    private $elapsedTime;
+    #[ORM\Column(name: 'elapsed_time', type: Types::INTEGER)]
+    private ?int $elapsedTime = null;
 
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="data_file_name", type="string", length=50)
-     */
-    private $dataFileName;
+    #[ORM\Column(name: 'data_file_name', type: Types::STRING, length: 50)]
+    private ?string $dataFileName = null;
 
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="entity_class", type="string", length=255)
-     */
-    private $entityClass;
+    #[ORM\Column(name: 'entity_class', type: Types::STRING, length: 255)]
+    private ?string $entityClass = null;
 
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="action_name", type="string", length=20)
-     */
-    private $actionName;
+    #[ORM\Column(name: 'action_name', type: Types::STRING, length: 20)]
+    private ?string $actionName = null;
 
-    /**
-     * @var bool
-     *
-     * @ORM\Column(name="has_errors", type="boolean", options={"default"=false})
-     */
-    private $hasErrors = false;
+    #[ORM\Column(name: 'has_errors', type: Types::BOOLEAN, options: ['default' => false])]
+    private ?bool $hasErrors = false;
 
-    /**
-     * @var array|null
-     *
-     * @ORM\Column(name="summary", type="json_array", nullable=true)
-     */
-    private $summary;
+    #[ORM\Column(name: 'summary', type: 'json_array', nullable: true)]
+    private ?array $summary = null;
+
+    #[ORM\Column(name: 'affected_entities', type: Types::JSON, nullable: true)]
+    private ?array $affectedEntities = null;
 
     /**
      * Gets an unique identifier of the entity.
-     *
-     * @return int
      */
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
     }
@@ -154,10 +94,8 @@ class AsyncOperation
     /**
      * Gets the status of the asynchronous operation.
      * See STATUS_* constants.
-     *
-     * @return string
      */
-    public function getStatus()
+    public function getStatus(): string
     {
         return $this->status;
     }
@@ -165,12 +103,8 @@ class AsyncOperation
     /**
      * Sets the status of the asynchronous operation.
      * See STATUS_* constants.
-     *
-     * @param string $status
-     *
-     * @return $this
      */
-    public function setStatus($status)
+    public function setStatus(string $status): self
     {
         $this->status = $status;
 
@@ -179,22 +113,16 @@ class AsyncOperation
 
     /**
      * Gets the progress, in percentage, for the asynchronous operation.
-     *
-     * @return float|null
      */
-    public function getProgress()
+    public function getProgress(): ?float
     {
         return $this->progress;
     }
 
     /**
      * Sets the progress, in percentage, for the asynchronous operation.
-     *
-     * @param float|null $progress
-     *
-     * @return $this
      */
-    public function setProgress($progress)
+    public function setProgress(?float $progress): self
     {
         $this->progress = $progress;
 
@@ -203,22 +131,16 @@ class AsyncOperation
 
     /**
      * Gets the identifier of a job that is used to process the asynchronous operation.
-     *
-     * @return int|null
      */
-    public function getJobId()
+    public function getJobId(): ?int
     {
         return $this->jobId;
     }
 
     /**
      * Sets the identifier of a job that is used to process the asynchronous operation.
-     *
-     * @param int|null $jobId
-     *
-     * @return $this
      */
-    public function setJobId($jobId)
+    public function setJobId(?int $jobId): self
     {
         $this->jobId = $jobId;
 
@@ -227,52 +149,40 @@ class AsyncOperation
 
     /**
      * Gets the date and time when the asynchronous operation was created.
-     *
-     * @return \DateTime
      */
-    public function getCreatedAt()
+    public function getCreatedAt(): \DateTimeInterface
     {
         return $this->createdAt;
     }
 
     /**
      * Gets the date and time when the asynchronous operation was last updated.
-     *
-     * @return \DateTime
      */
-    public function getUpdatedAt()
+    public function getUpdatedAt(): \DateTimeInterface
     {
         return $this->updatedAt;
     }
 
     /**
      * Gets the number of seconds the asynchronous operation has been running.
-     *
-     * @return int
      */
-    public function getElapsedTime()
+    public function getElapsedTime(): int
     {
         return $this->elapsedTime;
     }
 
     /**
      * Gets a user who created the asynchronous operation.
-     *
-     * @return User|null
      */
-    public function getOwner()
+    public function getOwner(): ?User
     {
         return $this->owner;
     }
 
     /**
      * Sets a user who created the asynchronous operation.
-     *
-     * @param User $owningUser
-     *
-     * @return $this
      */
-    public function setOwner(User $owningUser = null)
+    public function setOwner(?User $owningUser): self
     {
         $this->owner = $owningUser;
 
@@ -281,22 +191,16 @@ class AsyncOperation
 
     /**
      * Gets an organization the asynchronous operation belongs to.
-     *
-     * @return Organization|null
      */
-    public function getOrganization()
+    public function getOrganization(): ?Organization
     {
         return $this->organization;
     }
 
     /**
      * Sets an organization the asynchronous operation belongs to.
-     *
-     * @param Organization $organization
-     *
-     * @return $this
      */
-    public function setOrganization(Organization $organization = null)
+    public function setOrganization(?Organization $organization): self
     {
         $this->organization = $organization;
 
@@ -305,22 +209,16 @@ class AsyncOperation
 
     /**
      * Gets the name of a file contains the request data for the asynchronous operation.
-     *
-     * @return string
      */
-    public function getDataFileName()
+    public function getDataFileName(): ?string
     {
         return $this->dataFileName;
     }
 
     /**
      * Sets the name of a file contains the request data for the asynchronous operation.
-     *
-     * @param string $dataFileName
-     *
-     * @return $this
      */
-    public function setDataFileName($dataFileName)
+    public function setDataFileName(?string $dataFileName): self
     {
         $this->dataFileName = $dataFileName;
 
@@ -329,22 +227,16 @@ class AsyncOperation
 
     /**
      * Gets the class name of an entity for which the asynchronous operation was created.
-     *
-     * @return string
      */
-    public function getEntityClass()
+    public function getEntityClass(): string
     {
         return $this->entityClass;
     }
 
     /**
      * Sets the class name of an entity for which the asynchronous operation was created.
-     *
-     * @param string $entityClass
-     *
-     * @return $this
      */
-    public function setEntityClass($entityClass)
+    public function setEntityClass(string $entityClass): self
     {
         $this->entityClass = $entityClass;
 
@@ -353,22 +245,16 @@ class AsyncOperation
 
     /**
      * Gets the name of an API action for which the asynchronous operation was created.
-     *
-     * @return string
      */
-    public function getActionName()
+    public function getActionName(): string
     {
         return $this->actionName;
     }
 
     /**
      * Sets the name of an API action for which the asynchronous operation was created.
-     *
-     * @param string $actionName
-     *
-     * @return $this
      */
-    public function setActionName($actionName)
+    public function setActionName(string $actionName): self
     {
         $this->actionName = $actionName;
 
@@ -377,30 +263,24 @@ class AsyncOperation
 
     /**
      * Indicates whether the asynchronous operation has at least one error.
-     *
-     * @return bool
      */
-    public function isHasErrors()
+    public function isHasErrors(): bool
     {
         return $this->hasErrors;
     }
 
     /**
      * Sets a value indicates whether the asynchronous operation has at least one error.
-     *
-     * @param bool $hasErrors
      */
-    public function setHasErrors($hasErrors)
+    public function setHasErrors(bool $hasErrors): void
     {
         $this->hasErrors = $hasErrors;
     }
 
     /**
      * Gets the summary statistics of the asynchronous operation.
-     *
-     * @return array|null
      */
-    public function getSummary()
+    public function getSummary(): ?array
     {
         return $this->summary;
     }
@@ -414,19 +294,36 @@ class AsyncOperation
     }
 
     /**
-     * @ORM\PrePersist
+     * Gets entities affected by the asynchronous operation.
+     *
+     * @return array|null [
+     *                      'primary' => [[id, request id, is existing], ...],
+     *                      'included' => [[class, id, request id, is existing], ...]
+     *                    ]
      */
-    public function beforeSave()
+    public function getAffectedEntities(): ?array
+    {
+        return $this->affectedEntities;
+    }
+
+    /**
+     * Sets entities affected by the asynchronous operation.
+     */
+    public function setAffectedEntities(?array $affectedEntities): void
+    {
+        $this->affectedEntities = $affectedEntities;
+    }
+
+    #[ORM\PrePersist]
+    public function beforeSave(): void
     {
         $this->createdAt = new \DateTime('now', new \DateTimeZone('UTC'));
         $this->updatedAt = clone $this->createdAt;
         $this->elapsedTime = 0;
     }
 
-    /**
-     * @ORM\PreUpdate
-     */
-    public function preUpdate()
+    #[ORM\PreUpdate]
+    public function preUpdate(): void
     {
         $this->updatedAt = new \DateTime('now', new \DateTimeZone('UTC'));
         $this->elapsedTime = $this->updatedAt->getTimestamp() - $this->createdAt->getTimestamp();

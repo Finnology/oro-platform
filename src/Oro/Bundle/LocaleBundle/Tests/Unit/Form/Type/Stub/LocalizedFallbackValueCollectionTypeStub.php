@@ -12,17 +12,13 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class LocalizedFallbackValueCollectionTypeStub extends AbstractType
 {
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return LocalizedFallbackValueCollectionType::NAME;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults([
@@ -44,10 +40,8 @@ class LocalizedFallbackValueCollectionTypeStub extends AbstractType
         });
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getParent()
+    #[\Override]
+    public function getParent(): ?string
     {
         return CollectionType::class;
     }

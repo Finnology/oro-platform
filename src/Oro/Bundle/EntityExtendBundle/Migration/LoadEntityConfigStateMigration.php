@@ -4,27 +4,19 @@ namespace Oro\Bundle\EntityExtendBundle\Migration;
 
 use Doctrine\DBAL\Schema\Schema;
 use Oro\Bundle\EntityExtendBundle\Migration\Schema\ExtendSchema;
-use Oro\Bundle\MigrationBundle\Migration\Extension\DataStorageExtension;
 use Oro\Bundle\MigrationBundle\Migration\Extension\DataStorageExtensionAwareInterface;
+use Oro\Bundle\MigrationBundle\Migration\Extension\DataStorageExtensionAwareTrait;
 use Oro\Bundle\MigrationBundle\Migration\Migration;
 use Oro\Bundle\MigrationBundle\Migration\QueryBag;
 
+/**
+ * The migration to load entity configuration state.
+ */
 class LoadEntityConfigStateMigration implements Migration, DataStorageExtensionAwareInterface
 {
-    /** @var DataStorageExtension */
-    protected $dataStorageExtension;
+    use DataStorageExtensionAwareTrait;
 
-    /**
-     * {@inheritdoc}
-     */
-    public function setDataStorageExtension(DataStorageExtension $dataStorageExtension)
-    {
-        $this->dataStorageExtension = $dataStorageExtension;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function up(Schema $schema, QueryBag $queries)
     {
         if ($schema instanceof ExtendSchema) {

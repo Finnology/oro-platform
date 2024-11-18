@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\InstallerBundle\Command;
@@ -27,6 +28,7 @@ abstract class AbstractCommand extends Command
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     protected function configure()
     {
         $this
@@ -62,7 +64,7 @@ HELP
         $container = $this->getContainer();
 
         $commandExecutor = new CommandExecutor(
-            $input->hasOption('env') ? $input->getOption('env') : null,
+            $input,
             $output,
             $this->getApplication(),
             $container->get('oro_cache.oro_data_cache_manager')

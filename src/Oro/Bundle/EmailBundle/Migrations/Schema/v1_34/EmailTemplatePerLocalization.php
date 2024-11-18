@@ -14,34 +14,29 @@ class EmailTemplatePerLocalization implements Migration, DatabasePlatformAwareIn
 {
     use DatabasePlatformAwareTrait;
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function up(Schema $schema, QueryBag $queries): void
     {
         if (!$schema->hasTable('oro_email_template_localized')) {
-            self::oroEmailTemplateLocalizedTable($schema);
-
+            $this->createOroEmailTemplateLocalizedTable($schema);
             if ($schema->hasTable('oro_email_template_translation')) {
                 $queries->addPostQuery(new MigrateEmailTemplatesQuery($schema));
             }
         }
 
-        self::oroEmailTemplateLocalizedForeignKeys($schema);
+        $this->addOroEmailTemplateLocalizedForeignKeys($schema);
 
         if ($schema->hasTable('oro_email_template_translation')) {
             $toSchema = clone $schema;
             $toSchema->dropTable('oro_email_template_translation');
-
             foreach ($schema->getMigrateToSql($toSchema, $this->platform) as $query) {
                 $queries->addQuery($query);
             }
-
             $queries->addPostQuery(new RemoveFieldQuery(EmailTemplate::class, 'translations'));
         }
     }
 
-    public static function oroEmailTemplateLocalizedTable(Schema $schema): void
+    private function createOroEmailTemplateLocalizedTable(Schema $schema): void
     {
         $table = $schema->createTable('oro_email_template_localized');
         $table->addColumn('id', 'integer', ['autoincrement' => true]);
@@ -54,7 +49,7 @@ class EmailTemplatePerLocalization implements Migration, DatabasePlatformAwareIn
         $table->setPrimaryKey(['id']);
     }
 
-    public static function oroEmailTemplateLocalizedForeignKeys(Schema $schema): void
+    private function addOroEmailTemplateLocalizedForeignKeys(Schema $schema): void
     {
         $table = $schema->getTable('oro_email_template_localized');
         $table->addForeignKeyConstraint(
@@ -63,7 +58,6 @@ class EmailTemplatePerLocalization implements Migration, DatabasePlatformAwareIn
             ['id'],
             ['onDelete' => 'CASCADE', 'onUpdate' => null]
         );
-
         if ($schema->hasTable('oro_localization')) {
             $table = $schema->getTable('oro_email_template_localized');
             $table->addForeignKeyConstraint(

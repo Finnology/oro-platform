@@ -25,9 +25,7 @@ class ActionsConfiguration extends AbstractConfigurationSection
         $this->sectionName = $sectionName;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function configure(NodeBuilder $node): void
     {
         /** @var NodeBuilder $actionNode */
@@ -65,9 +63,7 @@ class ActionsConfiguration extends AbstractConfigurationSection
         $this->configureActionNode($actionNode);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function isApplicable(string $section): bool
     {
         return 'entities.entity' === $section;
@@ -94,6 +90,7 @@ class ActionsConfiguration extends AbstractConfigurationSection
             ->scalarNode(ConfigUtil::DOCUMENTATION)->cannotBeEmpty()->end()
             ->scalarNode(ConfigUtil::ACL_RESOURCE)->end()
             ->integerNode(ConfigUtil::MAX_RESULTS)->min(-1)->end()
+            ->booleanNode(ConfigUtil::DISABLE_PAGING)->end()
             ->integerNode(ConfigUtil::PAGE_SIZE)
                 ->min(-1)
                 ->validate()
@@ -113,7 +110,11 @@ class ActionsConfiguration extends AbstractConfigurationSection
             ->booleanNode(ConfigUtil::DISABLE_SORTING)->end()
             ->booleanNode(ConfigUtil::DISABLE_INCLUSION)->end()
             ->booleanNode(ConfigUtil::DISABLE_FIELDSET)->end()
-            ->booleanNode(ConfigUtil::DISABLE_META_PROPERTIES)->end()
+            ->arrayNode(ConfigUtil::DISABLE_META_PROPERTIES)
+                ->treatFalseLike([false])
+                ->treatTrueLike([true])
+                ->prototype('scalar')->end()
+            ->end()
             ->scalarNode(ConfigUtil::FORM_TYPE)->end()
             ->arrayNode(ConfigUtil::FORM_OPTIONS)
                 ->useAttributeAsKey('')
@@ -133,7 +134,20 @@ class ActionsConfiguration extends AbstractConfigurationSection
                     })
                 ->end()
             ->end();
+
         $this->addStatusCodesNode($node);
+
+        /** @var NodeBuilder $upsertNode */
+        $upsertNode = $node
+            ->arrayNode(ConfigUtil::UPSERT)
+                ->treatFalseLike([ConfigUtil::UPSERT_DISABLE => true])
+                ->treatTrueLike([ConfigUtil::UPSERT_DISABLE => false])
+                ->children()
+                    ->booleanNode(ConfigUtil::UPSERT_DISABLE)->end();
+        $this->appendArrayOfNotEmptyStrings($upsertNode, ConfigUtil::UPSERT_ADD);
+        $this->appendArrayOfNotEmptyStrings($upsertNode, ConfigUtil::UPSERT_REMOVE);
+        $this->appendArrayOfNotEmptyStrings($upsertNode, ConfigUtil::UPSERT_REPLACE);
+
         $fieldNode = $node
             ->arrayNode(ConfigUtil::FIELDS)
                 ->useAttributeAsKey('')
@@ -149,6 +163,12 @@ class ActionsConfiguration extends AbstractConfigurationSection
      */
     private function postProcessActionConfig(array $config): array
     {
+        if (\array_key_exists(ConfigUtil::DISABLE_PAGING, $config)) {
+            if ($config[ConfigUtil::DISABLE_PAGING] && !\array_key_exists(ConfigUtil::PAGE_SIZE, $config)) {
+                $config[ConfigUtil::PAGE_SIZE] = -1;
+            }
+            unset($config[ConfigUtil::DISABLE_PAGING]);
+        }
         if (\array_key_exists(ConfigUtil::PAGE_SIZE, $config)
             && -1 === $config[ConfigUtil::PAGE_SIZE]
             && !\array_key_exists(ConfigUtil::MAX_RESULTS, $config)
@@ -170,6 +190,20 @@ class ActionsConfiguration extends AbstractConfigurationSection
         if (empty($config[ConfigUtil::FORM_EVENT_SUBSCRIBER])) {
             unset($config[ConfigUtil::FORM_EVENT_SUBSCRIBER]);
         }
+        if (empty($config[ConfigUtil::DISABLE_META_PROPERTIES])) {
+            unset($config[ConfigUtil::DISABLE_META_PROPERTIES]);
+        }
+        if (\array_key_exists(ConfigUtil::UPSERT, $config)) {
+            if (empty($config[ConfigUtil::UPSERT][ConfigUtil::UPSERT_ADD])) {
+                unset($config[ConfigUtil::UPSERT][ConfigUtil::UPSERT_ADD]);
+            }
+            if (empty($config[ConfigUtil::UPSERT][ConfigUtil::UPSERT_REMOVE])) {
+                unset($config[ConfigUtil::UPSERT][ConfigUtil::UPSERT_REMOVE]);
+            }
+            if (empty($config[ConfigUtil::UPSERT][ConfigUtil::UPSERT_REPLACE])) {
+                unset($config[ConfigUtil::UPSERT][ConfigUtil::UPSERT_REPLACE]);
+            }
+        }
         if (empty($config[ConfigUtil::FIELDS])) {
             unset($config[ConfigUtil::FIELDS]);
         }
@@ -177,7 +211,7 @@ class ActionsConfiguration extends AbstractConfigurationSection
         return $config;
     }
 
-    public function addStatusCodesNode(NodeBuilder $node): void
+    private function addStatusCodesNode(NodeBuilder $node): void
     {
         /** @var ArrayNodeDefinition $parentNode */
         $codeNode = $node
@@ -267,5 +301,27 @@ class ActionsConfiguration extends AbstractConfigurationSection
         }
 
         return $config;
+    }
+
+    private function appendArrayOfNotEmptyStrings(NodeBuilder $node, string $name): void
+    {
+        $node->arrayNode($name)
+            ->variablePrototype()
+                ->validate()
+                    ->always(function (mixed $value) {
+                        if (!\is_array($value)) {
+                            throw new \InvalidArgumentException(sprintf(
+                                'Expected "array", but got "%s"',
+                                get_debug_type($value)
+                            ));
+                        }
+                        foreach ($value as $val) {
+                            if (!\is_string($val) || '' === $val) {
+                                throw new \InvalidArgumentException('Expected array of not empty strings');
+                            }
+                        }
+
+                        return $value;
+                    });
     }
 }

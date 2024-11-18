@@ -24,13 +24,11 @@ class RenameDataFixturesFixture extends AbstractFixture
         return (bool)$this->renamedDataFixtures;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function load(ObjectManager $manager)
     {
         /** @var DataFixture[] $dataFixtures */
-        $dataFixtures = $manager->getRepository('OroMigrationBundle:DataFixture')
+        $dataFixtures = $manager->getRepository(DataFixture::class)
             ->findBy(['className' => \array_keys($this->renamedDataFixtures)]);
 
         foreach ($dataFixtures as $dataFixture) {

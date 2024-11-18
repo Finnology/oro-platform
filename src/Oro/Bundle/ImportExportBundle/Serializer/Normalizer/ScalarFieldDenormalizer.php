@@ -54,12 +54,14 @@ class ScalarFieldDenormalizer implements ScalarFieldDenormalizerInterface
         Types::BOOLEAN => self::SCALAR_TYPE_BOOLEAN,
     ];
 
+    #[\Override]
     public function addFieldToIgnore(string $className, string $fieldName)
     {
         $ignoredFieldKey = $this->getIgnoredFieldKey($className, $fieldName);
         $this->ignoredFields[$ignoredFieldKey] = true;
     }
 
+    #[\Override]
     public function addConvertTypeMappings(string $doctrineType, string $toType)
     {
         if ($this->isSupportedScalarType($toType)) {
@@ -77,11 +79,12 @@ class ScalarFieldDenormalizer implements ScalarFieldDenormalizerInterface
      *
      * @param mixed  $data Data to denormalize from.
      * @param string $type Field type
-     * @param string $format The format being deserialized from.
+     * @param string|null $format The format being deserialized from.
      * @param array  $context options available to the denormalizer
      *
      * @return bool
      */
+    #[\Override]
     public function supportsDenormalization($data, string $type, string $format = null, array $context = []): bool
     {
         if (!\array_key_exists('fieldName', $context) || !\array_key_exists('className', $context)) {
@@ -100,9 +103,7 @@ class ScalarFieldDenormalizer implements ScalarFieldDenormalizerInterface
         return \array_key_exists($type, $this->convertTypeMappings);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function denormalize($data, string $type, string $format = null, array $context = [])
     {
         if ('' === $data) {

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\UserBundle\Command;
@@ -36,6 +37,7 @@ class CreateUserCommand extends Command
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     protected function configure()
     {
         $this
@@ -77,7 +79,8 @@ HELP
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    #[\Override]
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         /** @var User $user */
         $user = $this->userManager->createUser();
@@ -99,7 +102,7 @@ HELP
             return $exception->getCode() ?: 1;
         }
 
-        return 0;
+        return Command::SUCCESS;
     }
 
     /**

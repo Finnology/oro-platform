@@ -13,10 +13,8 @@ class PermissionConfiguration implements ConfigurationInterface
     public const ROOT_NODE          = 'oro_permissions';
     public const DEFAULT_GROUP_NAME = 'default';
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getConfigTreeBuilder()
+    #[\Override]
+    public function getConfigTreeBuilder(): TreeBuilder
     {
         $builder = new TreeBuilder(self::ROOT_NODE);
         $rootNode = $builder->getRootNode();

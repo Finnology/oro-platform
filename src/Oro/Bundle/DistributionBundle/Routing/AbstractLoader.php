@@ -20,8 +20,6 @@ abstract class AbstractLoader extends CumulativeRoutingFileLoader
 
     /**
      * Sets the event dispatcher
-     *
-     * @param EventDispatcherInterface $eventDispatcher
      */
     public function setEventDispatcher(EventDispatcherInterface $eventDispatcher = null)
     {
@@ -30,8 +28,6 @@ abstract class AbstractLoader extends CumulativeRoutingFileLoader
 
     /**
      * Sets an object that can be used to share data between different loaders
-     *
-     * @param SharedData $cache
      */
     public function setCache(SharedData $cache = null)
     {
@@ -55,9 +51,7 @@ abstract class AbstractLoader extends CumulativeRoutingFileLoader
         return $event->getCollection();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function loadRoutes(RouteCollection $routes)
     {
         if (null === $this->cache) {

@@ -1,9 +1,13 @@
 <?php
+
 namespace Oro\Component\MessageQueue\Consumption\Extension;
 
 use Oro\Component\MessageQueue\Consumption\AbstractExtension;
 use Oro\Component\MessageQueue\Consumption\Context;
 
+/**
+ * Interrupts execution if memory limit reached
+ */
 class LimitConsumerMemoryExtension extends AbstractExtension
 {
     /**
@@ -26,25 +30,19 @@ class LimitConsumerMemoryExtension extends AbstractExtension
         $this->memoryLimit = $memoryLimit * 1024 * 1024;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function onBeforeReceive(Context $context)
     {
         $this->checkMemory($context);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function onPostReceived(Context $context)
     {
         $this->checkMemory($context);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function onIdle(Context $context)
     {
         $this->checkMemory($context);

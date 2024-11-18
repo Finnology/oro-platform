@@ -16,10 +16,8 @@ use Symfony\Component\Form\FormEvents;
  */
 class DateGroupingFormSubscriber implements EventSubscriberInterface
 {
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedEvents()
+    #[\Override]
+    public static function getSubscribedEvents(): array
     {
         return [
             FormEvents::POST_SET_DATA => 'onPostSetData',

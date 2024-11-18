@@ -2,17 +2,17 @@
 
 namespace Oro\Bundle\WorkflowBundle\Migration;
 
-use Doctrine\DBAL\Connection;
 use Oro\Bundle\MigrationBundle\Migration\ConnectionAwareInterface;
+use Oro\Bundle\MigrationBundle\Migration\ConnectionAwareTrait;
 use Oro\Bundle\MigrationBundle\Migration\MigrationQuery;
 use Psr\Log\LoggerInterface;
 
+/**
+ * The migration query that removes visibility processes from all "process" tables.
+ */
 class RemoveProcessesQuery implements MigrationQuery, ConnectionAwareInterface
 {
-    /**
-     * @var Connection
-     */
-    private $connection;
+    use ConnectionAwareTrait;
 
     /**
      * @var array
@@ -27,25 +27,13 @@ class RemoveProcessesQuery implements MigrationQuery, ConnectionAwareInterface
         $this->names = (array) $names;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function setConnection(Connection $connection)
-    {
-        $this->connection = $connection;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getDescription()
     {
         return 'Removes visibility processes from all "process" tables';
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function execute(LoggerInterface $logger)
     {
         $sql = "DELETE FROM oro_process_definition WHERE name in (?)";

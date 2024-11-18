@@ -16,9 +16,7 @@ class UpdateDoctrineEventHandlersPass implements CompilerPassInterface
     private const DOCTRINE_EVENT_SUBSCRIBER_TAG = 'doctrine.event_subscriber';
     private const DOCTRINE_EVENT_LISTENER_TAG   = 'doctrine.event_listener';
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function process(ContainerBuilder $container): void
     {
         $connections = $this->getAllConnections($container);
@@ -62,7 +60,8 @@ class UpdateDoctrineEventHandlersPass implements CompilerPassInterface
                     $tag['connection'] = 'default';
                 } elseif ('default' === $tag['connection']) {
                     $definition->setDeprecated(
-                        true,
+                        'oro/platform',
+                        '6.0',
                         sprintf(
                             'Passing "connection: default" to "%%service_id%%" tags is default behaviour now.'
                             . ' Specify one of "%s" or remove default one.',

@@ -2,6 +2,7 @@
 
 namespace Oro\Bundle\NavigationBundle\Entity;
 
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Oro\Bundle\NavigationBundle\Model\UrlAwareInterface;
 use Oro\Bundle\NavigationBundle\Model\UrlAwareTrait;
@@ -10,8 +11,10 @@ use Oro\Bundle\OrganizationBundle\Entity\Ownership\OrganizationAwareTrait;
 use Oro\Bundle\UserBundle\Entity\AbstractUser;
 
 /**
- * @ORM\MappedSuperclass
- */
+* AbstractNavigationHistoryItem abstract class
+*
+*/
+#[ORM\MappedSuperclass]
 abstract class AbstractNavigationHistoryItem implements
     NavigationItemInterface,
     OrganizationAwareInterface,
@@ -24,65 +27,34 @@ abstract class AbstractNavigationHistoryItem implements
     const NAVIGATION_HISTORY_COLUMN_VISITED_AT  = 'visitedAt';
     const NAVIGATION_HISTORY_COLUMN_VISIT_COUNT = 'visitCount';
 
-    /**
-     * @var integer $id
-     *
-     * @ORM\Id
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
-    protected $id;
+    #[ORM\Id]
+    #[ORM\Column(name: 'id', type: Types::INTEGER)]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
+    protected ?int $id = null;
 
-    /**
-     * @var string $title
-     *
-     * @ORM\Column(name="title", type="text")
-     */
-    protected $title;
+    #[ORM\Column(name: 'title', type: Types::TEXT)]
+    protected ?string $title = null;
 
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="visited_at", type="datetime")
-     */
-    protected $visitedAt;
+    #[ORM\Column(name: 'visited_at', type: Types::DATETIME_MUTABLE)]
+    protected ?\DateTimeInterface $visitedAt = null;
 
-    /**
-     * @var \int
-     *
-     * @ORM\Column(name="visit_count", type="integer")
-     */
-    protected $visitCount = 0;
+    #[ORM\Column(name: 'visit_count', type: Types::INTEGER)]
+    protected ?int $visitCount = 0;
 
-    /**
-     * @var string $url
-     *
-     * @ORM\Column(name="route", type="string", length=128)
-     */
-    protected $route;
+    #[ORM\Column(name: 'route', type: Types::STRING, length: 128)]
+    protected ?string $route = null;
 
     /**
      * @var array
-     *
-     * @ORM\Column(name="route_parameters", type="array")
      */
+    #[ORM\Column(name: 'route_parameters', type: Types::ARRAY)]
     protected $routeParameters = [];
 
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="entity_id", type="integer", nullable=true)
-     */
-    protected $entityId;
+    #[ORM\Column(name: 'entity_id', type: Types::INTEGER, nullable: true)]
+    protected ?int $entityId = null;
 
-    /**
-     * @var AbstractUser $user
-     */
-    protected $user;
+    protected ?AbstractUser $user = null;
 
-    /**
-     * @param array $values
-     */
     public function __construct(array $values = null)
     {
         if (!empty($values)) {
@@ -95,6 +67,7 @@ abstract class AbstractNavigationHistoryItem implements
      *
      * @return integer
      */
+    #[\Override]
     public function getId()
     {
         return $this->id;
@@ -221,7 +194,7 @@ abstract class AbstractNavigationHistoryItem implements
     }
 
     /**
-     * @param AbstractUser $user
+     * @param AbstractUser|null $user
      * @return AbstractNavigationHistoryItem
      */
     public function setUser(AbstractUser $user = null)
@@ -234,6 +207,7 @@ abstract class AbstractNavigationHistoryItem implements
     /**
      * @return AbstractUser
      */
+    #[\Override]
     public function getUser()
     {
         return $this->user;
@@ -242,6 +216,7 @@ abstract class AbstractNavigationHistoryItem implements
     /**
      * Set entity properties
      */
+    #[\Override]
     public function setValues(array $values)
     {
         if (isset($values['title'])) {
@@ -269,9 +244,8 @@ abstract class AbstractNavigationHistoryItem implements
 
     /**
      * Pre persist event handler
-     *
-     * @ORM\PrePersist
      */
+    #[ORM\PrePersist]
     public function doPrePersist()
     {
         $this->visitedAt = new \DateTime('now', new \DateTimeZone('UTC'));

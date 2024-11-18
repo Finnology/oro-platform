@@ -92,9 +92,7 @@ class AttributeMultiSelectType extends AbstractType
         return  $field->getFieldName();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder->addModelTransformer(new AttributeRelationsTransformer($options['attributeGroup']));
@@ -111,9 +109,7 @@ class AttributeMultiSelectType extends AbstractType
         return $this->attributeManager->isSystem($field);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults(
@@ -139,26 +135,19 @@ class AttributeMultiSelectType extends AbstractType
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getParent()
+    #[\Override]
+    public function getParent(): ?string
     {
         return Select2ChoiceType::class;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getName()
     {
         return $this->getBlockPrefix();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return self::NAME;
     }

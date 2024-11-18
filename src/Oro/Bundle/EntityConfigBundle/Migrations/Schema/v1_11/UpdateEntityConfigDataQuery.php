@@ -160,9 +160,7 @@ class UpdateEntityConfigDataQuery extends ParametrizedMigrationQuery
         'zoom-out' => 'search-minus',
     ];
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getDescription()
     {
         $logger = new ArrayLogger();
@@ -171,9 +169,7 @@ class UpdateEntityConfigDataQuery extends ParametrizedMigrationQuery
         return $logger->getMessages();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function execute(LoggerInterface $logger)
     {
         $this->migrateConfigs($logger);
@@ -188,7 +184,7 @@ class UpdateEntityConfigDataQuery extends ParametrizedMigrationQuery
         $sql = 'SELECT id, data FROM oro_entity_config';
         $this->logQuery($logger, $sql);
 
-        $rows = $this->connection->fetchAll($sql);
+        $rows = $this->connection->fetchAllAssociative($sql);
 
         foreach ($rows as $key => $row) {
             $type = Type::getType(Types::ARRAY);
@@ -223,7 +219,7 @@ class UpdateEntityConfigDataQuery extends ParametrizedMigrationQuery
     private function createIconName($name)
     {
         foreach (self::$iconReplaceMask as $pattern => $replace) {
-            $exact = str_ends_with($pattern, '*') ? '': '$';
+            $exact = str_ends_with($pattern, '*') ? '' : '$';
             $pattern = '/' . $pattern . $exact .'/';
             $next = false;
 

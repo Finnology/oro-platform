@@ -1,4 +1,5 @@
 <?php
+
 namespace Oro\Component\MessageQueue\Tests\Unit\Consumption\Mock;
 
 use Oro\Component\MessageQueue\Consumption\AbstractExtension;
@@ -15,11 +16,13 @@ class BreakCycleExtension extends AbstractExtension
         $this->limit = $limit;
     }
 
+    #[\Override]
     public function onPostReceived(Context $context)
     {
         $this->onIdle($context);
     }
 
+    #[\Override]
     public function onIdle(Context $context)
     {
         if ($this->cycles >= $this->limit) {

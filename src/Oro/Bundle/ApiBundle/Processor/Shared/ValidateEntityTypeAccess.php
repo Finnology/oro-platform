@@ -39,16 +39,13 @@ class ValidateEntityTypeAccess implements ProcessorInterface
         $this->forcePermissionUsage = $forcePermissionUsage;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function process(ContextInterface $context): void
     {
         /** @var Context $context */
 
-        $config = $context->getConfig();
-
         $isGranted = true;
+        $config = $context->getConfig();
         if (null !== $config && $config->hasAclResource()) {
             $aclResource = $config->getAclResource();
             if ($aclResource) {

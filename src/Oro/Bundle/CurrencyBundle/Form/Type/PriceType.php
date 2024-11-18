@@ -33,6 +33,7 @@ class PriceType extends AbstractType
         $this->dataClass = $dataClass;
     }
 
+    #[\Override]
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $isRequiredPrice = $this->isRequired($options);
@@ -66,6 +67,7 @@ class PriceType extends AbstractType
                     'required' => $isRequiredPrice,
                     'scale' => Price::MAX_VALUE_SCALE,
                     'attr' => [
+                        'readonly' => $options['readonly'],
                         'data-match-price-on-null' =>  $options['match_price_on_null'] ? 1 : 0
                     ]
                 ]
@@ -75,9 +77,7 @@ class PriceType extends AbstractType
         $builder->addViewTransformer(new PriceTransformer());
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults([
@@ -89,14 +89,13 @@ class PriceType extends AbstractType
             'full_currency_list' => false,
             'currency_empty_value' => 'oro.currency.currency.form.choose',
             'compact' => false,
-            'validation_groups'=> ['Default'],
-            'match_price_on_null' => true
+            'validation_groups' => ['Default'],
+            'match_price_on_null' => true,
+            'readonly' => false,
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function finishView(FormView $view, FormInterface $form, array $options)
     {
         $view->vars['hide_currency'] = $options['hide_currency'];
@@ -110,10 +109,8 @@ class PriceType extends AbstractType
         return $this->getBlockPrefix();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return self::NAME;
     }

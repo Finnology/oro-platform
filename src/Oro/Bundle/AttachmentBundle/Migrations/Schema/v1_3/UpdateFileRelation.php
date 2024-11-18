@@ -11,9 +11,7 @@ class UpdateFileRelation extends ParametrizedMigrationQuery
 {
     const ENTITY_PATH = 'Oro\\Bundle\\AttachmentBundle\\Entity\\File';
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getDescription()
     {
         $logger = new ArrayLogger();
@@ -22,16 +20,13 @@ class UpdateFileRelation extends ParametrizedMigrationQuery
         return $logger->getMessages();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function execute(LoggerInterface $logger)
     {
         $this->doExecute($logger);
     }
 
     /**
-     * {@inheritdoc}
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
     public function doExecute(LoggerInterface $logger, $dryRun = false)
@@ -76,7 +71,7 @@ class UpdateFileRelation extends ParametrizedMigrationQuery
         $result = [];
         $sql    = 'SELECT id, class_name, data FROM oro_entity_config';
 
-        $rows = $this->connection->fetchAll($sql);
+        $rows = $this->connection->fetchAllAssociative($sql);
         foreach ($rows as $row) {
             $result[$row['id']] = $this->connection->convertToPHPValue($row['data'], 'array');
         }

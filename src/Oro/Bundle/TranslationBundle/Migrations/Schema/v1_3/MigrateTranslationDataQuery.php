@@ -11,9 +11,7 @@ use Psr\Log\LoggerInterface;
 
 class MigrateTranslationDataQuery extends ParametrizedMigrationQuery
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getDescription()
     {
         $logger = new ArrayLogger();
@@ -22,9 +20,7 @@ class MigrateTranslationDataQuery extends ParametrizedMigrationQuery
         return $logger->getMessages();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function execute(LoggerInterface $logger)
     {
         $this->migrateData($logger);
@@ -107,7 +103,7 @@ class MigrateTranslationDataQuery extends ParametrizedMigrationQuery
 
         $this->logQuery($logger, $query);
 
-        return array_column($this->connection->fetchAll($query), 'locale');
+        return array_column($this->connection->fetchAllAssociative($query), 'locale');
     }
 
     /**
@@ -140,7 +136,7 @@ class MigrateTranslationDataQuery extends ParametrizedMigrationQuery
 
         $this->logQuery($logger, $query[0]);
 
-        $aggregatedItems = $this->connection->fetchAll($query[0]);
+        $aggregatedItems = $this->connection->fetchAllAssociative($query[0]);
 
         $items = [];
         foreach ($aggregatedItems as $item) {

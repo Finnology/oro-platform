@@ -33,10 +33,8 @@ class AssetConfigCache implements WarmableInterface
         $this->themeManager = $themeManager;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function warmUp($cacheDir)
+    #[\Override]
+    public function warmUp(string $cacheDir): array
     {
         $config['paths'] = $this->getBundlesPath();
         $config['devServerOptions'] = $this->webpackDevServerOptions;
@@ -44,6 +42,7 @@ class AssetConfigCache implements WarmableInterface
         $config['themes'] = array_keys($this->themeManager->getEnabledThemes());
 
         @file_put_contents($this->getFilePath($cacheDir), \json_encode($config, JSON_UNESCAPED_SLASHES));
+        return [];
     }
 
     public function exists(string $cacheDir): bool

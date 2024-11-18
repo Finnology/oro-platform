@@ -14,7 +14,6 @@ class EmailTemplateVoter extends AbstractEntityVoter
 {
     const EMAIL_TEMPLATE_DELETE_ALIAS = 'oro_email_emailtemplate_delete';
 
-    /** {@inheritDoc} */
     protected $supportedAttributes = [
         BasicPermission::DELETE,
         self::EMAIL_TEMPLATE_DELETE_ALIAS
@@ -22,10 +21,8 @@ class EmailTemplateVoter extends AbstractEntityVoter
 
     private mixed $object;
 
-    /**
-     * {@inheritDoc}
-     */
-    public function vote(TokenInterface $token, $object, array $attributes)
+    #[\Override]
+    public function vote(TokenInterface $token, $object, array $attributes): int
     {
         $this->object = $object;
         try {
@@ -35,9 +32,7 @@ class EmailTemplateVoter extends AbstractEntityVoter
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     protected function getPermissionForAttribute($class, $identifier, $attribute)
     {
         return $this->isDeleteDenied($attribute)

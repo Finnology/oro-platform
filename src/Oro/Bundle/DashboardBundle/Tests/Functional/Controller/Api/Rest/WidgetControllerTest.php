@@ -2,7 +2,6 @@
 
 namespace Oro\Bundle\DashboardBundle\Tests\Functional\Controller\Api\Rest;
 
-use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Oro\Bundle\DashboardBundle\Entity\Dashboard;
 use Oro\Bundle\DashboardBundle\Entity\Widget;
@@ -12,7 +11,7 @@ use Oro\Bundle\TestFrameworkBundle\Test\WebTestCase;
 
 class WidgetControllerTest extends WebTestCase
 {
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $em;
 
     /** @var Widget */
@@ -24,6 +23,7 @@ class WidgetControllerTest extends WebTestCase
     /** @var Manager */
     private $dashboardManager;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->initClient([], $this->generateWsseAuthHeader());
@@ -204,15 +204,11 @@ class WidgetControllerTest extends WebTestCase
     {
         $dashboard = new Dashboard();
         $dashboard->setName('main');
-
         $widget = new Widget();
-        $widget
-            ->setName($name)
-            ->setLayoutPosition($layoutPositions)
-            ->setDashboard($dashboard);
-
+        $widget->setName($name);
+        $widget->setLayoutPosition($layoutPositions);
+        $widget->setDashboard($dashboard);
         $dashboard->addWidget($widget);
-
         $this->em->persist($widget);
         $this->em->flush();
 

@@ -12,6 +12,7 @@ class DebugWorkflowItemSerializerPassTest extends \PHPUnit\Framework\TestCase
 {
     private DebugWorkflowItemSerializerPass $compiler;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->compiler = new DebugWorkflowItemSerializerPass();
@@ -33,7 +34,6 @@ class DebugWorkflowItemSerializerPassTest extends \PHPUnit\Framework\TestCase
         $container->setParameter('kernel.debug', true);
 
         $this->compiler->process($container);
-
 
         $expectedService = new Definition(DebugWorkflowItemSerializer::class);
         $expectedService->setDecoratedService('oro_workflow.workflow_item_serializer', null, -255);

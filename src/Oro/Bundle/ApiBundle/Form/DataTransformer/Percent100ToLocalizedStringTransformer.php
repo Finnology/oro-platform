@@ -20,10 +20,8 @@ class Percent100ToLocalizedStringTransformer extends NumberToLocalizedStringTran
         parent::__construct(($scale ?? self::PERCENT_SCALE) + 2, $grouping, $roundingMode, $locale);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function transform($value)
+    #[\Override]
+    public function transform($value): string
     {
         $result = parent::transform(
             is_numeric($value)
@@ -37,10 +35,8 @@ class Percent100ToLocalizedStringTransformer extends NumberToLocalizedStringTran
         return $result;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function reverseTransform($value)
+    #[\Override]
+    public function reverseTransform($value): float|int|null
     {
         $result = parent::reverseTransform($value);
         if (null !== $result) {

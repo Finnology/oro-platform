@@ -2,26 +2,20 @@
 
 namespace Oro\Bundle\ApiBundle\Tests\Unit\Fixtures\Entity;
 
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Translatable\Translatable;
 
-/**
- * @ORM\Entity
- * @ORM\Table(name="category_table")
- */
-class Category
+#[ORM\Entity]
+#[ORM\Table(name: 'category_table')]
+class Category implements Translatable
 {
-    /**
-     * @ORM\Column(name="name", type="string", length=50)
-     * @ORM\Id
-     */
-    protected $name;
+    #[ORM\Column(name: 'name', type: Types::STRING, length: 50)]
+    #[ORM\Id]
+    protected ?string $name = null;
 
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="label", type="string", length=255, unique=true)
-     */
-    protected $label;
+    #[ORM\Column(name: 'label', type: Types::STRING, length: 255, unique: true)]
+    protected ?string $label = null;
 
     /**
      * @param string $name
@@ -66,6 +60,7 @@ class Category
     /**
      * @return string
      */
+    #[\Override]
     public function __toString()
     {
         return (string)$this->name;

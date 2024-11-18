@@ -4,6 +4,7 @@ namespace Oro\Bundle\NavigationBundle\Tests\Unit\Entity;
 
 use Oro\Bundle\NavigationBundle\Entity\PageState;
 use Oro\Bundle\UserBundle\Entity\User;
+use Oro\Component\Testing\ReflectionUtil;
 
 class PageStateTest extends \PHPUnit\Framework\TestCase
 {
@@ -40,15 +41,12 @@ class PageStateTest extends \PHPUnit\Framework\TestCase
         $item->setPageId($pageId);
 
         $this->assertEquals($pageId, $item->getPageId());
-        $this->assertEquals(PageState::generateHash($pageId), $item->getPageHash());
     }
 
     public function testData()
     {
         $item = new PageState();
-        $data = [
-            ['key' => 'val', 'key2' => 'val2'],
-        ];
+        $data = 'test data';
 
         $item->setData($data);
 
@@ -58,12 +56,20 @@ class PageStateTest extends \PHPUnit\Framework\TestCase
     public function testDoPrePersist()
     {
         $item = new PageState();
+        $pageId = 'SomeId';
+        $userId = 123;
+        $user = new User();
+        ReflectionUtil::setId($user, $userId);
+
+        $item->setPageId($pageId);
+        $item->setUser($user);
 
         $item->doPrePersist();
 
         $this->assertInstanceOf('DateTime', $item->getCreatedAt());
         $this->assertInstanceOf('DateTime', $item->getUpdatedAt());
         $this->assertEquals($item->getCreatedAt(), $item->getUpdatedAt());
+        $this->assertEquals(PageState::generateHash($pageId, $userId), $item->getPageHash());
     }
 
     public function testDoPreUpdate()

@@ -8,19 +8,12 @@ use Oro\Bundle\MigrationBundle\Migration\QueryBag;
 
 class OroEmailBundle implements Migration
 {
-    /**
-     * {@inheritdoc}
-     */
-    public function up(Schema $schema, QueryBag $queries)
-    {
-        static::oroEmailFolderChangeColumn($schema);
-    }
-
-    public static function oroEmailFolderChangeColumn(Schema $schema)
+    #[\Override]
+    public function up(Schema $schema, QueryBag $queries): void
     {
         $table = $schema->getTable('oro_email_folder');
         if ($table->hasColumn('failed_count')) {
-            $table->getColumn('failed_count')->setDefault("0");
+            $table->getColumn('failed_count')->setDefault('0');
         }
     }
 }

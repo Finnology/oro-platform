@@ -4,6 +4,7 @@ namespace Oro\Bundle\SearchBundle\Engine;
 
 use Doctrine\Persistence\ManagerRegistry;
 use Oro\Bundle\EntityBundle\ORM\OroEntityManager;
+use Oro\Bundle\SearchBundle\Entity\Item;
 use Oro\Bundle\SearchBundle\Entity\Repository\SearchIndexRepository;
 use Oro\Bundle\SearchBundle\Query\LazyResult;
 use Oro\Bundle\SearchBundle\Query\Query;
@@ -36,9 +37,7 @@ class Orm extends AbstractEngine
         $this->mapper = $mapper;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function doSearch(Query $query)
     {
         $resultsCallback = function () use ($query) {
@@ -87,14 +86,13 @@ class Orm extends AbstractEngine
      *  <Entity ClassName> => <Documents Count>
      * ]
      */
+    #[\Override]
     protected function doGetDocumentsCountGroupByEntityFQCN(Query $query): array
     {
         return $this->getIndexRepository()->getDocumentsCountGroupByEntityFQCN($query);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function buildResult(Query $query, array $data)
     {
         return new LazyResult(
@@ -116,7 +114,7 @@ class Orm extends AbstractEngine
             return $this->indexRepository;
         }
 
-        $this->indexRepository = $this->getIndexManager()->getRepository('OroSearchBundle:Item');
+        $this->indexRepository = $this->getIndexManager()->getRepository(Item::class);
 
         return $this->indexRepository;
     }
@@ -132,7 +130,7 @@ class Orm extends AbstractEngine
             return $this->indexManager;
         }
 
-        $this->indexManager = $this->registry->getManagerForClass('OroSearchBundle:Item');
+        $this->indexManager = $this->registry->getManagerForClass(Item::class);
 
         return $this->indexManager;
     }

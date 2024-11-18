@@ -22,6 +22,7 @@ class RemoveOptionSetAttributesQuery extends ParametrizedMigrationQuery
     /**
      * {inheritdoc}
      */
+    #[\Override]
     public function getDescription()
     {
         $logger = new ArrayLogger();
@@ -33,6 +34,7 @@ class RemoveOptionSetAttributesQuery extends ParametrizedMigrationQuery
     /**
      * {inheritdoc}
      */
+    #[\Override]
     public function execute(LoggerInterface $logger)
     {
         $this->removeOptionSetAttributes($logger);
@@ -74,7 +76,7 @@ class RemoveOptionSetAttributesQuery extends ParametrizedMigrationQuery
             'SELECT id, data FROM oro_entity_config_field WHERE id IN (%s)',
             implode(',', $configFieldIds)
         );
-        $rows  = $this->connection->fetchAll($query);
+        $rows  = $this->connection->fetchAllAssociative($query);
 
         $result = [];
         foreach ($rows as $row) {

@@ -10,10 +10,7 @@ use Symfony\Component\Security\Core\Authorization\Voter\AuthenticatedVoter;
  */
 abstract class AbstractRole extends Role
 {
-    /**
-     * @var string
-     */
-    protected $role;
+    protected ?string $role = null;
 
     /**
      * @return string
@@ -41,6 +38,7 @@ abstract class AbstractRole extends Role
      */
     abstract public function getLabel();
 
+    #[\Override]
     public function __toString(): string
     {
         return (string)$this->getRole();
@@ -85,7 +83,7 @@ abstract class AbstractRole extends Role
      */
     protected function addPrefix($role)
     {
-        if (AuthenticatedVoter::IS_AUTHENTICATED_ANONYMOUSLY !== $role) {
+        if (AuthenticatedVoter::PUBLIC_ACCESS !== $role) {
             if (!$role) {
                 $role = $this->getPrefix();
             } elseif (!str_starts_with($role, $this->getPrefix())) {

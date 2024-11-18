@@ -13,8 +13,11 @@ define(function(require, exports, module) {
         ? require('oroform/js/validate-topmost-label-mixin') : null;
     const messageTemplate = require('tpl-loader!oroform/templates/error-template.html');
 
-    const original = _.pick($.validator.prototype, 'init', 'showLabel', 'defaultShowErrors', 'resetElements');
+    const original = _.pick($.validator.prototype,
+        'init', 'showLabel', 'defaultShowErrors', 'resetElements', 'elementValue'
+    );
 
+    const rCRLF = /\r?\n/g;
     const ERROR_CLASS_NAME = 'error';
 
     /**
@@ -181,7 +184,7 @@ define(function(require, exports, module) {
             $(this.currentForm)
                 .find('[name^="temp-validation-name-"]')
                 .each(function() {
-                    $(this).removeAttr('name');
+                    $(this).attr('name', null);
                 });
         }
         return isValid;
@@ -217,15 +220,10 @@ define(function(require, exports, module) {
 
         if ($elem.is('.select2[type=hidden]') || $elem.is('select.select2')) {
             $elem.parent().find('input.select2-focusser')
-                .focus()
+                .trigger('focus')
                 .trigger('focusin');
         } else if (!$elem.filter(':visible').length && $firstValidationError.length) {
-            const $scrollableContainer = $firstValidationError.closest('.scrollable-container');
-            const scrollTop = $firstValidationError.position().top + $scrollableContainer.scrollTop();
-
-            $scrollableContainer.animate({
-                scrollTop: scrollTop
-            }, scrollTop / 2);
+            $firstValidationError[0].scrollIntoView({block: 'center'});
         } else {
             return func.call(this);
         }
@@ -245,15 +243,15 @@ define(function(require, exports, module) {
             }
 
             $(this.currentForm).on({
-                'content:initialized.validate': function(e) {
+                'content:initialized.validate': e => {
                     this.bindInitialErrors(e.target);
-                }.bind(this),
-                'content:changed.validate': function(event) {
-                    validationHandler.initializeOptionalValidationGroupHandlers($(event.target));
                 },
-                'disabled.validate': function(e) {
+                'content:changed.validate': e => {
+                    validationHandler.initializeOptionalValidationGroupHandlers($(e.target));
+                },
+                'disabled.validate': e => {
                     this.hideElementErrors(e.target);
-                }.bind(this)
+                }
             });
 
             $.validator.preloadMethods()
@@ -337,21 +335,23 @@ define(function(require, exports, module) {
              * @param {string=} path
              */
             (function parseBackendErrors(obj, path) {
-                _.each(obj, function(item, name) {
-                    let _path;
+                for (const [name, item] of Object.entries(obj)) {
+                    const _path = path ? `${path}[${name}]` : namePrefix ? `${namePrefix}[${name}]` : name;
+
                     if (name === 'children') {
                         // skip 'children' level
                         parseBackendErrors(item, path);
                     } else {
-                        _path = path ? `${path}[${name}]` : namePrefix ? `${namePrefix}[${name}]` : name;
-                        if ('errors' in item && _.isArray(item.errors)) {
-                            // only first error to show
-                            result[_path] = item.errors[0];
-                        } else if (_.isObject(item)) {
-                            parseBackendErrors(item, _path);
+                        if (typeof item === 'object' && item !== null) {
+                            if ('errors' in item && Array.isArray(item.errors)) {
+                                // only first error to show
+                                result[_path] = item.errors[0];
+                            } else {
+                                parseBackendErrors(item, _path);
+                            }
                         }
                     }
-                });
+                }
             })(errors);
 
             result = _.omit(result, function(message, name) {
@@ -511,6 +511,16 @@ define(function(require, exports, module) {
                     });
             }
 
+            // Process initial errors from backend side
+            if (this.numberOfInvalids()) {
+                Object.entries(this.invalid)
+                    .forEach(([elementName, isValid]) => {
+                        if (isValid) {
+                            updateListElement($(`[name="${elementName}"]`), true);
+                        }
+                    });
+            }
+
             if (this.toHide.length) {
                 this.toHide.each((i, el) => {
                     let id = el.getAttribute('id');
@@ -531,6 +541,17 @@ define(function(require, exports, module) {
                     updateListElement($elements, false);
                 });
             }
+        },
+
+        elementValue: function(element) {
+            const value = original.elementValue.call(this, element);
+
+            // Add CRLF for multiline text
+            if (element.type === 'textarea') {
+                return value.replace(rCRLF, '\r\n');
+            }
+
+            return value;
         },
 
         /**
@@ -696,6 +717,14 @@ define(function(require, exports, module) {
             if (element.name in this.submitted || element.name in this.invalid) {
                 this.element(element);
             }
+        },
+        normalizer(value) {
+            // Add CRLF for multiline text
+            if (this.type === 'textarea') {
+                return value.replace(rCRLF, '\r\n');
+            }
+
+            return value;
         }
     });
 
@@ -744,7 +773,7 @@ define(function(require, exports, module) {
      */
     $.validator.addMethod = _.wrap($.validator.addMethod, function(addMethod, name, method, message) {
         method = _.wrap(method, function(method, value, element, params) {
-            if (!_.isArray(params)) {
+            if (!Array.isArray(params)) {
                 return method.call(this, value, element, params);
             }
             return _.every(params, function(param, index) {
@@ -758,7 +787,7 @@ define(function(require, exports, module) {
 
         if (_.isFunction(message)) {
             message = _.wrap(message, function(message, params, element) {
-                if (!_.isArray(params)) {
+                if (!Array.isArray(params)) {
                     return message.call(this, params, element);
                 }
                 const param = params[params.failedIndex];

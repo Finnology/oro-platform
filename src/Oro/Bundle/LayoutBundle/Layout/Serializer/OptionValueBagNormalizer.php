@@ -8,6 +8,9 @@ use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Component\Serializer\SerializerAwareInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 
+/**
+ * Normalizer for options value
+ */
 class OptionValueBagNormalizer implements NormalizerInterface, DenormalizerInterface, SerializerAwareInterface
 {
     /**
@@ -15,9 +18,7 @@ class OptionValueBagNormalizer implements NormalizerInterface, DenormalizerInter
      */
     protected $serializer;
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function setSerializer(SerializerInterface $serializer)
     {
         if (!($serializer instanceof NormalizerInterface && $serializer instanceof DenormalizerInterface)) {
@@ -27,17 +28,13 @@ class OptionValueBagNormalizer implements NormalizerInterface, DenormalizerInter
         $this->serializer = $serializer;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function supportsNormalization($data, $format = null)
+    #[\Override]
+    public function supportsNormalization($data, $format = null): bool
     {
         return $data instanceof OptionValueBag;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function normalize($object, string $format = null, array $context = [])
     {
         $actions = [
@@ -103,17 +100,13 @@ class OptionValueBagNormalizer implements NormalizerInterface, DenormalizerInter
         return $argument;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function supportsDenormalization($data, string $type, string $format = null): bool
     {
         return $type === OptionValueBag::class;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function denormalize($data, string $type, string $format = null, array $context = [])
     {
         $bag = new OptionValueBag();
@@ -158,5 +151,12 @@ class OptionValueBagNormalizer implements NormalizerInterface, DenormalizerInter
 
             return $element;
         }
+    }
+
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+            OptionValueBag::class => false
+        ];
     }
 }

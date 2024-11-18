@@ -34,6 +34,7 @@ class ResponseHashnavListenerTest extends \PHPUnit\Framework\TestCase
     /** @var ResponseHashnavListener */
     private $listener;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->response = new Response();
@@ -68,7 +69,7 @@ class ResponseHashnavListenerTest extends \PHPUnit\Framework\TestCase
 
         $this->tokenStorage->expects(self::once())
             ->method('getToken')
-            ->willReturn(false);
+            ->willReturn(null);
 
         $template = 'rendered_template_content';
         $this->twig->expects(self::once())

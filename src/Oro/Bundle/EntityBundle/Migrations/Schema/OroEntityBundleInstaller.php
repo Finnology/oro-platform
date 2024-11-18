@@ -8,27 +8,22 @@ use Oro\Bundle\MigrationBundle\Migration\QueryBag;
 
 class OroEntityBundleInstaller implements Installation
 {
-    /**
-     * {@inheritdoc}
-     */
-    public function getMigrationVersion()
+    #[\Override]
+    public function getMigrationVersion(): string
     {
         return 'v1_0';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function up(Schema $schema, QueryBag $queries)
+    #[\Override]
+    public function up(Schema $schema, QueryBag $queries): void
     {
-        /** Tables generation **/
         $this->createOroEntityFallbackValueTable($schema);
     }
 
     /**
      * Create oro_entity_fallback_value table
      */
-    protected function createOroEntityFallbackValueTable(Schema $schema)
+    private function createOroEntityFallbackValueTable(Schema $schema): void
     {
         $table = $schema->createTable('oro_entity_fallback_value');
         $table->addColumn('id', 'integer', ['autoincrement' => true]);

@@ -26,13 +26,34 @@
             module: 'oroui/js/app/components/app-loading-mask-component'
         }) }}></div>
         <div {{ UI.renderPageComponentAttributes({
-            module: 'oroui/js/app/components/app-loading-bar-component'
+            module: 'oroui/js/app/components/app-loading-bar-component',
+            options: {viewOptions: {className: 'loading-bar app-loading-bar'}}
         }) }}></div>
         <div id="container" data-layout="separate"
              {{ UI.renderPageComponentAttributes({view: 'oroui/js/app/views/page/content-view'}) }}>
             {{ block_widget(block) }}
         </div>
     </body>
+{% endblock %}
+
+{% block _service_worker_widget %}
+    {% set layoutContext = get_layout_context() %}
+    {% set url = asset('/sw.js') ~ '&theme=' ~ layoutContext.theme %}
+    {# Register only if the app is installed, not in a sub-folder. #}
+    {% if app.request.basePath|trim|length == 0 %}
+        <script>
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker
+                        .register('{{ url|raw }}', {scope: '/'})
+                        .catch(error => {console.error(error)});
+                });
+                window.addEventListener('beforeinstallprompt', e => {
+                    e.preventDefault()
+                })
+            }
+        </script>
+    {% endif %}
 {% endblock %}
 
 {% block _wrapper_widget %}
@@ -140,7 +161,7 @@
 
 {% block _skip_to_content_widget %}
     {% set attr = layout_attr_defaults(attr, {
-        '~class': 'btn btn--info skip-to-content__btn',
+        '~class': 'btn btn--outlined skip-to-content__btn',
         'data-page-component-proxy-focus': '[data-role="page-main-container"]',
         'type': 'button'
     }) %}

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\NavigationBundle\Command;
@@ -31,9 +32,7 @@ class ClearNavigationHistoryCommand extends Command implements CronCommandSchedu
         parent::__construct();
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getDefaultDefinition(): string
     {
         // 00:05 every day
@@ -41,6 +40,7 @@ class ClearNavigationHistoryCommand extends Command implements CronCommandSchedu
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     public function configure()
     {
         $this
@@ -67,7 +67,8 @@ HELP
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
-    public function execute(InputInterface $input, OutputInterface $output)
+    #[\Override]
+    public function execute(InputInterface $input, OutputInterface $output): int
     {
         try {
             $interval = $input->getOption('interval') ?: self::DEFAULT_INTERVAL;
@@ -75,13 +76,18 @@ HELP
             $now = new \DateTime('now', new \DateTimeZone('UTC'));
             $cleanBefore = clone $now;
 
-            /** @noinspection PhpUsageOfSilenceOperatorInspection */
-            $dateInterval = @\DateInterval::createFromDateString($interval);
-            if ($dateInterval instanceof \DateInterval) {
-                $cleanBefore->sub($dateInterval);
-            }
+            try {
+                $dateInterval = \DateInterval::createFromDateString($interval);
+                if ($dateInterval instanceof \DateInterval) {
+                    $cleanBefore->sub($dateInterval);
+                }
 
-            if ($cleanBefore >= $now) {
+                if ($cleanBefore >= $now) {
+                    throw new \DateMalformedStringException(
+                        \sprintf("Interval string '%s' should not be positive", $interval)
+                    );
+                }
+            } catch (\DateException $e) {
                 throw new \InvalidArgumentException(\sprintf("Value '%s' should be valid date interval", $interval));
             }
 
@@ -97,6 +103,6 @@ HELP
             return $e->getCode() ?: 1;
         }
 
-        return 0;
+        return Command::SUCCESS;
     }
 }

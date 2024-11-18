@@ -11,6 +11,12 @@ use Oro\Bundle\EntityConfigBundle\Config\ConfigManager;
  */
 class ExtendEntityMetadataProvider implements ExtendEntityMetadataProviderInterface
 {
+    public const FIELD_NAME = 'fieldName';
+    public const FIELD_TYPE = 'fieldType';
+    public const IS_EXTEND = 'is_extend';
+    public const IS_NULLABLE = 'is_nullable';
+    public const IS_SERIALIZED = 'is_serialized';
+
     protected const SCOPE = 'extend';
     protected array $entityFieldsCache = [];
     protected array $entityManageable = [];
@@ -26,11 +32,13 @@ class ExtendEntityMetadataProvider implements ExtendEntityMetadataProviderInterf
         return $this->doctrineHelper->isManageableEntityClass($class);
     }
 
+    #[\Override]
     public function getExtendEntityMetadata(string $class): ConfigInterface
     {
         return $this->configManager->getEntityConfig(self::SCOPE, $this->obtainClassName($class));
     }
 
+    #[\Override]
     public function getExtendEntityFieldsMetadata(string $class): array
     {
         $class = $this->obtainClassName($class);
@@ -47,10 +55,11 @@ class ExtendEntityMetadataProvider implements ExtendEntityMetadataProviderInterf
             }
             $fieldName = $config->getId()->getFieldName();
             $result[$fieldName] = [
-                'fieldName' => $fieldName,
-                'fieldType' => $config->getId()->getFieldType(),
-                'is_extend' => $configValues['is_extend'],
-                'is_serialized' => $configValues['is_serialized'],
+                self::FIELD_NAME => $fieldName,
+                self::FIELD_TYPE => $config->getId()->getFieldType(),
+                self::IS_EXTEND => $configValues['is_extend'],
+                self::IS_NULLABLE => $configValues['nullable'] ?? false,
+                self::IS_SERIALIZED => $configValues['is_serialized'],
             ];
             if (isset($configValues['default'])) {
                 $result[$fieldName]['default'] = $configValues['default'];

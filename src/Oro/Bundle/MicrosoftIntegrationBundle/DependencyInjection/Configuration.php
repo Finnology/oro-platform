@@ -8,10 +8,8 @@ use Symfony\Component\Config\Definition\ConfigurationInterface;
 
 class Configuration implements ConfigurationInterface
 {
-    /**
-     * {@inheritDoc}
-     */
-    public function getConfigTreeBuilder()
+    #[\Override]
+    public function getConfigTreeBuilder(): TreeBuilder
     {
         $treeBuilder = new TreeBuilder('oro_microsoft_integration');
         $rootNode = $treeBuilder->getRootNode();

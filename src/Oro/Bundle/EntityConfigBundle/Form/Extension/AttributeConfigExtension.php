@@ -38,16 +38,14 @@ class AttributeConfigExtension extends AbstractTypeExtension
         $this->attributeTypeRegistry = $attributeTypeRegistry;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $configModel = $options['config_model'];
         if ($configModel instanceof FieldConfigModel) {
             if ($this->isApplicable($configModel)) {
                 $builder->addEventListener(FormEvents::POST_SET_DATA, [$this, 'onPostSetData']);
-                $builder->addEventListener(FormEvents::POST_SUBMIT, [$this, 'onPostSubmit']);
+                $builder->addEventListener(FormEvents::SUBMIT, [$this, 'onSubmit']);
 
                 $this->ensureAttributeFields($builder, $configModel);
             } else {
@@ -91,23 +89,19 @@ class AttributeConfigExtension extends AbstractTypeExtension
         $event->getForm()->remove('is_serialized');
     }
 
-    public function onPostSubmit(FormEvent $event)
+    public function onSubmit(FormEvent $event)
     {
-        if ($event->getForm()->isValid()) {
-            $configModel = $event->getForm()->getConfig()->getOption('config_model');
-            if (!$configModel->getId()) {
-                $data = $event->getData();
-                $isSerialized = $this->serializedFieldProvider->isSerializedByData($configModel, $data);
-                $data['extend']['is_serialized'] = $isSerialized;
+        $configModel = $event->getForm()->getConfig()->getOption('config_model');
+        if (!$configModel->getId()) {
+            $data = $event->getData();
+            $isSerialized = $this->serializedFieldProvider->isSerializedByData($configModel, $data);
+            $data['extend']['is_serialized'] = $isSerialized;
 
-                $event->setData($data);
-            }
+            $event->setData($data);
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public static function getExtendedTypes(): iterable
     {
         return [ConfigType::class];

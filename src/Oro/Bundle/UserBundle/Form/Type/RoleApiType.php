@@ -4,19 +4,21 @@ namespace Oro\Bundle\UserBundle\Form\Type;
 
 use Oro\Bundle\FormBundle\Form\Type\EntityIdentifierType;
 use Oro\Bundle\SoapBundle\Form\EventListener\PatchSubscriber;
+use Oro\Bundle\UserBundle\Entity\User;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
+/**
+ * Role API form type.
+ */
 class RoleApiType extends AclRoleType
 {
     public function __construct()
     {
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder->add(
@@ -32,7 +34,7 @@ class RoleApiType extends AclRoleType
             'appendUsers',
             EntityIdentifierType::class,
             array(
-                'class'    => 'OroUserBundle:User',
+                'class'    => User::class,
                 'required' => false,
                 'mapped'   => false,
                 'multiple' => true,
@@ -43,7 +45,7 @@ class RoleApiType extends AclRoleType
             'removeUsers',
             EntityIdentifierType::class,
             array(
-                'class'    => 'OroUserBundle:User',
+                'class'    => User::class,
                 'required' => false,
                 'mapped'   => false,
                 'multiple' => true,
@@ -51,17 +53,12 @@ class RoleApiType extends AclRoleType
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function addEntityFields(FormBuilderInterface $builder)
     {
         $builder->addEventSubscriber(new PatchSubscriber());
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         parent::configureOptions($resolver);
@@ -69,18 +66,14 @@ class RoleApiType extends AclRoleType
         $resolver->setDefaults(['csrf_protection' => false]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getName()
     {
         return $this->getBlockPrefix();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return 'role';
     }

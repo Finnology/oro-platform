@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\EmailBundle\Command\Cron;
@@ -35,15 +36,14 @@ class EmailBodySyncCommand extends Command implements CronCommandScheduleDefinit
         $this->synchronizer = $synchronizer;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getDefaultDefinition(): string
     {
         return '*/30 * * * *';
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     protected function configure()
     {
         $this
@@ -86,7 +86,8 @@ HELP
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    #[\Override]
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $store = new SemaphoreStore();
         $lockFactory = new LockFactory($store);
@@ -95,7 +96,7 @@ HELP
         if (!$lock->acquire()) {
             $output->writeln('The command is already running in another process.');
 
-            return 0;
+            return Command::SUCCESS;
         }
 
         $this->synchronizer->setLogger(new OutputLogger($output));
@@ -103,6 +104,6 @@ HELP
 
         $lock->release();
 
-        return 0;
+        return Command::SUCCESS;
     }
 }

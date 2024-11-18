@@ -23,6 +23,7 @@ class TransportTest extends \PHPUnit\Framework\TestCase
 
     private EventDispatcherInterface $eventDispatcher;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->decoratedTransport = $this->createMock(TransportInterface::class);
@@ -124,7 +125,6 @@ class TransportTest extends \PHPUnit\Framework\TestCase
                     'exception' => $exception,
                 ]
             );
-
 
         $this->transport->send($message);
     }

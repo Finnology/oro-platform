@@ -13,15 +13,12 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * Provide functionality to manage activity conditions
- *
- * @Route("/activity-list/segment")
  */
+#[Route(path: '/activity-list/segment')]
 class SegmentController extends AbstractController
 {
-    /**
-     * @Route("/activity-condition")
-     * @Template
-     */
+    #[Route(path: '/activity-condition')]
+    #[Template]
     public function activityConditionAction(Request $request)
     {
         $params = $request->attributes->get('params', []);
@@ -61,18 +58,16 @@ class SegmentController extends AbstractController
 
     protected function getEventDispatcher(): EventDispatcherInterface
     {
-        return $this->get(EventDispatcherInterface::class);
+        return $this->container->get(EventDispatcherInterface::class);
     }
 
     protected function getTranslator(): TranslatorInterface
     {
-        return $this->get(TranslatorInterface::class);
+        return $this->container->get(TranslatorInterface::class);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedServices()
+    #[\Override]
+    public static function getSubscribedServices(): array
     {
         return array_merge(
             parent::getSubscribedServices(),

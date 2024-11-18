@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\LocaleBundle\EntityExtend;
@@ -311,9 +312,7 @@ EOF;
         $transport->setProcessed(true);
     }
 
-    /**
-     * @inheritDoc
-     */
+    #[\Override]
     public function get(EntityFieldProcessTransport $transport): void
     {
         $properties = $this->getProperties($transport);
@@ -323,9 +322,7 @@ EOF;
         }
     }
 
-    /**
-     * @inheritDoc
-     */
+    #[\Override]
     public function set(EntityFieldProcessTransport $transport): void
     {
         $properties = $this->getProperties($transport);
@@ -338,9 +335,7 @@ EOF;
         }
     }
 
-    /**
-     * @inheritDoc
-     */
+    #[\Override]
     public function call(EntityFieldProcessTransport $transport): void
     {
         if (str_starts_with($transport->getName(), 'get')) {
@@ -382,21 +377,7 @@ EOF;
         }
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function isset(EntityFieldProcessTransport $transport): void
-    {
-        $properties = $this->getProperties($transport);
-        if (array_key_exists($transport->getName(), $properties)) {
-            $transport->setResult(true);
-            $transport->setProcessed(true);
-        }
-    }
-
-    /**
-     * @inheritDoc
-     */
+    #[\Override]
     public function propertyExists(EntityFieldProcessTransport $transport): void
     {
         $properties = $this->getProperties($transport);
@@ -406,6 +387,7 @@ EOF;
         }
     }
 
+    #[\Override]
     public function methodExists(EntityFieldProcessTransport $transport): void
     {
         $exists = false;
@@ -432,12 +414,19 @@ EOF;
         }
     }
 
-    public function getMethods(EntityFieldProcessTransport $transport): array
+    #[\Override]
+    protected function getMethodsData(EntityFieldProcessTransport $transport): array
     {
         return array_merge(
             $this->getGetMethods($transport),
             $this->getSetMethods($transport),
             $this->getDefaultMethods($transport),
         );
+    }
+
+    #[\Override]
+    public function getMethods(EntityFieldProcessTransport $transport): array
+    {
+        return array_keys($this->getMethodsData($transport));
     }
 }

@@ -20,10 +20,6 @@ class WorkflowVariableDataTransformer implements DataTransformerInterface
     /** @var Variable|null */
     protected $variable;
 
-    /**
-     * @param ManagerRegistry $managerRegistry
-     * @param Variable $variable
-     */
     public function __construct(ManagerRegistry $managerRegistry, Variable $variable = null)
     {
         $this->managerRegistry = $managerRegistry;
@@ -35,6 +31,7 @@ class WorkflowVariableDataTransformer implements DataTransformerInterface
      *
      * @return mixed
      */
+    #[\Override]
     public function transform($entity)
     {
         return $entity;
@@ -45,6 +42,7 @@ class WorkflowVariableDataTransformer implements DataTransformerInterface
      *
      * @return string
      */
+    #[\Override]
     public function reverseTransform($entity)
     {
         $class = is_object($entity) ? get_class($entity) : null;
@@ -80,6 +78,9 @@ class WorkflowVariableDataTransformer implements DataTransformerInterface
      */
     protected function getMetadataForClass($class)
     {
+        if (null === $class) {
+            return null;
+        }
         try {
             $entityManager = $this->managerRegistry->getManagerForClass($class);
         } catch (ORMException $e) {

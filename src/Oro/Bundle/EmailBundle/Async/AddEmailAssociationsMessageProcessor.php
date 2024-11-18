@@ -1,4 +1,5 @@
 <?php
+
 namespace Oro\Bundle\EmailBundle\Async;
 
 use Oro\Bundle\EmailBundle\Async\Topic\AddEmailAssociationsTopic;
@@ -39,9 +40,7 @@ class AddEmailAssociationsMessageProcessor implements MessageProcessorInterface,
         $this->logger = $logger;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function process(MessageInterface $message, SessionInterface $session)
     {
         $data = $message->getBody();
@@ -86,9 +85,7 @@ class AddEmailAssociationsMessageProcessor implements MessageProcessorInterface,
         return $result ? self::ACK : self::REJECT;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public static function getSubscribedTopics()
     {
         return [AddEmailAssociationsTopic::getName()];

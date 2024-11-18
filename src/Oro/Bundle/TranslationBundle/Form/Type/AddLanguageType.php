@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\TranslationBundle\Form\Type;
@@ -35,6 +36,7 @@ class AddLanguageType extends AbstractType
         $this->translator = $translator;
     }
 
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults(
@@ -45,12 +47,14 @@ class AddLanguageType extends AbstractType
         );
     }
 
-    public function getParent()
+    #[\Override]
+    public function getParent(): ?string
     {
         return OroChoiceType::class;
     }
 
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return 'oro_translation_add_language';
     }

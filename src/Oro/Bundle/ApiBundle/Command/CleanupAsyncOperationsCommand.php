@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\ApiBundle\Command;
@@ -46,15 +47,14 @@ class CleanupAsyncOperationsCommand extends Command implements CronCommandSchedu
         parent::__construct();
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getDefaultDefinition(): string
     {
         return '0 1 * * *';
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     protected function configure(): void
     {
         $this
@@ -83,6 +83,7 @@ HELP
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $minDate = date_sub(
@@ -99,7 +100,7 @@ HELP
                 $iterator->count()
             ));
 
-            return 0;
+            return Command::SUCCESS;
         }
 
         $output->writeln(sprintf(
@@ -113,7 +114,7 @@ HELP
             if (time() > $endTime) {
                 $output->writeln('<info>The command was terminated by time limit.</info>');
 
-                return 0;
+                return Command::SUCCESS;
             }
             try {
                 $deleteHandler->delete($operation);
@@ -128,7 +129,7 @@ HELP
 
         $output->writeln('<info>The deletion complete.</info>');
 
-        return 0;
+        return Command::SUCCESS;
     }
 
     private function getOutdatedAsyncOperationsQueryBuilder(\DateTime $minDate, int $operationTimeout): QueryBuilder

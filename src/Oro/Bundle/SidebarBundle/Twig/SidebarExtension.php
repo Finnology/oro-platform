@@ -52,9 +52,7 @@ class SidebarExtension extends AbstractExtension implements FeatureToggleableInt
         return $this->container->get(AssetHelper::class);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getFunctions()
     {
         return [
@@ -93,10 +91,8 @@ class SidebarExtension extends AbstractExtension implements FeatureToggleableInt
         return $definitions;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedServices()
+    #[\Override]
+    public static function getSubscribedServices(): array
     {
         return [
             'oro_sidebar.widget_definition_provider' => WidgetDefinitionProvider::class,

@@ -22,9 +22,10 @@ class UserEmailOriginTransportFactoryTest extends \PHPUnit\Framework\TestCase
 
     private UserEmailOriginTransportFactory $factory;
 
+    #[\Override]
     protected function setUp(): void
     {
-        $this->transportFactory = $this->createMock(Transport::class);
+        $this->transportFactory = new Transport([]);
         $this->managerRegistry = $this->createMock(ManagerRegistry::class);
         $this->dsnFromUserEmailOriginFactory = $this->createMock(DsnFromUserEmailOriginFactory::class);
         $this->requestStack = new RequestStack();
@@ -39,9 +40,6 @@ class UserEmailOriginTransportFactoryTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @dataProvider supportsDataProvider
-     *
-     * @param Dsn $dsn
-     * @param bool $expected
      */
     public function testSupports(Dsn $dsn, bool $expected): void
     {

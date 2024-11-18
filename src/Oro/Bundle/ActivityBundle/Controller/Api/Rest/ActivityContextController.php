@@ -26,18 +26,16 @@ class ActivityContextController extends RestGetController
      */
     public function getAction($activity, $id)
     {
-        $className = $this->get('oro_entity.routing_helper')->resolveEntityClass($activity);
+        $className = $this->container->get('oro_entity.routing_helper')->resolveEntityClass($activity);
 
         $result = $this->getManager()->getActivityContext($className, $id);
 
         return $this->buildResponse($result, self::ACTION_LIST, ['result' => $result]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getManager()
     {
-        return $this->get('oro_activity.manager.activity_context.api');
+        return $this->container->get('oro_activity.manager.activity_context.api');
     }
 }

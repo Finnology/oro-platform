@@ -2,10 +2,10 @@
 
 namespace Oro\Bundle\ImapBundle\Provider;
 
-use Http\Client\Common\HttpMethodsClientInterface;
-use HWI\Bundle\OAuthBundle\Security\Http\ResourceOwnerMap;
+use HWI\Bundle\OAuthBundle\Security\Http\ResourceOwnerMapInterface;
 use Oro\Bundle\ConfigBundle\Config\ConfigManager;
 use Oro\Bundle\SecurityBundle\Encoder\SymmetricCrypterInterface;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
  * Provides functionality to work with Google OAuth implementation.
@@ -16,8 +16,8 @@ class GoogleOAuthProvider extends AbstractOAuthProvider
     private SymmetricCrypterInterface $crypter;
 
     public function __construct(
-        HttpMethodsClientInterface $httpClient,
-        ResourceOwnerMap $resourceOwnerMap,
+        HttpClientInterface $httpClient,
+        ResourceOwnerMapInterface $resourceOwnerMap,
         ConfigManager $configManager,
         SymmetricCrypterInterface $crypter
     ) {
@@ -26,9 +26,7 @@ class GoogleOAuthProvider extends AbstractOAuthProvider
         $this->crypter = $crypter;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getAuthorizationUrl(): string
     {
         throw new \LogicException(
@@ -36,9 +34,7 @@ class GoogleOAuthProvider extends AbstractOAuthProvider
         );
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getRedirectUrl(): string
     {
         throw new \LogicException(
@@ -46,25 +42,19 @@ class GoogleOAuthProvider extends AbstractOAuthProvider
         );
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     protected function getAccessTokenUrl(): string
     {
         return 'https://www.googleapis.com/oauth2/v4/token';
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     protected function getResourceOwnerName(): string
     {
         return 'google';
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     protected function getCommonParameters(): array
     {
         return [
@@ -75,9 +65,7 @@ class GoogleOAuthProvider extends AbstractOAuthProvider
         ];
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     protected function getAccessTokenParameters(string $code, array $scopes = null): array
     {
         $parameters = parent::getAccessTokenParameters($code, $scopes);

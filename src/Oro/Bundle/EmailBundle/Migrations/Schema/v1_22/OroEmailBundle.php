@@ -9,31 +9,16 @@ use Oro\Bundle\MigrationBundle\Migration\QueryBag;
 
 class OroEmailBundle implements Migration
 {
-    /**
-     * {@inheritdoc}
-     */
-    public function up(Schema $schema, QueryBag $queries)
-    {
-        self::oroEmailFolderTable($schema);
-        $this->updateSyncStart($schema, $queries);
-    }
-
-    public static function oroEmailFolderTable(Schema $schema)
+    #[\Override]
+    public function up(Schema $schema, QueryBag $queries): void
     {
         $table = $schema->getTable('oro_email_folder');
         if (!$table->hasColumn('sync_start_date')) {
             $table->addColumn('sync_start_date', 'datetime', ['notnull' => false]);
         }
-    }
 
-    protected function updateSyncStart(Schema $schema, QueryBag $queries)
-    {
-        if ($schema->hasTable('oro_email_folder')) {
-            $queries->addQuery(
-                new ParametrizedSqlMigrationQuery(
-                    'UPDATE oro_email_folder SET sync_start_date = synchronized'
-                )
-            );
-        }
+        $queries->addQuery(new ParametrizedSqlMigrationQuery(
+            'UPDATE oro_email_folder SET sync_start_date = synchronized'
+        ));
     }
 }

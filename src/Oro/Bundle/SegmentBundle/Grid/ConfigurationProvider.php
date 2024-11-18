@@ -5,7 +5,6 @@ namespace Oro\Bundle\SegmentBundle\Grid;
 use Doctrine\Persistence\ManagerRegistry;
 use Oro\Bundle\DataGridBundle\Datagrid\Common\DatagridConfiguration;
 use Oro\Bundle\DataGridBundle\Provider\ConfigurationProviderInterface;
-use Oro\Bundle\QueryDesignerBundle\Exception\InvalidConfigurationException;
 use Oro\Bundle\QueryDesignerBundle\Grid\BuilderAwareInterface;
 use Oro\Bundle\QueryDesignerBundle\Grid\DatagridConfigurationBuilder;
 use Oro\Bundle\SegmentBundle\Entity\Segment;
@@ -32,17 +31,13 @@ class ConfigurationProvider implements ConfigurationProviderInterface, BuilderAw
         $this->doctrine = $doctrine;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function isApplicable(string $gridName): bool
     {
         return $this->builder->isApplicable($gridName);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getConfiguration(string $gridName): DatagridConfiguration
     {
         $id = (int)substr($gridName, \strlen(Segment::GRID_PREFIX));
@@ -67,20 +62,24 @@ class ConfigurationProvider implements ConfigurationProviderInterface, BuilderAw
      */
     public function isConfigurationValid(string $gridName): bool
     {
+        return $this->isValidConfiguration($gridName);
+    }
+
+    #[\Override]
+    public function getBuilder(): DatagridConfigurationBuilder
+    {
+        return $this->builder;
+    }
+
+    #[\Override]
+    public function isValidConfiguration(string $gridName): bool
+    {
         try {
             $this->getConfiguration($gridName);
-        } catch (InvalidConfigurationException $e) {
+        } catch (\Throwable $e) {
             return false;
         }
 
         return true;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getBuilder(): DatagridConfigurationBuilder
-    {
-        return $this->builder;
     }
 }

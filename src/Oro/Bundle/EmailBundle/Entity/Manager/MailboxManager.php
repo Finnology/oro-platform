@@ -89,7 +89,7 @@ class MailboxManager
      */
     public function findAvailableOrigins(User $user, Organization $organization)
     {
-        return $this->registry->getRepository('OroEmailBundle:EmailOrigin')->findBy([
+        return $this->registry->getRepository(EmailOrigin::class)->findBy([
             'owner' => $user,
             'organization' => $organization,
             'isActive' => true,
@@ -98,13 +98,13 @@ class MailboxManager
 
     /**
      * @param User|integer $user User or user id
-     * @param Organization|integer|null $organization
+     * @param Organization|null $organization
      *
      * @return QueryBuilder
      */
     protected function createAvailableMailboxesQuery($user, Organization $organization = null)
     {
-        return $this->registry->getRepository('OroEmailBundle:Mailbox')
+        return $this->registry->getRepository(Mailbox::class)
             ->createAvailableMailboxesQuery($user, $organization);
     }
 }

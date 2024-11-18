@@ -10,9 +10,7 @@ use Oro\Bundle\UserBundle\Tests\Functional\DataFixtures\LoadUserData;
 
 class UserProviderTest extends WebTestCase
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function setUp(): void
     {
         $this->initClient(
@@ -41,18 +39,18 @@ class UserProviderTest extends WebTestCase
         $loggedUser = $this->getContainer()->get('oro_security.token_accessor')->getUser();
         $originalId = $loggedUser->getId();
         $this->assertInstanceOf(User::class, $loggedUser);
-        $this->assertSame(LoadUserData::SIMPLE_USER, $loggedUser->getUsername(), 'logged user username');
+        $this->assertSame(LoadUserData::SIMPLE_USER, $loggedUser->getUserIdentifier(), 'logged user username');
 
         /** @var User $customerUser */
         $customerUser = $this->getReference(LoadUserData::SIMPLE_USER);
         $customerUser->setUsername(LoadUserData::SIMPLE_USER_2);
-        $this->assertSame(LoadUserData::SIMPLE_USER_2, $loggedUser->getUsername(), 'username after change');
+        $this->assertSame(LoadUserData::SIMPLE_USER_2, $loggedUser->getUserIdentifier(), 'username after change');
         $this->assertSame($originalId, $customerUser->getId());
         $this->assertSame($originalId, $loggedUser->getId());
 
         $this->refreshUser($customerUser);
 
-        $this->assertSame(LoadUserData::SIMPLE_USER, $loggedUser->getUsername(), 'username after refresh');
+        $this->assertSame(LoadUserData::SIMPLE_USER, $loggedUser->getUserIdentifier(), 'username after refresh');
         $this->assertSame($originalId, $loggedUser->getId());
     }
 
@@ -68,14 +66,14 @@ class UserProviderTest extends WebTestCase
 
         $originalId = $loggedUser->getId();
         $this->assertInstanceOf(User::class, $loggedUser);
-        $this->assertSame(LoadUserData::SIMPLE_USER, $loggedUser->getUsername(), 'logged user username');
+        $this->assertSame(LoadUserData::SIMPLE_USER, $loggedUser->getUserIdentifier(), 'logged user username');
 
         $loggedUser->setUsername(LoadUserData::SIMPLE_USER_2);
         $em->detach($loggedUser);
 
         $loggedUser = $this->refreshUser($loggedUser);
 
-        $this->assertSame(LoadUserData::SIMPLE_USER, $loggedUser->getUsername(), 'username after refresh');
+        $this->assertSame(LoadUserData::SIMPLE_USER, $loggedUser->getUserIdentifier(), 'username after refresh');
         $this->assertSame($originalId, $loggedUser->getId());
     }
 }

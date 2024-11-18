@@ -8,9 +8,7 @@ use Psr\Log\LoggerInterface;
 
 class RemoveAssignFlagQuery extends ParametrizedMigrationQuery
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getDescription()
     {
         $logger = new ArrayLogger();
@@ -19,9 +17,7 @@ class RemoveAssignFlagQuery extends ParametrizedMigrationQuery
         return $logger->getMessages();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function execute(LoggerInterface $logger)
     {
         $this->doExecute($logger);
@@ -65,7 +61,7 @@ class RemoveAssignFlagQuery extends ParametrizedMigrationQuery
 
         $result = [];
 
-        $rows = $this->connection->fetchAll($sql);
+        $rows = $this->connection->fetchAllAssociative($sql);
         foreach ($rows as $row) {
             $result[$row['id']] = $this->connection->convertToPHPValue($row['data'], 'array');
         }

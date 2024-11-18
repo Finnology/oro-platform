@@ -9,9 +9,7 @@ use Symfony\Component\Form\FormView;
 
 class MultipleAssociationChoiceType extends BaseMultipleAssociationChoiceType
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function finishView(FormView $view, FormInterface $form, array $options)
     {
         parent::finishView($view, $form, $options);
@@ -31,26 +29,20 @@ class MultipleAssociationChoiceType extends BaseMultipleAssociationChoiceType
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getName()
     {
         return $this->getBlockPrefix();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return 'oro_activity_multiple_association_choice';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getParent()
+    #[\Override]
+    public function getParent(): ?string
     {
         return BaseMultipleAssociationChoiceType::class;
     }

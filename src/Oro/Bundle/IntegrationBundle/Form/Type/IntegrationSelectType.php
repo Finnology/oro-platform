@@ -48,9 +48,7 @@ class IntegrationSelectType extends AbstractType
         $this->aclHelper     = $aclHelper;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         $em             = $this->em;
@@ -87,9 +85,7 @@ class IntegrationSelectType extends AbstractType
         $resolver->setNormalizer('configs', $configsNormalizer);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function finishView(FormView $view, FormInterface $form, array $options)
     {
         $typeData = $this->typesRegistry->getAvailableIntegrationTypesDetailedData();
@@ -107,26 +103,19 @@ class IntegrationSelectType extends AbstractType
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getParent()
+    #[\Override]
+    public function getParent(): ?string
     {
         return Select2ChoiceType::class;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getName()
     {
         return $this->getBlockPrefix();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return self::NAME;
     }

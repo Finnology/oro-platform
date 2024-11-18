@@ -30,6 +30,7 @@ class ScheduleSendEmailTemplateTest extends \PHPUnit\Framework\TestCase
 
     private ScheduleSendEmailTemplate $action;
 
+    #[\Override]
     protected function setUp(): void
     {
         $contextAccessor = $this->createMock(ContextAccessor::class);
@@ -69,7 +70,6 @@ class ScheduleSendEmailTemplateTest extends \PHPUnit\Framework\TestCase
             ->method('getSingleEntityIdentifier')
             ->willReturn(42);
     }
-
 
     /**
      * @dataProvider initializeExceptionDataProvider

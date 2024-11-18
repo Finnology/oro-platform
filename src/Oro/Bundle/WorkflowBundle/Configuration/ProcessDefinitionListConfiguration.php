@@ -28,10 +28,8 @@ class ProcessDefinitionListConfiguration implements ConfigurationInterface
         return $processor->processConfiguration($this, array($configs));
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getConfigTreeBuilder()
+    #[\Override]
+    public function getConfigTreeBuilder(): TreeBuilder
     {
         $treeBuilder = new TreeBuilder('configuration');
         $rootNode = $treeBuilder->getRootNode();

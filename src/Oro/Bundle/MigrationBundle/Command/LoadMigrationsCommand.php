@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\MigrationBundle\Command;
@@ -37,6 +38,7 @@ class LoadMigrationsCommand extends Command
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     protected function configure()
     {
         $this
@@ -106,7 +108,8 @@ HELP
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
-    public function execute(InputInterface $input, OutputInterface $output)
+    #[\Override]
+    public function execute(InputInterface $input, OutputInterface $output): int
     {
         $force = $input->getOption('force');
         $dryRun = $input->getOption('dry-run');
@@ -144,10 +147,10 @@ HELP
             $output->writeln('To force execution run command with <info>--force</info> option:');
             $output->writeln(sprintf('    <info>%s --force</info>', $this->getName()));
 
-            return 1;
+            return Command::FAILURE;
         }
 
-        return 0;
+        return Command::SUCCESS;
     }
 
     protected function getMigrationLoader(InputInterface $input): MigrationsLoader

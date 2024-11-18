@@ -15,6 +15,7 @@ class DbalMessageProducerTest extends WebTestCase
 {
     use DbalSchemaExtensionTrait;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -24,6 +25,7 @@ class DbalMessageProducerTest extends WebTestCase
         $this->ensureTableExists('message_queue');
     }
 
+    #[\Override]
     protected function tearDown(): void
     {
         parent::tearDown();
@@ -39,7 +41,7 @@ class DbalMessageProducerTest extends WebTestCase
         $producer = new DbalMessageProducer($connection);
 
         // guard
-        $messages = $dbal->executeQuery('SELECT * FROM message_queue')->fetchAll();
+        $messages = $dbal->executeQuery('SELECT * FROM message_queue')->fetchAllAssociative();
         $this->assertEmpty($messages);
 
         $message = new DbalMessage();
@@ -54,7 +56,7 @@ class DbalMessageProducerTest extends WebTestCase
         // test
         $producer->send(new Queue('default'), $message);
 
-        $messages = $dbal->executeQuery('SELECT * FROM message_queue')->fetchAll();
+        $messages = $dbal->executeQuery('SELECT * FROM message_queue')->fetchAllAssociative();
 
         $this->assertCount(1, $messages);
         $this->assertNotEmpty($messages[0]['id']);
@@ -74,7 +76,7 @@ class DbalMessageProducerTest extends WebTestCase
         $producer = new DbalMessageProducer($connection);
 
         // guard
-        $messages = $dbal->executeQuery('SELECT * FROM message_queue')->fetchAll();
+        $messages = $dbal->executeQuery('SELECT * FROM message_queue')->fetchAllAssociative();
         $this->assertEmpty($messages);
 
         // test
@@ -83,14 +85,14 @@ class DbalMessageProducerTest extends WebTestCase
 
         $producer->send(new Queue('default'), $message);
 
-        $messages = $dbal->executeQuery('SELECT * FROM message_queue')->fetchAll();
+        $messages = $dbal->executeQuery('SELECT * FROM message_queue')->fetchAllAssociative();
         $this->assertCount(1, $messages);
         $this->assertEquals(5, $messages[0]['priority']);
 
         $message->setPriority(10);
         $producer->send(new Queue('default'), $message);
 
-        $messages = $dbal->executeQuery('SELECT * FROM message_queue ORDER BY id ASC')->fetchAll();
+        $messages = $dbal->executeQuery('SELECT * FROM message_queue ORDER BY id ASC')->fetchAllAssociative();
         $this->assertCount(2, $messages);
         $this->assertEquals(10, $messages[1]['priority']);
     }

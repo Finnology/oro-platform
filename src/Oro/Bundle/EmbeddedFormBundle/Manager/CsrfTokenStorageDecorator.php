@@ -42,41 +42,31 @@ class CsrfTokenStorageDecorator implements TokenStorageInterface, ClearableToken
         $this->embeddedFormRouteName = $embeddedFormRouteName;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function hasToken($tokenId)
+    #[\Override]
+    public function hasToken($tokenId): bool
     {
         return $this->getTokenStorage()->hasToken($tokenId);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getToken($tokenId)
+    #[\Override]
+    public function getToken($tokenId): string
     {
         return $this->getTokenStorage()->getToken($tokenId);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function setToken($tokenId, $token)
     {
         $this->getTokenStorage()->setToken($tokenId, $token);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function removeToken($tokenId)
+    #[\Override]
+    public function removeToken($tokenId): ?string
     {
         return $this->getTokenStorage()->removeToken($tokenId);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function clear()
     {
         return $this->getTokenStorage()->clear();

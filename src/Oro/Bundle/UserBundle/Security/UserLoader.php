@@ -25,20 +25,16 @@ class UserLoader implements UserLoaderInterface
         $this->configManager = $configManager;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getUserClass(): string
     {
         return User::class;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function loadUser(string $login): ?UserInterface
     {
-        $user = $this->loadUserByUsername($login);
+        $user = $this->loadUserByIdentifier($login);
         if (!$user && filter_var($login, FILTER_VALIDATE_EMAIL)) {
             $user = $this->loadUserByEmail($login);
         }
@@ -46,17 +42,13 @@ class UserLoader implements UserLoaderInterface
         return $user;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function loadUserByUsername(string $username): ?UserInterface
+    #[\Override]
+    public function loadUserByIdentifier(string $username): ?UserInterface
     {
         return $this->getRepository()->findOneBy(['username' => $username]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function loadUserByEmail(string $email): ?UserInterface
     {
         return $this->getRepository()->findUserByEmail(

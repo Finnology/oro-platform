@@ -22,12 +22,10 @@ class CacheableSecurityIdentityRetrievalStrategy implements SecurityIdentityRetr
         $this->innerStrategy = $innerStrategy;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getSecurityIdentities(TokenInterface $token)
     {
-        $username = $token->getUsername();
+        $username = $token->getUserIdentifier();
         if (isset($this->sids[$username])) {
             return $this->sids[$username];
         }

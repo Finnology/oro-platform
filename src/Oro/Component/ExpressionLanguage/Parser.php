@@ -72,7 +72,7 @@ class Parser
             '%' => ['precedence' => 60, 'associativity' => self::OPERATOR_LEFT],
             '**' => ['precedence' => 200, 'associativity' => self::OPERATOR_RIGHT],
         ];
-        
+
         // [CUSTOM LINES]
         $this->binaryOperators['='] = ['precedence' => 20, 'associativity' => self::OPERATOR_LEFT];
         unset($this->binaryOperators['==='], $this->binaryOperators['!==']);
@@ -243,7 +243,7 @@ class Parser
                                 if (\is_int($name = array_search($token->value, $this->names)) || $name === false) {
                                     $name = $token->value;
                                 }
-                            // [/CUSTOM LINES]
+                                // [/CUSTOM LINES]
                             } else {
                                 $name = $token->value;
                             }
@@ -383,7 +383,7 @@ class Parser
                 } else {
                     $type = GetAttrNodeFactory::PROPERTY_CALL;
                 }
-            // [/CUSTOM LINES]
+                // [/CUSTOM LINES]
             } elseif ('[' === $token->value) {
                 // [CUSTOM LINES]
                 if ($node instanceof CustomNode\AbstractCollectionMethodCallNode) {
@@ -395,7 +395,7 @@ class Parser
                 $arguments = new Node\ArgumentsNode();
                 $type = GetAttrNodeFactory::ARRAY_CALL;
                 $this->stream->expect(Token::PUNCTUATION_TYPE, ']');
-            // [/CUSTOM LINES]
+                // [/CUSTOM LINES]
             } else {
                 break;
             }

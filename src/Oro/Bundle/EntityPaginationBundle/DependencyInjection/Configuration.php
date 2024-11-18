@@ -10,10 +10,8 @@ class Configuration implements ConfigurationInterface
 {
     const DEFAULT_LIMIT = 1000;
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getConfigTreeBuilder()
+    #[\Override]
+    public function getConfigTreeBuilder(): TreeBuilder
     {
         $treeBuilder = new TreeBuilder('oro_entity_pagination');
         $rootNode = $treeBuilder->getRootNode();

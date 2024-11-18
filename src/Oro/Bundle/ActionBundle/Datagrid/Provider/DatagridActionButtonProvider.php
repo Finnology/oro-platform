@@ -68,12 +68,13 @@ class DatagridActionButtonProvider implements DatagridActionProviderInterface
         $this->groups = $groups;
     }
 
-    /** {@inheritdoc} */
+    #[\Override]
     public function hasActions(DatagridConfiguration $configuration)
     {
         return 0 !== count($this->getButtons($this->getButtonSearchContext($configuration), $configuration));
     }
 
+    #[\Override]
     public function applyActions(DatagridConfiguration $configuration)
     {
         if (!$this->hasActions($configuration)) {
@@ -216,6 +217,13 @@ class DatagridActionButtonProvider implements DatagridActionProviderInterface
             $config->offsetSetByPath(
                 '[options][urlParams]['. DefaultOperationRequestHelper::ORIGINAL_ROUTE_URL_PARAMETER_KEY .']',
                 $context['route']
+            );
+        }
+
+        if (!empty($context['route_params'])) {
+            $config->offsetSetByPath(
+                '[options][urlParams]['. DefaultOperationRequestHelper::ORIGINAL_ROUTE_PARAMETERS_KEY .']',
+                $context['route_params']
             );
         }
     }

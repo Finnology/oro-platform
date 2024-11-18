@@ -21,6 +21,7 @@ use Symfony\Component\Form\FormView;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints\Valid;
 
 /**
@@ -39,6 +40,7 @@ class SegmentFilterBuilderTypeTest extends FormIntegrationTestCase
     /** @var SegmentFilterBuilderType */
     private $formType;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->doctrineHelper = $this->createMock(DoctrineHelper::class);
@@ -51,9 +53,7 @@ class SegmentFilterBuilderTypeTest extends FormIntegrationTestCase
         parent::setUp();
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     protected function getExtensions(): array
     {
         return [
@@ -269,7 +269,7 @@ class SegmentFilterBuilderTypeTest extends FormIntegrationTestCase
             ->with(SegmentType::class, SegmentType::TYPE_DYNAMIC)
             ->willReturn($segmentType);
 
-        $user = new \stdClass();
+        $user = $this->createMock(UserInterface::class);
         $token = $this->createMock(TokenInterface::class);
         $token->expects($this->once())
             ->method('getUser')

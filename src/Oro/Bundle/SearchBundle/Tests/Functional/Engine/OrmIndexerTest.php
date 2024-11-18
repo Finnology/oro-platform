@@ -1,4 +1,5 @@
 <?php
+
 namespace Oro\Bundle\SearchBundle\Tests\Functional\Engine;
 
 use Doctrine\ORM\EntityManager;
@@ -18,6 +19,7 @@ class OrmIndexerTest extends WebTestCase
 {
     use SearchExtensionTrait;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->initClient();
@@ -28,6 +30,7 @@ class OrmIndexerTest extends WebTestCase
         }
     }
 
+    #[\Override]
     protected function tearDown(): void
     {
         $this->clearIndexTextTable();

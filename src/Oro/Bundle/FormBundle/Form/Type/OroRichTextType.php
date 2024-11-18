@@ -47,11 +47,11 @@ class OroRichTextType extends AbstractType
     public static $toolbars = [
         self::TOOLBAR_SMALL  => ['undo redo | bold italic underline | bullist numlist | link image | fullscreen'],
         self::TOOLBAR_DEFAULT => [
-            'undo redo | formatselect | bold italic underline | forecolor backcolor | bullist numlist ' .
+            'undo redo | blocks formatselect | bold italic underline | forecolor backcolor | bullist numlist ' .
             '| alignleft aligncenter alignright alignjustify | link image | fullscreen'
         ],
         self::TOOLBAR_LARGE => [
-            'undo redo | formatselect | bold italic underline | forecolor backcolor | bullist numlist' .
+            'undo redo | blocks formatselect | bold italic underline | forecolor backcolor | bullist numlist' .
             '| alignleft aligncenter alignright alignjustify | link image | fullscreen'
         ],
     ];
@@ -80,9 +80,7 @@ class OroRichTextType extends AbstractType
         $this->assetHelper = $assetHelper;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         if (null !== $options['wysiwyg_options']['valid_elements']) {
@@ -90,9 +88,7 @@ class OroRichTextType extends AbstractType
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         $assetsBaseUrl = ltrim($this->context->getBasePath() . '/', '/');
@@ -180,26 +176,19 @@ class OroRichTextType extends AbstractType
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getName()
     {
         return $this->getBlockPrefix();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return self::NAME;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getParent()
+    #[\Override]
+    public function getParent(): ?string
     {
         return TextareaType::class;
     }

@@ -26,6 +26,7 @@ class EmailUserListenerTest extends \PHPUnit\Framework\TestCase
     /** @var EmailUserListener */
     private $listener;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->webSocketSendProcessor = $this->createMock(WebSocketSendProcessor::class);
@@ -60,7 +61,7 @@ class EmailUserListenerTest extends \PHPUnit\Framework\TestCase
 
         $onFlushEventArgs = $this->createMock(OnFlushEventArgs::class);
         $onFlushEventArgs->expects($this->once())
-            ->method('getEntityManager')
+            ->method('getObjectManager')
             ->willReturn($this->em);
         $this->uow->expects($this->any())
             ->method('getEntityChangeSet')
@@ -83,7 +84,7 @@ class EmailUserListenerTest extends \PHPUnit\Framework\TestCase
 
         $postFlushEventArgs = $this->createMock(PostFlushEventArgs::class);
         $postFlushEventArgs->expects($this->any())
-            ->method('getEntityManager')
+            ->method('getObjectManager')
             ->willReturn($this->em);
 
         $this->listener->onFlush($onFlushEventArgs);

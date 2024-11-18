@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\TranslationBundle\Action;
@@ -38,9 +39,7 @@ class DownloadUpdateLanguageTranslationAction extends AbstractLanguageResultActi
         $this->logger = $logger;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     protected function executeAction($context): void
     {
         $result = true;

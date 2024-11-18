@@ -54,9 +54,7 @@ class MoveEntityConfigFieldValueQuery extends ParametrizedMigrationQuery
         $this->toCode = $toCode;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getDescription(): array
     {
         $logger = new ArrayLogger();
@@ -76,9 +74,7 @@ class MoveEntityConfigFieldValueQuery extends ParametrizedMigrationQuery
         return $logger->getMessages();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function execute(LoggerInterface $logger): void
     {
         $this->updateFieldConfig($logger);
@@ -92,10 +88,10 @@ class MoveEntityConfigFieldValueQuery extends ParametrizedMigrationQuery
 
         if ($this->fieldName !== null) {
             $sql .= ' AND field_name = ?';
-            $params[] = [$this->fieldName];
+            $params[] = $this->fieldName;
         }
 
-        $rows = $this->connection->fetchAll($sql, $params);
+        $rows = $this->connection->fetchAllAssociative($sql, $params);
         $sql = 'UPDATE oro_entity_config_field SET data = ? WHERE id = ?';
 
         foreach ($rows as $row) {
@@ -115,7 +111,7 @@ class MoveEntityConfigFieldValueQuery extends ParametrizedMigrationQuery
 
             if (!$dryRun) {
                 $statement = $this->connection->prepare($sql);
-                $statement->execute($params);
+                $statement->executeStatement($params);
             }
         }
     }

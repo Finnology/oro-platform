@@ -16,6 +16,7 @@ class CurrentApplicationProviderTest extends \PHPUnit\Framework\TestCase
     /** @var CurrentApplicationProvider */
     private $provider;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->tokenStorage = $this->createMock(TokenStorageInterface::class);
@@ -23,7 +24,7 @@ class CurrentApplicationProviderTest extends \PHPUnit\Framework\TestCase
         $this->provider = new CurrentApplicationProvider($this->tokenStorage);
     }
 
-    private function createToken(UserInterface|string $user): TokenInterface
+    private function createToken(UserInterface $user): TokenInterface
     {
         $token = $this->createMock(TokenInterface::class);
         $token->expects($this->once())
@@ -72,12 +73,12 @@ class CurrentApplicationProviderTest extends \PHPUnit\Framework\TestCase
             ],
             [
                 'applications' => ['default'],
-                'token' => $this->createToken('anon.'),
+                'token' => $this->createToken($this->createMock(UserInterface::class)),
                 'expectedResult' => false
             ],
             [
                 'applications' => ['test'],
-                'token' => $this->createToken('anon.'),
+                'token' => $this->createToken($this->createMock(UserInterface::class)),
                 'expectedResult' => false
             ],
             [
@@ -101,7 +102,7 @@ class CurrentApplicationProviderTest extends \PHPUnit\Framework\TestCase
                 'expectedResult' => 'default',
             ],
             'not supported user' => [
-                'token' => $this->createToken('anon.'),
+                'token' => $this->createToken($this->createMock(UserInterface::class)),
                 'expectedResult' => null,
             ],
             'empty token' => [

@@ -28,14 +28,12 @@ class CustomLogChannelCommandStub extends Command
         parent::__construct();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    #[\Override]
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->getLogger()->info(self::LOG_MESSAGE);
 
-        return 0;
+        return Command::SUCCESS;
     }
 
     /**

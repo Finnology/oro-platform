@@ -37,9 +37,7 @@ class OroEntityExtendBundle extends Bundle
         ExtendClassLoadingUtils::registerClassLoader($this->cacheDir);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function boot(): void
     {
         parent::boot();
@@ -64,9 +62,7 @@ class OroEntityExtendBundle extends Bundle
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function build(ContainerBuilder $container): void
     {
         parent::build($container);
@@ -74,7 +70,6 @@ class OroEntityExtendBundle extends Bundle
         $this->ensureInitialized();
 
         $container->addCompilerPass(new Compiler\EntityExtendValidationLoaderPass());
-        $container->addCompilerPass(new Compiler\ConfigLoaderPass());
         $container->addCompilerPass(new Compiler\EntityManagerPass());
         $container->addCompilerPass(new Compiler\MigrationConfigPass());
         $container->addCompilerPass(new Compiler\ExtendDuplicatorPass());
@@ -91,7 +86,7 @@ class OroEntityExtendBundle extends Bundle
             && !CommandExecutor::isCurrentCommand('oro:install')
             && !CommandExecutor::isCurrentCommand('oro:assets:install')
         ) {
-            if (!ExtendClassLoadingUtils::aliasesExist($this->cacheDir)
+            if (!ExtendClassLoadingUtils::classesExist($this->cacheDir)
                 && !CommandExecutor::isCommandRunning('oro:entity-extend:update-config')
             ) {
                 $this->checkConfigs();

@@ -42,12 +42,13 @@ class EmailModelBuilderHelperTest extends \PHPUnit\Framework\TestCase
     /** @var EmailCacheManager|\PHPUnit\Framework\MockObject\MockObject */
     private $emailCacheManager;
 
-    /** @var Environment|\PHPUnit\Framework\MockObject\MockObject  */
+    /** @var Environment|\PHPUnit\Framework\MockObject\MockObject */
     private $twig;
 
     /** @var EmailModelBuilderHelper */
     private $helper;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->entityRoutingHelper = $this->createMock(EntityRoutingHelper::class);

@@ -6,39 +6,39 @@ use Doctrine\Persistence\ManagerRegistry;
 use Oro\Bundle\EmailBundle\Async\Topic\SendEmailTemplateTopic;
 use Oro\Bundle\EmailBundle\Model\From;
 use Oro\Bundle\EmailBundle\Model\Recipient;
-use Oro\Bundle\EmailBundle\Tools\AggregatedEmailTemplatesSender;
+use Oro\Bundle\EmailBundle\Sender\EmailTemplateSender;
 use Oro\Component\MessageQueue\Client\TopicSubscriberInterface;
 use Oro\Component\MessageQueue\Consumption\MessageProcessorInterface;
 use Oro\Component\MessageQueue\Transport\MessageInterface;
 use Oro\Component\MessageQueue\Transport\SessionInterface;
-use Psr\Log\LoggerAwareInterface;
-use Psr\Log\LoggerAwareTrait;
-use Psr\Log\NullLogger;
+use Psr\Log\LoggerInterface;
 
 /**
- * Uses {@see AggregatedEmailTemplatesSender} to send localized emails to specified recipients using specified email
- * template and create {@see EmailUser} entities.
+ * Sends emails to specified recipients using specified email template and creates {@see EmailUser} entities.
  */
-class SendEmailTemplateProcessor implements MessageProcessorInterface, TopicSubscriberInterface, LoggerAwareInterface
+class SendEmailTemplateProcessor implements MessageProcessorInterface, TopicSubscriberInterface
 {
-    use LoggerAwareTrait;
-
-    private ManagerRegistry $managerRegistry;
-
-    private AggregatedEmailTemplatesSender $aggregatedEmailTemplatesSender;
+    private ManagerRegistry $doctrine;
+    private EmailTemplateSender $emailTemplateSender;
+    private LoggerInterface $logger;
 
     public function __construct(
-        ManagerRegistry $managerRegistry,
-        AggregatedEmailTemplatesSender $aggregatedEmailTemplatesSender
+        ManagerRegistry $doctrine,
+        EmailTemplateSender $emailTemplateSender,
+        LoggerInterface $logger
     ) {
-        $this->managerRegistry = $managerRegistry;
-        $this->aggregatedEmailTemplatesSender = $aggregatedEmailTemplatesSender;
-        $this->logger = new NullLogger();
+        $this->doctrine = $doctrine;
+        $this->emailTemplateSender = $emailTemplateSender;
+        $this->logger = $logger;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
+    public static function getSubscribedTopics(): array
+    {
+        return [SendEmailTemplateTopic::getName()];
+    }
+
+    #[\Override]
     public function process(MessageInterface $message, SessionInterface $session): string
     {
         $messageBody = $message->getBody();
@@ -54,12 +54,14 @@ class SendEmailTemplateProcessor implements MessageProcessorInterface, TopicSubs
         }
 
         try {
-            $this->aggregatedEmailTemplatesSender->send(
-                $entity,
-                $recipients,
-                From::emailAddress($messageBody['from']),
-                $messageBody['templateName']
-            );
+            foreach ($recipients as $recipient) {
+                $this->emailTemplateSender->sendEmailTemplate(
+                    From::emailAddress($messageBody['from']),
+                    $recipient,
+                    $messageBody['templateName'],
+                    ['entity' => $entity]
+                );
+            }
         } catch (\Exception $exception) {
             $this->logger->error('Cannot send email template.', ['exception' => $exception]);
 
@@ -82,7 +84,7 @@ class SendEmailTemplateProcessor implements MessageProcessorInterface, TopicSubs
     private function getEntity(array $messageBody): ?object
     {
         [$entityClass, $entityId] = $messageBody['entity'];
-        $entity = $this->managerRegistry->getManagerForClass($entityClass)->find($entityClass, $entityId);
+        $entity = $this->doctrine->getManagerForClass($entityClass)->find($entityClass, $entityId);
         if (!$entity) {
             $this->logger->error(
                 sprintf('Could not find required entity with class "%s" and id "%s".', $entityClass, $entityId)
@@ -92,13 +94,5 @@ class SendEmailTemplateProcessor implements MessageProcessorInterface, TopicSubs
         }
 
         return $entity;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedTopics(): array
-    {
-        return [SendEmailTemplateTopic::getName()];
     }
 }

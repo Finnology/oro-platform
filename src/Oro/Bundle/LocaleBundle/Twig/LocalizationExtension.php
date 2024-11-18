@@ -32,9 +32,7 @@ class LocalizationExtension extends AbstractExtension implements ServiceSubscrib
         $this->container = $container;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getFilters()
     {
         return [
@@ -80,10 +78,8 @@ class LocalizationExtension extends AbstractExtension implements ServiceSubscrib
         return (string)$this->getLocalizationHelper()->getLocalizedValue($values, $localization);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedServices()
+    #[\Override]
+    public static function getSubscribedServices(): array
     {
         return [
             'oro_locale.formatter.language_code' => LanguageCodeFormatter::class,

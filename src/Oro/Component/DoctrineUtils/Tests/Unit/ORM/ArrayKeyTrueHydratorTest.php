@@ -1,11 +1,12 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Component\DoctrineUtils\Tests\Unit\ORM;
 
 use Doctrine\Common\EventManager;
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Driver\Statement;
+use Doctrine\DBAL\Result;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Query\ResultSetMapping;
 use Oro\Component\DoctrineUtils\ORM\ArrayKeyTrueHydrator;
@@ -14,9 +15,9 @@ class ArrayKeyTrueHydratorTest extends \PHPUnit\Framework\TestCase
 {
     public function testHydrateAllData(): void
     {
-        $stmt = $this->createMock(Statement::class);
+        $stmt = $this->createMock(Result::class);
         $stmt->expects($this->any())
-            ->method('fetch')
+            ->method('fetchOne')
             ->willReturnOnConsecutiveCalls('one', 'two', 'three', false);
         $rsm = $this->createMock(ResultSetMapping::class);
 

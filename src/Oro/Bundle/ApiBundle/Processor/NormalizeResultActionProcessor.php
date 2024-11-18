@@ -29,22 +29,18 @@ class NormalizeResultActionProcessor extends ActionProcessor implements LoggerAw
 {
     protected ?LoggerInterface $logger = null;
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function setLogger(LoggerInterface $logger): void
     {
         $this->logger = $logger;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     protected function executeProcessors(ComponentContextInterface $context): void
     {
         /** @var NormalizeResultContext $context */
 
-        $processors = $this->processorBag->getProcessors($context);
+        $processors = $this->getProcessors($context);
         $processorId = null;
         $group = null;
         try {
@@ -194,7 +190,7 @@ class NormalizeResultActionProcessor extends ActionProcessor implements LoggerAw
 
     protected function isNormalizeResultEnabled(NormalizeResultContext $context): bool
     {
-        return !$context->getLastGroup();
+        return !$context->isSoftErrorsHandling() && !$context->getLastGroup();
     }
 
     /**
@@ -206,7 +202,7 @@ class NormalizeResultActionProcessor extends ActionProcessor implements LoggerAw
     protected function executeNormalizeResultProcessors(NormalizeResultContext $context): void
     {
         $context->setFirstGroup(ApiActionGroup::NORMALIZE_RESULT);
-        $processors = $this->processorBag->getProcessors($context);
+        $processors = $this->getProcessors($context);
         /** @var ProcessorInterface $processor */
         foreach ($processors as $processor) {
             try {

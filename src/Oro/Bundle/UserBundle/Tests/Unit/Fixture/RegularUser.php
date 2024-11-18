@@ -21,7 +21,8 @@ class RegularUser implements UserInterface
     /**
      * @return array
      */
-    public function getRoles()
+    #[\Override]
+    public function getRoles(): array
     {
         return $this->roles;
     }
@@ -82,10 +83,14 @@ class RegularUser implements UserInterface
         $this->username = $username;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function eraseCredentials()
     {
+    }
+
+    #[\Override]
+    public function getUserIdentifier(): string
+    {
+        return $this->getUsername();
     }
 }

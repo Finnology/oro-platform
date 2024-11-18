@@ -20,12 +20,8 @@ abstract class AbstractDraftAction extends AbstractAction
      */
     protected $options;
 
-    /**
-     * @param array $options
-     *
-     * @return $this|ActionInterface
-     */
-    public function initialize(array $options): ActionInterface
+    #[\Override]
+    public function initialize(array $options): ActionInterface|static
     {
         $this->options = $this->getOptionResolver()->resolve($options);
 

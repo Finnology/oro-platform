@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\MigrationBundle\Command;
@@ -65,6 +66,7 @@ class DumpMigrationsCommand extends Command
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     protected function configure()
     {
         $this
@@ -108,7 +110,8 @@ HELP
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
-    public function execute(InputInterface $input, OutputInterface $output)
+    #[\Override]
+    public function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->setup($input, $output);
 

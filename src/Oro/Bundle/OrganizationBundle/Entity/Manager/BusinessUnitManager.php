@@ -12,6 +12,7 @@ use Oro\Bundle\SecurityBundle\Authentication\TokenAccessorInterface;
 use Oro\Bundle\SecurityBundle\ORM\Walker\AclHelper;
 use Oro\Bundle\SecurityBundle\Owner\OwnerTreeProviderInterface;
 use Oro\Bundle\UserBundle\Entity\User;
+use Oro\Bundle\UserBundle\Entity\UserInterface;
 
 /**
  * Provides a set of methods to manage business units.
@@ -40,7 +41,7 @@ class BusinessUnitManager
     /**
      * Get Business Units tree
      *
-     * @param User     $entity
+     * @param User|null $entity
      * @param int|null $organizationId
      *
      * @return array
@@ -83,7 +84,7 @@ class BusinessUnitManager
 
     /**
      * @param array $criteria
-     * @param array $orderBy
+     * @param array|null $orderBy
      *
      * @return BusinessUnit
      */
@@ -104,8 +105,8 @@ class BusinessUnitManager
      * @return bool
      */
     public function canUserBeSetAsOwner(
-        User $currentUser,
-        User $newUser,
+        UserInterface $currentUser,
+        UserInterface $newUser,
         $accessLevel,
         OwnerTreeProviderInterface $treeProvider,
         Organization $organization
@@ -181,7 +182,7 @@ class BusinessUnitManager
      */
     public function getBusinessUnitRepo()
     {
-        return $this->em->getRepository('OroOrganizationBundle:BusinessUnit');
+        return $this->em->getRepository(BusinessUnit::class);
     }
 
     /**
@@ -189,7 +190,7 @@ class BusinessUnitManager
      */
     public function getUserRepo()
     {
-        return $this->em->getRepository('OroUserBundle:User');
+        return $this->em->getRepository(User::class);
     }
 
     /**
@@ -290,7 +291,7 @@ class BusinessUnitManager
      * @return array
      */
     private function getAllowedBusinessUnitIds(
-        User $currentUser,
+        UserInterface $currentUser,
         $accessLevel,
         OwnerTreeProviderInterface $treeProvider,
         Organization $organization

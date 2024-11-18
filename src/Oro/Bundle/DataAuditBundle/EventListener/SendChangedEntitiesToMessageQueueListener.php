@@ -3,7 +3,7 @@
 namespace Oro\Bundle\DataAuditBundle\EventListener;
 
 use Doctrine\Common\Util\ClassUtils;
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Event\OnFlushEventArgs;
 use Doctrine\ORM\Event\PostFlushEventArgs;
 use Doctrine\ORM\PersistentCollection;
@@ -34,7 +34,6 @@ use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
  * "Doctrine will only check the owning side of an association for changes."
  * http://doctrine-orm.readthedocs.io/projects/doctrine-orm/en/latest/reference/unitofwork-associations.html
  * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
- * @SuppressWarnings(PHPMD.TooManyFields)
  */
 class SendChangedEntitiesToMessageQueueListener implements OptionalListenerInterface
 {
@@ -42,74 +41,32 @@ class SendChangedEntitiesToMessageQueueListener implements OptionalListenerInter
 
     private const BATCH_SIZE = 100;
 
-    /** @var MessageProducerInterface */
-    private $messageProducer;
+    private \SplObjectStorage $allInsertions;
+    private \SplObjectStorage $allUpdates;
+    private \SplObjectStorage $allDeletions;
+    private \SplObjectStorage $allCollectionUpdates;
+    private \SplObjectStorage $allTokens;
 
-    /** @var TokenStorageInterface */
-    private $tokenStorage;
-
-    /** @var EntityToEntityChangeArrayConverter */
-    private $entityToArrayConverter;
-
-    /** @var AuditConfigProvider */
-    private $auditConfigProvider;
-
-    /** @var LoggerInterface */
-    private $logger;
-
-    /** @var \SplObjectStorage */
-    private $allInsertions;
-
-    /** @var \SplObjectStorage */
-    private $allUpdates;
-
-    /** @var \SplObjectStorage */
-    private $allDeletions;
-
-    /** @var \SplObjectStorage */
-    private $allCollectionUpdates;
-
-    /** @var \SplObjectStorage */
-    private $allTokens;
-
-    /** @var AdditionalEntityChangesToAuditStorage */
-    private $additionalEntityChangesStorage;
-
-    /** @var AuditMessageBodyProvider */
-    private $auditMessageBodyProvider;
-
-    /** @var EntityNameResolver */
-    private $entityNameResolver;
-
-    /** @var PropertyAccessorInterface */
-    private $propertyAccessor;
-
-    private ApplicationState $applicationState;
-
+    /**
+     * @SuppressWarnings(PHPMD.ExcessiveParameterList)
+     */
     public function __construct(
-        MessageProducerInterface $messageProducer,
-        TokenStorageInterface $tokenStorage,
-        AdditionalEntityChangesToAuditStorage $additionalEntityChangesStorage,
-        EntityToEntityChangeArrayConverter $entityToArrayConverter,
-        AuditConfigProvider $auditConfigProvider,
-        LoggerInterface $logger,
-        AuditMessageBodyProvider $auditMessageBodyProvider,
-        ApplicationState $applicationState
+        private readonly MessageProducerInterface $messageProducer,
+        private readonly TokenStorageInterface $tokenStorage,
+        private readonly AdditionalEntityChangesToAuditStorage $additionalEntityChangesStorage,
+        private readonly EntityToEntityChangeArrayConverter $entityToArrayConverter,
+        private readonly AuditConfigProvider $auditConfigProvider,
+        private readonly AuditMessageBodyProvider $auditMessageBodyProvider,
+        private readonly ApplicationState $applicationState,
+        private readonly EntityNameResolver $entityNameResolver,
+        private readonly PropertyAccessorInterface $propertyAccessor,
+        private readonly LoggerInterface $logger
     ) {
-        $this->messageProducer = $messageProducer;
-        $this->tokenStorage = $tokenStorage;
-        $this->additionalEntityChangesStorage = $additionalEntityChangesStorage;
-        $this->entityToArrayConverter = $entityToArrayConverter;
-        $this->auditConfigProvider = $auditConfigProvider;
-        $this->logger = $logger;
-        $this->auditMessageBodyProvider = $auditMessageBodyProvider;
-        $this->applicationState = $applicationState;
-
-        $this->allInsertions = new \SplObjectStorage;
-        $this->allUpdates = new \SplObjectStorage;
-        $this->allDeletions = new \SplObjectStorage;
-        $this->allCollectionUpdates = new \SplObjectStorage;
-        $this->allTokens = new \SplObjectStorage;
+        $this->allInsertions = new \SplObjectStorage();
+        $this->allUpdates = new \SplObjectStorage();
+        $this->allDeletions = new \SplObjectStorage();
+        $this->allCollectionUpdates = new \SplObjectStorage();
+        $this->allTokens = new \SplObjectStorage();
     }
 
     private function isEnabled(): bool
@@ -120,13 +77,13 @@ class SendChangedEntitiesToMessageQueueListener implements OptionalListenerInter
         return $this->enabled;
     }
 
-    public function onFlush(OnFlushEventArgs $eventArgs)
+    public function onFlush(OnFlushEventArgs $eventArgs): void
     {
         if (!$this->isEnabled()) {
             return;
         }
 
-        $em = $eventArgs->getEntityManager();
+        $em = $eventArgs->getObjectManager();
 
         $this->findAuditableInsertions($em);
         $this->findAuditableUpdates($em);
@@ -139,13 +96,13 @@ class SendChangedEntitiesToMessageQueueListener implements OptionalListenerInter
         }
     }
 
-    public function postFlush(PostFlushEventArgs $eventArgs)
+    public function postFlush(PostFlushEventArgs $eventArgs): void
     {
         if (!$this->isEnabled()) {
             return;
         }
 
-        $em = $eventArgs->getEntityManager();
+        $em = $eventArgs->getObjectManager();
         try {
             $insertions = $this->processInsertions($em);
             $updates = $this->processUpdates($em);
@@ -177,19 +134,14 @@ class SendChangedEntitiesToMessageQueueListener implements OptionalListenerInter
         }
     }
 
-    /**
-     * @param EntityManager $em
-     *
-     * @return TokenInterface|null
-     */
-    private function getSecurityToken(EntityManager $em)
+    private function getSecurityToken(EntityManagerInterface $em): ?TokenInterface
     {
         return $this->allTokens->contains($em)
             ? $this->allTokens[$em]
             : $this->tokenStorage->getToken();
     }
 
-    private function findAuditableInsertions(EntityManager $em)
+    private function findAuditableInsertions(EntityManagerInterface $em): void
     {
         $uow = $em->getUnitOfWork();
 
@@ -206,7 +158,7 @@ class SendChangedEntitiesToMessageQueueListener implements OptionalListenerInter
         $this->saveChanges($this->allInsertions, $em, $insertions);
     }
 
-    private function findAuditableUpdates(EntityManager $em)
+    private function findAuditableUpdates(EntityManagerInterface $em): void
     {
         $uow = $em->getUnitOfWork();
 
@@ -226,23 +178,23 @@ class SendChangedEntitiesToMessageQueueListener implements OptionalListenerInter
         $this->saveChanges($this->allUpdates, $em, $updates);
     }
 
-    private function hasAssociationUpdates(EntityManager $em, object $entity): bool
+    private function hasAssociationUpdates(EntityManagerInterface $em, object $entity): bool
     {
         $uow = $em->getUnitOfWork();
         $ownerSplHash = spl_object_hash($entity);
 
-        $collectionChanges = static function () use ($uow) {
-            yield from $uow->getScheduledCollectionDeletions();
-            yield from $uow->getScheduledCollectionUpdates();
-        };
+        return
+            $this->hasAuditableCollection($uow->getScheduledCollectionDeletions(), $ownerSplHash)
+            || $this->hasAuditableCollection($uow->getScheduledCollectionUpdates(), $ownerSplHash);
+    }
 
+    private function hasAuditableCollection(array $collections, string $ownerSplHash): bool
+    {
         /** @var PersistentCollection $collection */
-        foreach ($collectionChanges() as $collection) {
-            if (!$this->auditConfigProvider->isAuditableEntity($collection->getTypeClass()->getName())) {
-                continue;
-            }
-
-            if (spl_object_hash($collection->getOwner()) === $ownerSplHash) {
+        foreach ($collections as $collection) {
+            if (spl_object_hash($collection->getOwner()) === $ownerSplHash
+                && $this->auditConfigProvider->isAuditableEntity($collection->getTypeClass()->getName())
+            ) {
                 return true;
             }
         }
@@ -250,7 +202,7 @@ class SendChangedEntitiesToMessageQueueListener implements OptionalListenerInter
         return false;
     }
 
-    private function findAuditableDeletions(EntityManager $em)
+    private function findAuditableDeletions(EntityManagerInterface $em): void
     {
         $uow = $em->getUnitOfWork();
 
@@ -291,12 +243,11 @@ class SendChangedEntitiesToMessageQueueListener implements OptionalListenerInter
         $this->saveChanges($this->allDeletions, $em, $deletions);
     }
 
-    private function findAuditableCollectionUpdates(EntityManager $em): void
+    private function findAuditableCollectionUpdates(EntityManagerInterface $em): void
     {
         $uow = $em->getUnitOfWork();
         $collectionUpdates = new \SplObjectStorage();
 
-        /** @var PersistentCollection[] $scheduledCollectionUpdates */
         $scheduledCollectionUpdates = $uow->getScheduledCollectionUpdates();
         $collectionDeletions = $this->findAuditableCollectionDeletions($em);
         foreach ($scheduledCollectionUpdates as $updateCollection) {
@@ -316,9 +267,10 @@ class SendChangedEntitiesToMessageQueueListener implements OptionalListenerInter
                 'changeDiff' => array_filter(
                     $updateCollection->toArray(),
                     function ($entity) use ($uow, $updateCollection) {
-                        return $uow->isScheduledForUpdate($entity) &&
-                            !in_array($entity, $updateCollection->getInsertDiff(), true) &&
-                            !in_array($entity, $updateCollection->getDeleteDiff(), true);
+                        return
+                            $uow->isScheduledForUpdate($entity)
+                            && !\in_array($entity, $updateCollection->getInsertDiff(), true)
+                            && !\in_array($entity, $updateCollection->getDeleteDiff(), true);
                     }
                 ),
             ];
@@ -328,12 +280,11 @@ class SendChangedEntitiesToMessageQueueListener implements OptionalListenerInter
         $this->saveChanges($this->allCollectionUpdates, $em, $collectionDeletions);
     }
 
-    private function findAuditableCollectionDeletions(EntityManager $em): \SplObjectStorage
+    private function findAuditableCollectionDeletions(EntityManagerInterface $em): \SplObjectStorage
     {
         $uow = $em->getUnitOfWork();
         $collectionDeletions = new \SplObjectStorage();
 
-        /** @var PersistentCollection[] $scheduledCollectionDeletions */
         $scheduledCollectionDeletions = $uow->getScheduledCollectionDeletions();
         foreach ($scheduledCollectionDeletions as $collection) {
             if (!$this->auditConfigProvider->isAuditableEntity($collection->getTypeClass()->getName())) {
@@ -344,7 +295,7 @@ class SendChangedEntitiesToMessageQueueListener implements OptionalListenerInter
             $identityMap = $uow->getIdentityMap();
             $targetEntityName = $mapping['targetEntity'];
             $isOwningSide = $mapping['isOwningSide'];
-            if ($isOwningSide && array_key_exists($targetEntityName, $identityMap)) {
+            if ($isOwningSide && \array_key_exists($targetEntityName, $identityMap)) {
                 $deletionEntitiesDiff = array_udiff(
                     $identityMap[$targetEntityName],
                     $collection->toArray(),
@@ -364,8 +315,11 @@ class SendChangedEntitiesToMessageQueueListener implements OptionalListenerInter
         return $collectionDeletions;
     }
 
-    private function saveChanges(\SplObjectStorage $storage, EntityManager $em, \SplObjectStorage $changes)
-    {
+    private function saveChanges(
+        \SplObjectStorage $storage,
+        EntityManagerInterface $em,
+        \SplObjectStorage $changes
+    ): void {
         if ($changes->count() > 0) {
             if (!$storage->contains($em)) {
                 $storage[$em] = $changes;
@@ -377,12 +331,7 @@ class SendChangedEntitiesToMessageQueueListener implements OptionalListenerInter
         }
     }
 
-    /**
-     * @param EntityManager $em
-     *
-     * @return array
-     */
-    private function processInsertions(EntityManager $em)
+    private function processInsertions(EntityManagerInterface $em): array
     {
         if (!$this->allInsertions->contains($em)) {
             return [];
@@ -391,18 +340,13 @@ class SendChangedEntitiesToMessageQueueListener implements OptionalListenerInter
         $insertions = [];
         foreach ($this->allInsertions[$em] as $entity) {
             $changeSet = $this->allInsertions[$em][$entity];
-            $insertions[$this->getEntityHash($entity)] = $this->convertEntityToArray($em, $entity, $changeSet);
+            $insertions[spl_object_hash($entity)] = $this->convertEntityToArray($em, $entity, $changeSet);
         }
 
         return $insertions;
     }
 
-    /**
-     * @param EntityManager $em
-     *
-     * @return array
-     */
-    private function processUpdates(EntityManager $em)
+    private function processUpdates(EntityManagerInterface $em): array
     {
         $updates = $this->getUpdates($em);
 
@@ -419,13 +363,13 @@ class SendChangedEntitiesToMessageQueueListener implements OptionalListenerInter
             }
 
             $key = spl_object_hash($entity);
-            if (array_key_exists($key, $updates)) {
+            if (\array_key_exists($key, $updates)) {
                 $updates[$key]['change_set'] = array_merge(
-                    $updates[$key]['change_set'],
-                    $additionalUpdate['change_set']
+                    (array)$updates[$key]['change_set'],
+                    $additionalUpdate['change_set'] ?? []
                 );
             } else {
-                $updates[$this->getEntityHash($entity)] = $additionalUpdate;
+                $updates[spl_object_hash($entity)] = $additionalUpdate;
             }
         }
         $this->additionalEntityChangesStorage->clear($em);
@@ -433,7 +377,7 @@ class SendChangedEntitiesToMessageQueueListener implements OptionalListenerInter
         return $updates;
     }
 
-    private function getUpdates(EntityManager $em): array
+    private function getUpdates(EntityManagerInterface $em): array
     {
         $updates = [];
         if ($this->allUpdates->contains($em)) {
@@ -444,21 +388,14 @@ class SendChangedEntitiesToMessageQueueListener implements OptionalListenerInter
                     continue;
                 }
 
-                $updates[$this->getEntityHash($entity)] = $update;
+                $updates[spl_object_hash($entity)] = $update;
             }
         }
 
         return $updates;
     }
 
-    /**
-     * @param EntityManager $entityManager
-     * @param object        $entity
-     * @param array         $changeSet
-     *
-     * @return array|null
-     */
-    private function processUpdate(EntityManager $entityManager, $entity, array $changeSet)
+    private function processUpdate(EntityManagerInterface $entityManager, object $entity, array $changeSet): ?array
     {
         $update = $this->convertEntityToArray($entityManager, $entity, $changeSet);
         if (null !== $update['entity_id']) {
@@ -473,12 +410,7 @@ class SendChangedEntitiesToMessageQueueListener implements OptionalListenerInter
         return null;
     }
 
-    /**
-     * @param EntityManager $em
-     *
-     * @return array
-     */
-    private function processDeletions(EntityManager $em)
+    private function processDeletions(EntityManagerInterface $em): array
     {
         if (!$this->allDeletions->contains($em)) {
             return [];
@@ -486,7 +418,7 @@ class SendChangedEntitiesToMessageQueueListener implements OptionalListenerInter
 
         $deletions = [];
         foreach ($this->allDeletions[$em] as $entity) {
-            $deletions[$this->getEntityHash($entity)] = $this->allDeletions[$em][$entity];
+            $deletions[spl_object_hash($entity)] = $this->allDeletions[$em][$entity];
         }
 
         return $deletions;
@@ -494,19 +426,13 @@ class SendChangedEntitiesToMessageQueueListener implements OptionalListenerInter
 
     /**
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
-     *
-     * @param EntityManager $em
-     * @param array $insertions
-     * @param array $updates
-     * @param array $deletions
-     * @return array
      */
     private function processCollectionUpdates(
-        EntityManager $em,
+        EntityManagerInterface $em,
         array $insertions = [],
         array $updates = [],
         array $deletions = []
-    ) {
+    ): array {
         if (!$this->allCollectionUpdates->contains($em)) {
             return [];
         }
@@ -519,17 +445,17 @@ class SendChangedEntitiesToMessageQueueListener implements OptionalListenerInter
             $changed = [];
 
             foreach ($this->allCollectionUpdates[$em][$collection]['insertDiff'] as $entity) {
-                $entityHash = $this->getEntityHash($entity);
+                $entityHash = spl_object_hash($entity);
                 $inserted[$entityHash] = $insertions[$entityHash] ?? $this->convertEntityToArray($em, $entity, []);
             }
 
             foreach ($this->allCollectionUpdates[$em][$collection]['deleteDiff'] as $entity) {
-                $entityHash = $this->getEntityHash($entity);
+                $entityHash = spl_object_hash($entity);
                 $deleted[$entityHash] = $deletions[$entityHash] ?? $this->convertEntityToArray($em, $entity, []);
             }
 
             foreach ($this->allCollectionUpdates[$em][$collection]['changeDiff'] as $entity) {
-                $entityHash = $this->getEntityHash($entity);
+                $entityHash = spl_object_hash($entity);
                 $changed[$entityHash] = $updates[$entityHash] ?? $this->convertEntityToArray($em, $entity, []);
             }
 
@@ -542,7 +468,7 @@ class SendChangedEntitiesToMessageQueueListener implements OptionalListenerInter
 
             if ($inserted || $deleted || $changed) {
                 $key = spl_object_hash($collection->getOwner());
-                $collectionUpdates[$key] = array_key_exists($key, $collectionUpdates)
+                $collectionUpdates[$key] = \array_key_exists($key, $collectionUpdates)
                     ? ArrayUtil::arrayMergeRecursiveDistinct($collectionUpdates[$key], $entityData)
                     : $entityData;
             }
@@ -551,45 +477,12 @@ class SendChangedEntitiesToMessageQueueListener implements OptionalListenerInter
         return $collectionUpdates;
     }
 
-    /**
-     * @param EntityManager $em
-     * @param object $entity
-     * @param array $changeSet
-     * @param string|null $entityName
-     * @return array
-     */
-    private function convertEntityToArray(EntityManager $em, $entity, array $changeSet, $entityName = null)
-    {
+    private function convertEntityToArray(
+        EntityManagerInterface $em,
+        object $entity,
+        array $changeSet,
+        ?string $entityName = null
+    ): array {
         return $this->entityToArrayConverter->convertNamedEntityToArray($em, $entity, $changeSet, $entityName);
-    }
-
-    public function setAdditionalEntityChangesStorage(
-        AdditionalEntityChangesToAuditStorage $additionalEntityChangesStorage
-    ) {
-        $this->additionalEntityChangesStorage = $additionalEntityChangesStorage;
-    }
-
-    public function setEntityNameResolver(EntityNameResolver $entityNameResolver): void
-    {
-        $this->entityNameResolver = $entityNameResolver;
-    }
-
-    public function setAuditMessageBodyProvider(AuditMessageBodyProvider $auditMessageBodyProvider)
-    {
-        $this->auditMessageBodyProvider = $auditMessageBodyProvider;
-    }
-
-    public function setPropertyAccessor(PropertyAccessorInterface $propertyAccessor)
-    {
-        $this->propertyAccessor = $propertyAccessor;
-    }
-
-    /**
-     * @param object $entity
-     * @return string
-     */
-    private function getEntityHash($entity): string
-    {
-        return spl_object_hash($entity);
     }
 }

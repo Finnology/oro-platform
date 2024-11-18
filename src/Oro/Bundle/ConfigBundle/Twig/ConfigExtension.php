@@ -22,9 +22,7 @@ class ConfigExtension extends AbstractExtension implements ServiceSubscriberInte
         $this->container = $container;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getFunctions()
     {
         return [
@@ -42,10 +40,8 @@ class ConfigExtension extends AbstractExtension implements ServiceSubscriberInte
         return $this->getConfigManager()->get($name);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedServices()
+    #[\Override]
+    public static function getSubscribedServices(): array
     {
         return [
             'oro_config.user' => ConfigManager::class

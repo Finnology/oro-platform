@@ -8,10 +8,8 @@ use Twig\Extension\AbstractExtension;
 
 class TwigExtensionStub2 extends AbstractExtension implements ServiceSubscriberInterface
 {
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedServices()
+    #[\Override]
+    public static function getSubscribedServices(): array
     {
         return [
             'request_stack' => RequestStack::class

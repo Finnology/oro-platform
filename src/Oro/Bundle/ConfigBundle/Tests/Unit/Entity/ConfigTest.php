@@ -11,9 +11,10 @@ class ConfigTest extends \PHPUnit\Framework\TestCase
     /** @var Config */
     private $object;
 
+    #[\Override]
     protected function setUp(): void
     {
-        $this->object = new Config;
+        $this->object = new Config();
     }
 
     public function testGetId()

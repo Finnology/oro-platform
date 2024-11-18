@@ -11,10 +11,8 @@ class ValidOrganization extends Constraint
 {
     public $message = 'oro.address.validation.invalid_customer_and_address_organization';
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getTargets()
+    #[\Override]
+    public function getTargets(): string|array
     {
         return self::CLASS_CONSTRAINT;
     }

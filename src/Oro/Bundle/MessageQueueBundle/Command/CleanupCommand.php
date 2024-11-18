@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\MessageQueueBundle\Command;
@@ -34,15 +35,14 @@ class CleanupCommand extends Command implements CronCommandScheduleDefinitionInt
         parent::__construct();
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getDefaultDefinition(): string
     {
         return '0 1 * * *';
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     public function configure()
     {
         $this
@@ -73,7 +73,8 @@ HELP
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    #[\Override]
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         if ($input->getOption('dry-run')) {
             $output->writeln(
@@ -83,7 +84,7 @@ HELP
                 )
             );
 
-            return 0;
+            return Command::SUCCESS;
         }
 
         $output->writeln(sprintf(
@@ -93,7 +94,7 @@ HELP
 
         $output->writeln('<info>Message queue job history cleanup complete</info>');
 
-        return 0;
+        return Command::SUCCESS;
     }
 
     /**

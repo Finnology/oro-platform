@@ -11,6 +11,7 @@ use Symfony\Component\Validator\Test\ConstraintValidatorTestCase;
 
 class NameOrOrganizationValidatorTest extends ConstraintValidatorTestCase
 {
+    #[\Override]
     protected function createValidator(): NameOrOrganizationValidator
     {
         return new NameOrOrganizationValidator();
@@ -116,12 +117,6 @@ class NameOrOrganizationValidatorTest extends ConstraintValidatorTestCase
             ],
             'false as organization' => [
                 (new Address())->setOrganization(false)
-            ],
-            'array as names' => [
-                (new Address())->setFirstName([])->setLastName([])
-            ],
-            'array as organization' => [
-                (new Address())->setOrganization([])
             ],
             'empty string as names' => [
                 (new Address())->setFirstName('')->setLastName('')

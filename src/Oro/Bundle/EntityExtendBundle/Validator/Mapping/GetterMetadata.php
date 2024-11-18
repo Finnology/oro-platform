@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\EntityExtendBundle\Validator\Mapping;
@@ -61,10 +62,8 @@ class GetterMetadata extends MemberMetadata
         parent::__construct($class, $method, $property);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function __sleep()
+    #[\Override]
+    public function __sleep(): array
     {
         return array_merge(parent::__sleep(), ['methodType']);
     }
@@ -101,10 +100,8 @@ class GetterMetadata extends MemberMetadata
         return null;
     }
 
-    /**
-     * @inheritDoc
-     */
-    protected function newReflectionMember($objectOrClassName)
+    #[\Override]
+    protected function newReflectionMember($objectOrClassName): \ReflectionMethod|\ReflectionProperty
     {
         if ($this->methodType === self::METHOD_REAL) {
             return new \ReflectionMethod($objectOrClassName, $this->getName());
@@ -113,10 +110,8 @@ class GetterMetadata extends MemberMetadata
         return ReflectionVirtualProperty::create($this->getPropertyName());
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getPropertyValue($containingValue)
+    #[\Override]
+    public function getPropertyValue($containingValue): mixed
     {
         if ($this->methodType === self::METHOD_REAL) {
             return $this->newReflectionMember($containingValue)->invoke($containingValue);

@@ -22,14 +22,6 @@ class ReverseSyncProcessor extends AbstractSyncProcessor
     /** @var ManagerRegistry */
     protected $doctrineRegistry;
 
-    /**
-     * @param ManagerRegistry          $doctrineRegistry
-     * @param ProcessorRegistry        $processorRegistry
-     * @param Executor                 $jobExecutor
-     * @param TypesRegistry            $registry
-     * @param LoggerStrategy           $logger
-     * @param EventDispatcherInterface $eventDispatcher
-     */
     public function __construct(
         ManagerRegistry $doctrineRegistry,
         ProcessorRegistry $processorRegistry,
@@ -44,10 +36,10 @@ class ReverseSyncProcessor extends AbstractSyncProcessor
     }
 
     /**
-     * {@inheritdoc}
      *
      * @throws InvalidConnectorException
      */
+    #[\Override]
     public function process(Integration $integration, $connector, array $parameters = [])
     {
         if (!$integration->isEnabled()) {
@@ -150,9 +142,7 @@ class ReverseSyncProcessor extends AbstractSyncProcessor
         return $status;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function formatResultMessage(ContextInterface $context = null)
     {
         return sprintf(
@@ -162,9 +152,6 @@ class ReverseSyncProcessor extends AbstractSyncProcessor
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function assertValidConnector(ConnectorInterface $connector)
     {
         if (!($connector instanceof TwoWaySyncConnectorInterface)) {
@@ -183,7 +170,7 @@ class ReverseSyncProcessor extends AbstractSyncProcessor
     protected function addConnectorStatusAndFlush(Integration $integration, Status $status)
     {
         $this->doctrineRegistry
-            ->getRepository('OroIntegrationBundle:Channel')
+            ->getRepository(Integration::class)
             ->addStatusAndFlush($integration, $status);
     }
 }

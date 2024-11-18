@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\EmailBundle\Command;
@@ -28,6 +29,7 @@ class UpdateVisibilitiesCommand extends Command
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     protected function configure()
     {
         $this->setDescription('Updates visibilities for emails and email addresses.')
@@ -43,7 +45,8 @@ HELP
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    #[\Override]
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
 
@@ -51,6 +54,6 @@ HELP
 
         $io->success('Update of visibilities has been scheduled.');
 
-        return 0;
+        return Command::SUCCESS;
     }
 }

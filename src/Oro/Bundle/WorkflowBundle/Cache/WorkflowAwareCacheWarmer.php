@@ -20,18 +20,18 @@ class WorkflowAwareCacheWarmer implements CacheWarmerInterface
         $this->workflowAwareCache = $workflowAwareCache;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function warmUp($cacheDir)
+    #[\Override]
+    public function warmUp($cacheDir): array
     {
         $this->workflowAwareCache->build();
+        return [];
     }
 
     /**
      * {inheritdoc}
      */
-    public function isOptional()
+    #[\Override]
+    public function isOptional(): bool
     {
         return true;
     }

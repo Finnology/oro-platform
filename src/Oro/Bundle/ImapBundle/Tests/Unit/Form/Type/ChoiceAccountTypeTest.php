@@ -41,6 +41,7 @@ class ChoiceAccountTypeTest extends FormIntegrationTestCase
     /** @var User */
     private $user;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->encryptor = new DefaultCrypter('someKey');
@@ -72,12 +73,12 @@ class ChoiceAccountTypeTest extends FormIntegrationTestCase
         $this->oauthManagerRegistry->expects(self::any())
             ->method('isOauthImapEnabled')
             ->willReturnCallback(function ($type) {
-                return in_array($type, ['oauth1', 'oauth2']);
+                return in_array($type, ['oauth1', 'oauth2'], true);
             });
         $this->oauthManagerRegistry->expects(self::any())
             ->method('hasManager')
             ->willReturnCallback(function ($type) {
-                return in_array($type, ['oauth1', 'oauth2']);
+                return in_array($type, ['oauth1', 'oauth2'], true);
             });
         $this->oauthManagerRegistry->expects(self::any())
             ->method('getManager')
@@ -94,9 +95,7 @@ class ChoiceAccountTypeTest extends FormIntegrationTestCase
         parent::setUp();
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     protected function getExtensions(): array
     {
         return array_merge(

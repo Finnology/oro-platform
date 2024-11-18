@@ -29,10 +29,6 @@ class ChoiceAccountType extends AbstractType
     /** @var OAuthManagerRegistry */
     protected $oauthManagerRegistry;
 
-    /**
-     * @param TranslatorInterface $translator
-     * @param OAuthManagerRegistry $oauthManagerRegistry
-     */
     public function __construct(
         TranslatorInterface $translator,
         OAuthManagerRegistry $oauthManagerRegistry
@@ -41,25 +37,18 @@ class ChoiceAccountType extends AbstractType
         $this->oauthManagerRegistry = $oauthManagerRegistry;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getName()
     {
         return $this->getBlockPrefix();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return self::NAME;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder->add('accountType', ChoiceType::class, [
@@ -171,9 +160,7 @@ class ChoiceAccountType extends AbstractType
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults(['data_class' => AccountTypeModel::class]);

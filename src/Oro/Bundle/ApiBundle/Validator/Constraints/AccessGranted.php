@@ -2,6 +2,7 @@
 
 namespace Oro\Bundle\ApiBundle\Validator\Constraints;
 
+use Attribute;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Validator\Constraint;
 
@@ -11,24 +12,21 @@ use Symfony\Component\Validator\Constraint;
  *
  * @Annotation
  */
+#[Attribute]
 class AccessGranted extends Constraint implements ConstraintWithStatusCodeInterface
 {
     public string $message = 'oro.api.form.no_access';
 
     public string $permission = 'VIEW';
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getStatusCode(): int
     {
         return Response::HTTP_FORBIDDEN;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getTargets()
+    #[\Override]
+    public function getTargets(): string|array
     {
         return self::PROPERTY_CONSTRAINT;
     }

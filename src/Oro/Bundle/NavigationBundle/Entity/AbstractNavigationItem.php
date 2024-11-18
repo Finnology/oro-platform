@@ -2,6 +2,7 @@
 
 namespace Oro\Bundle\NavigationBundle\Entity;
 
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Oro\Bundle\EntityBundle\EntityProperty\DatesAwareInterface;
 use Oro\Bundle\EntityBundle\EntityProperty\DatesAwareTrait;
@@ -12,8 +13,10 @@ use Oro\Bundle\OrganizationBundle\Entity\Ownership\OrganizationAwareTrait;
 use Oro\Bundle\UserBundle\Entity\AbstractUser;
 
 /**
- * @ORM\MappedSuperclass
- */
+* AbstractNavigationItem abstract class
+*
+*/
+#[ORM\MappedSuperclass]
 abstract class AbstractNavigationItem implements
     NavigationItemInterface,
     OrganizationAwareInterface,
@@ -24,42 +27,21 @@ abstract class AbstractNavigationItem implements
     use UrlAwareTrait;
     use DatesAwareTrait;
 
-    /**
-     * @var integer $id
-     *
-     * @ORM\Id
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
-    protected $id;
+    #[ORM\Id]
+    #[ORM\Column(name: 'id', type: Types::INTEGER)]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
+    protected ?int $id = null;
 
-    /**
-     * @var AbstractUser $user
-     */
-    protected $user;
+    protected ?AbstractUser $user = null;
 
-    /**
-     * @var string $type
-     */
-    protected $type;
+    protected ?string $type = null;
 
-    /**
-     * @var string $title
-     *
-     * @ORM\Column(name="title", type="text")
-     */
-    protected $title;
+    #[ORM\Column(name: 'title', type: Types::TEXT)]
+    protected ?string $title = null;
 
-    /**
-     * @var integer $position
-     *
-     * @ORM\Column(name="position", type="smallint")
-     */
-    protected $position;
+    #[ORM\Column(name: 'position', type: Types::SMALLINT)]
+    protected ?int $position = null;
 
-    /**
-     * @param array $values
-     */
     public function __construct(array $values = null)
     {
         if (!empty($values)) {
@@ -70,6 +52,7 @@ abstract class AbstractNavigationItem implements
     /**
      * @return integer
      */
+    #[\Override]
     public function getId()
     {
         return $this->id;
@@ -133,7 +116,7 @@ abstract class AbstractNavigationItem implements
     }
 
     /**
-     * @param AbstractUser $user
+     * @param AbstractUser|null $user
      * @return AbstractNavigationItem
      */
     public function setUser(AbstractUser $user = null)
@@ -146,6 +129,7 @@ abstract class AbstractNavigationItem implements
     /**
      * @return AbstractUser
      */
+    #[\Override]
     public function getUser()
     {
         return $this->user;
@@ -154,6 +138,7 @@ abstract class AbstractNavigationItem implements
     /**
      * Set entity properties
      */
+    #[\Override]
     public function setValues(array $values)
     {
         if (isset($values['title'])) {
@@ -175,9 +160,8 @@ abstract class AbstractNavigationItem implements
 
     /**
      * Pre persist event handler
-     *
-     * @ORM\PrePersist
      */
+    #[ORM\PrePersist]
     public function doPrePersist()
     {
         $this->createdAt = new \DateTime('now', new \DateTimeZone('UTC'));
@@ -186,9 +170,8 @@ abstract class AbstractNavigationItem implements
 
     /**
      * Pre update event handler
-     *
-     * @ORM\PreUpdate
      */
+    #[ORM\PreUpdate]
     public function doPreUpdate()
     {
         $this->updatedAt = new \DateTime('now', new \DateTimeZone('UTC'));

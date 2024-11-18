@@ -14,10 +14,8 @@ class EventSubscriberStub implements EventSubscriberInterface
         self::$events = $events;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedEvents()
+    #[\Override]
+    public static function getSubscribedEvents(): array
     {
         return self::$events;
     }

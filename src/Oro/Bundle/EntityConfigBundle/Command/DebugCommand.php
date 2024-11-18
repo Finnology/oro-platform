@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\EntityConfigBundle\Command;
@@ -45,6 +46,7 @@ class DebugCommand extends Command
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     public function configure()
     {
         $this
@@ -128,7 +130,8 @@ HELP
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      * @noinspection PhpMissingParentCallCommonInspection
      */
-    public function execute(InputInterface $input, OutputInterface $output)
+    #[\Override]
+    public function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
         $entity         = $input->getArgument('entity');
@@ -212,7 +215,7 @@ HELP
             }
         }
 
-        return 0;
+        return Command::SUCCESS;
     }
 
     protected function dumpEntityList(OutputInterface $output): void
@@ -220,7 +223,7 @@ HELP
         /** @var EntityManager $em */
         $em = $this->registry->getManagerForClass(EntityConfigModel::class);
 
-        $rows = $em->getConnection()->fetchAll(
+        $rows = $em->getConnection()->fetchAllAssociative(
             'SELECT class_name, mode FROM oro_entity_config ORDER BY class_name'
         );
         foreach ($rows as $row) {
@@ -258,7 +261,7 @@ HELP
         /** @var EntityManager $em */
         $em = $this->registry->getManagerForClass(EntityConfigModel::class);
 
-        $rows = $em->getConnection()->fetchAll(
+        $rows = $em->getConnection()->fetchAllAssociative(
             'SELECT fc.field_name, fc.type, fc.mode FROM oro_entity_config ec'
             . ' INNER JOIN oro_entity_config_field fc ON fc.entity_id = ec.id'
             . ' WHERE ec.class_name = ?'
@@ -305,7 +308,7 @@ HELP
         $em = $this->registry->getManagerForClass(EntityConfigModel::class);
 
         if (empty($className)) {
-            $rows       = $em->getConnection()->fetchAll(
+            $rows       = $em->getConnection()->fetchAllAssociative(
                 'SELECT class_name FROM oro_entity_config ORDER BY class_name'
             );
             $classNames = [];
@@ -334,7 +337,7 @@ HELP
                         $isClassNameDumped = true;
                         $output->writeln(sprintf('%s:', $className));
                     }
-                    $fieldInfo = $em->getConnection()->fetchAll(
+                    $fieldInfo = $em->getConnection()->fetchAllAssociative(
                         'SELECT fc.type FROM oro_entity_config ec'
                         . ' INNER JOIN oro_entity_config_field fc ON fc.entity_id = ec.id'
                         . ' WHERE ec.class_name = ? AND fc.field_name = ?',
@@ -375,7 +378,7 @@ HELP
         /** @var Connection $connection */
         $connection = $em->getConnection();
 
-        $rows = $connection->fetchAll(
+        $rows = $connection->fetchAllAssociative(
             'SELECT * FROM oro_entity_config WHERE class_name = ?',
             [$className],
             ['string']
@@ -421,7 +424,7 @@ HELP
         /** @var Connection $connection */
         $connection = $em->getConnection();
 
-        $rows = $connection->fetchAll(
+        $rows = $connection->fetchAllAssociative(
             'SELECT ec.class_name, fc.* FROM oro_entity_config ec'
             . ' INNER JOIN oro_entity_config_field fc ON fc.entity_id = ec.id'
             . ' WHERE ec.class_name = ? AND fc.field_name = ?',
@@ -503,7 +506,7 @@ HELP
         /** @var Connection $connection */
         $connection = $em->getConnection();
 
-        $rows = $connection->fetchAll(
+        $rows = $connection->fetchAllAssociative(
             'SELECT * FROM oro_entity_config WHERE class_name = ?',
             [$className],
             ['string']
@@ -543,7 +546,7 @@ HELP
         /** @var Connection $connection */
         $connection = $em->getConnection();
 
-        $rows = $connection->fetchAll(
+        $rows = $connection->fetchAllAssociative(
             'SELECT fc.* FROM oro_entity_config ec'
             . ' INNER JOIN oro_entity_config_field fc ON fc.entity_id = ec.id'
             . ' WHERE ec.class_name = ? AND fc.field_name = ?',
@@ -588,7 +591,7 @@ HELP
         /** @var Connection $connection */
         $connection = $em->getConnection();
 
-        $rows = $connection->fetchAll(
+        $rows = $connection->fetchAllAssociative(
             'SELECT * FROM oro_entity_config WHERE class_name = ?',
             [$className],
             ['string']
@@ -628,7 +631,7 @@ HELP
         /** @var Connection $connection */
         $connection = $em->getConnection();
 
-        $rows = $connection->fetchAll(
+        $rows = $connection->fetchAllAssociative(
             'SELECT fc.* FROM oro_entity_config ec'
             . ' INNER JOIN oro_entity_config_field fc ON fc.entity_id = ec.id'
             . ' WHERE ec.class_name = ? AND fc.field_name = ?',

@@ -26,6 +26,7 @@ class DefaultOwnerSubscriberTest extends \PHPUnit\Framework\TestCase
     /** @var DefaultOwnerSubscriber */
     private $subscriber;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->user = $this->createMock(AbstractUser::class);
@@ -121,7 +122,7 @@ class DefaultOwnerSubscriberTest extends \PHPUnit\Framework\TestCase
                     'constraints' => new NotBlank()
                 ]
             )
-            ->willReturn(true);
+            ->willReturn($form);
 
         $event = new  FormEvent($form, $integration);
         $this->subscriber->preSet($event);
@@ -158,7 +159,7 @@ class DefaultOwnerSubscriberTest extends \PHPUnit\Framework\TestCase
                     'constraints' => new NotBlank(),
                 ]
             )
-            ->willReturn(true);
+            ->willReturn($form);
 
         $event = new FormEvent($form, $integration);
         $this->subscriber->preSet($event);
@@ -198,7 +199,7 @@ class DefaultOwnerSubscriberTest extends \PHPUnit\Framework\TestCase
                     'constraints' => new NotBlank(),
                 ]
             )
-            ->willReturn(true);
+            ->willReturn($form);
 
         $event = new  FormEvent($form, $integration);
         $this->subscriber->preSet($event);
@@ -238,7 +239,7 @@ class DefaultOwnerSubscriberTest extends \PHPUnit\Framework\TestCase
                     'constraints' => new NotBlank(),
                 ]
             )
-            ->willReturn(true);
+            ->willReturn($form);
 
         $event = new FormEvent($form, $integration);
         $this->subscriber->preSet($event);

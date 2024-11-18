@@ -2,6 +2,9 @@
 
 @import './functions';
 
+$skeleton-color: get-color('neutral', 'grey1') !default;
+$skeleton-animation: 1.25s ease-in-out infinite alternate skeleton-pulse !default;
+
 // Mixin for generate loading skeleton
 // @param: List $particles
 // @example
@@ -20,4 +23,18 @@
     background-size: skeleton-size($list-normalized...);
     background-position: skeleton-position($list-normalized...);
     background-repeat: no-repeat;
+
+    animation: $skeleton-animation;
+}
+
+@keyframes skeleton-pulse {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: .5;
+    }
+    100% {
+        opacity: 1;
+    }
 }

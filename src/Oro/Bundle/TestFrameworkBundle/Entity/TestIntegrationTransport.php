@@ -7,16 +7,16 @@ use Oro\Bundle\IntegrationBundle\Entity\Transport;
 use Symfony\Component\HttpFoundation\ParameterBag;
 
 /**
- * @ORM\Entity
- */
+* Entity that represents Test Integration Transport
+*
+*/
+#[ORM\Entity]
 class TestIntegrationTransport extends Transport
 {
     /** @var ParameterBag|null */
     protected $settingsBag;
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getSettingsBag()
     {
         if (null === $this->settingsBag) {

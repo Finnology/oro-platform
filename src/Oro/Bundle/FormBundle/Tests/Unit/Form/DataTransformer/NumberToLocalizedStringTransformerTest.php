@@ -10,6 +10,7 @@ class NumberToLocalizedStringTransformerTest extends \PHPUnit\Framework\TestCase
     /** @var NumberFormatter|\PHPUnit\Framework\MockObject\MockObject */
     private $numberFormatter;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->numberFormatter = $this->createMock(NumberFormatter::class);
@@ -32,7 +33,7 @@ class NumberToLocalizedStringTransformerTest extends \PHPUnit\Framework\TestCase
         string $to,
         int $scale = null,
         ?bool $grouping = false,
-        ?int $roundingMode = NumberToLocalizedStringTransformer::ROUND_HALF_UP,
+        ?int $roundingMode = \NumberFormatter::ROUND_HALFUP,
         string $locale = null
     ): void {
         if (null !== $scale) {
@@ -64,28 +65,19 @@ class NumberToLocalizedStringTransformerTest extends \PHPUnit\Framework\TestCase
             [1234.123456789, '1234.123456789'],
             [1234.123456789, '1234.123456789', 2],
             [1234.123456789, '1,234.123456789', 2, true],
-            [1234.123456789, '1.234,123456789', 2, true, NumberToLocalizedStringTransformer::ROUND_HALF_UP, 'de_DE'],
+            [1234.123456789, '1.234,123456789', 2, true, \NumberFormatter::ROUND_HALFUP, 'de_DE'],
         ];
     }
 
     /**
-     * @param string|null $from
-     * @param float|string $to
-     * @param int|null $scale
-     * @param bool|null $grouping
-     * @param int|null $roundingMode
-     * @param string|null $locale
-     * @param string $decimalSeparator
-     * @param string $groupingSeparator
-     *
      * @dataProvider reverseTransformDataProvider
      */
     public function testReverseTransform(
         ?string $from,
-        $to,
+        string|float|null $to,
         int $scale = null,
         ?bool $grouping = false,
-        ?int $roundingMode = NumberToLocalizedStringTransformer::ROUND_HALF_UP,
+        ?int $roundingMode = \NumberFormatter::ROUND_HALFUP,
         string $locale = 'en',
         string $decimalSeparator = '.',
         string $groupingSeparator = ','
@@ -98,8 +90,6 @@ class NumberToLocalizedStringTransformerTest extends \PHPUnit\Framework\TestCase
             )
             ->willReturnOnConsecutiveCalls($decimalSeparator, $groupingSeparator);
 
-        \Locale::setDefault($locale);
-
         $transformer = new NumberToLocalizedStringTransformer(
             $this->numberFormatter,
             $scale,
@@ -107,7 +97,16 @@ class NumberToLocalizedStringTransformerTest extends \PHPUnit\Framework\TestCase
             $roundingMode,
             $locale
         );
-        self::assertSame($to, $transformer->reverseTransform($from));
+
+        $defaultLocale = \Locale::getDefault();
+        \Locale::setDefault($locale);
+        try {
+            $result = $transformer->reverseTransform($from);
+        } finally {
+            \Locale::setDefault($defaultLocale);
+        }
+
+        self::assertSame($to, $result);
     }
 
     public function reverseTransformDataProvider(): array
@@ -118,14 +117,14 @@ class NumberToLocalizedStringTransformerTest extends \PHPUnit\Framework\TestCase
             ['1234.123456789', 1234.123456789],
             ['1234.123', 1234.123, 3],
             ['1234.123456789', '1234.123456789', 3],
-            ['1,234.123', 1234.123, 3, true, NumberToLocalizedStringTransformer::ROUND_HALF_UP],
+            ['1,234.123', 1234.123, 3, true, \NumberFormatter::ROUND_HALFUP],
             ['1,234.123456789123456789123456789', '1234.123456789123456789123456789', 3, true],
             [
                 '1.234,123',
                 1234.123,
                 3,
                 true,
-                NumberToLocalizedStringTransformer::ROUND_HALF_UP,
+                \NumberFormatter::ROUND_HALFUP,
                 'de_DE',
                 ',',
                 '.'
@@ -135,7 +134,7 @@ class NumberToLocalizedStringTransformerTest extends \PHPUnit\Framework\TestCase
                 '1234.123456789',
                 3,
                 true,
-                NumberToLocalizedStringTransformer::ROUND_HALF_UP,
+                \NumberFormatter::ROUND_HALFUP,
                 'de_DE',
                 ',',
                 '.'
@@ -145,7 +144,7 @@ class NumberToLocalizedStringTransformerTest extends \PHPUnit\Framework\TestCase
                 1234.9999,
                 4,
                 true,
-                NumberToLocalizedStringTransformer::ROUND_HALF_UP,
+                \NumberFormatter::ROUND_HALFUP,
                 'de_DE',
                 ',',
                 '.'
@@ -156,7 +155,7 @@ class NumberToLocalizedStringTransformerTest extends \PHPUnit\Framework\TestCase
                 '1234.99999',
                 4,
                 true,
-                NumberToLocalizedStringTransformer::ROUND_HALF_UP,
+                \NumberFormatter::ROUND_HALFUP,
                 'de_DE',
                 ',',
                 '.'

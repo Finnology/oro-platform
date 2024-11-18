@@ -80,9 +80,7 @@ class ConfigurableAddOrReplaceStrategy extends AbstractImportStrategy
         $this->entityOwnershipAssociationsSetter = $entityOwnershipAssociationsSetter;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function process($entity)
     {
         $this->assertEnvironment($entity);
@@ -149,7 +147,9 @@ class ConfigurableAddOrReplaceStrategy extends AbstractImportStrategy
         // find and cache existing or new entity
         $existingEntity = $this->findExistingEntity($entity, $searchContext);
         if ($existingEntity) {
-            if (!$this->isPermissionGrantedForEntity('EDIT', $existingEntity, $entityClass)) {
+            if (!$entityIsRelation
+                && !$this->isPermissionGrantedForEntity('EDIT', $existingEntity, $entityClass)
+            ) {
                 return null;
             }
 

@@ -31,9 +31,7 @@ class MigrateEmailTemplatesQuery extends ParametrizedMigrationQuery
         $this->schema = $schema;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getDescription()
     {
         $logger = new ArrayLogger();
@@ -42,9 +40,7 @@ class MigrateEmailTemplatesQuery extends ParametrizedMigrationQuery
         return $logger->getMessages();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function execute(LoggerInterface $logger)
     {
         $this->doExecute($logger, false);
@@ -104,7 +100,7 @@ class MigrateEmailTemplatesQuery extends ParametrizedMigrationQuery
 
             $stm = $qb->execute();
 
-            foreach ($stm->fetchAll(\PDO::FETCH_ASSOC) as $row) {
+            foreach ($stm->fetchAllAssociative() as $row) {
                 if (preg_match(self::EMPTY_REGEX, $row['content'])) {
                     $row['content'] = null;
                 }

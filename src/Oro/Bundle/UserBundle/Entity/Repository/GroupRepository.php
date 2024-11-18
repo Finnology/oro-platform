@@ -1,10 +1,15 @@
 <?php
+
 namespace Oro\Bundle\UserBundle\Entity\Repository;
 
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\QueryBuilder;
 use Oro\Bundle\UserBundle\Entity\Group;
+use Oro\Bundle\UserBundle\Entity\User;
 
+/**
+ * Group entity repository
+ */
 class GroupRepository extends EntityRepository
 {
     /**
@@ -17,7 +22,7 @@ class GroupRepository extends EntityRepository
     {
         return $this->_em->createQueryBuilder()
             ->select('u')
-            ->from('OroUserBundle:User', 'u')
+            ->from(User::class, 'u')
             ->join('u.groups', 'groups')
             ->where('groups = :group')
             ->setParameter('group', $group);

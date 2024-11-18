@@ -51,17 +51,13 @@ class TagsExtension extends AbstractTagsExtension
         $this->featureChecker = $featureChecker;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getPriority(): int
     {
         return 10;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function isApplicable(DatagridConfiguration $config)
     {
         return
@@ -75,9 +71,6 @@ class TagsExtension extends AbstractTagsExtension
             && $this->authorizationChecker->isGranted('oro_tag_view');
     }
 
-    /**
-     * @return bool
-     */
     protected function isDisabled(): bool
     {
         $tagParameters = $this->getParameters()->get(self::TAGS_ROOT_PARAM);
@@ -85,11 +78,6 @@ class TagsExtension extends AbstractTagsExtension
         return !empty($tagParameters[self::DISABLED_PARAM]);
     }
 
-    /**
-     * @param DatagridConfiguration $configuration
-     *
-     * @return bool
-     */
     protected function isGridRootEntityTaggable(DatagridConfiguration $configuration): bool
     {
         $className = $this->getEntity($configuration);
@@ -97,9 +85,7 @@ class TagsExtension extends AbstractTagsExtension
         return $className && $this->taggableHelper->isTaggable($className);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function processConfigs(DatagridConfiguration $config): void
     {
         $columns = $config->offsetGetByPath('[columns]', []);
@@ -116,6 +102,7 @@ class TagsExtension extends AbstractTagsExtension
         $this->enableInlineEditing($config);
     }
 
+    #[\Override]
     public function visitMetadata(DatagridConfiguration $config, MetadataObject $data): void
     {
         if ($this->inlineEditingConfigurator->isInlineEditingSupported($config)) {
@@ -128,10 +115,6 @@ class TagsExtension extends AbstractTagsExtension
 
     /**
      * Gets definition for tag column.
-     *
-     * @param DatagridConfiguration $config
-     *
-     * @return array
      */
     protected function getColumnDefinition(DatagridConfiguration $config): array
     {
@@ -156,10 +139,6 @@ class TagsExtension extends AbstractTagsExtension
 
     /**
      * Gets definition for tag column filter.
-     *
-     * @param DatagridConfiguration $config
-     *
-     * @return array
      */
     protected function getColumnFilterDefinition(DatagridConfiguration $config): array
     {
@@ -180,9 +159,7 @@ class TagsExtension extends AbstractTagsExtension
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function visitResult(DatagridConfiguration $config, ResultsObject $result): void
     {
         $rows = $result->getData();

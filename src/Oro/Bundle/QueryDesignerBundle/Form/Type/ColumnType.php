@@ -12,9 +12,7 @@ class ColumnType extends AbstractType
 {
     const NAME = 'oro_query_designer_column';
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
@@ -39,9 +37,7 @@ class ColumnType extends AbstractType
             ->add('sorting', SortingChoiceType::class, array('required' => false));
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setRequired(['query_type']);
@@ -57,18 +53,13 @@ class ColumnType extends AbstractType
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getName()
     {
         return $this->getBlockPrefix();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return self::NAME;
     }

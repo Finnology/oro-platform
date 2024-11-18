@@ -10,26 +10,19 @@ use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
  */
 class ChoiceAssociationPropertyType extends AbstractAssociationType
 {
-    /**
-     * {@inheritdoc}
-     */
     public function getName()
     {
         return $this->getBlockPrefix();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return 'oro_entity_extend_association_property_choice';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getParent()
+    #[\Override]
+    public function getParent(): ?string
     {
         return ChoiceType::class;
     }

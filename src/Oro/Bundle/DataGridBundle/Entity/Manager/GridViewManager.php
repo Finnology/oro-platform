@@ -5,7 +5,7 @@ namespace Oro\Bundle\DataGridBundle\Entity\Manager;
 use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\Persistence\ObjectRepository;
 use Oro\Bundle\DataGridBundle\Datagrid\Common\DatagridConfiguration;
-use Oro\Bundle\DataGridBundle\Datagrid\Manager;
+use Oro\Bundle\DataGridBundle\Datagrid\ManagerInterface;
 use Oro\Bundle\DataGridBundle\Entity\AbstractGridViewUser;
 use Oro\Bundle\DataGridBundle\Entity\GridView;
 use Oro\Bundle\DataGridBundle\Entity\GridViewUser;
@@ -36,7 +36,7 @@ class GridViewManager
     /** @var ManagerRegistry */
     protected $registry;
 
-    /** @var  Manager */
+    /** @var  ManagerInterface */
     protected $gridManager;
 
     /** @var array */
@@ -60,7 +60,7 @@ class GridViewManager
     public function __construct(
         AclHelper $aclHelper,
         ManagerRegistry $registry,
-        Manager $gridManager,
+        ManagerInterface $gridManager,
         RestrictionManager $restrictionManager
     ) {
         $this->aclHelper = $aclHelper;
@@ -180,7 +180,12 @@ class GridViewManager
      */
     public function getAllGridViews(AbstractUser $user = null, $gridName = null)
     {
-        $cacheKey = sprintf('%s.%s.%s', self::ALL_VIEWS_KEY, $user ? $user->getUsername() : (string) $user, $gridName);
+        $cacheKey = sprintf(
+            '%s.%s.%s',
+            self::ALL_VIEWS_KEY,
+            $user ? $user->getUserIdentifier() : (string) $user,
+            $gridName
+        );
         if (!isset($this->cacheData[$cacheKey])) {
             $systemViews = $this->getSystemViews($gridName);
             $gridViews = [];
@@ -210,7 +215,7 @@ class GridViewManager
      */
     public function getDefaultView(AbstractUser $user, $gridName)
     {
-        $cacheKey = sprintf('%s.%s.%s', self::DEFAULT_VIEW_KEY, $user->getUsername(), $gridName);
+        $cacheKey = sprintf('%s.%s.%s', self::DEFAULT_VIEW_KEY, $user->getUserIdentifier(), $gridName);
         if (!array_key_exists($cacheKey, $this->cacheData)) {
             /** @var GridViewUserRepository $gridViewRepository */
             $gridViewRepository = $this->getRepository($this->gridViewUserClassName);

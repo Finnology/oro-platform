@@ -9,14 +9,12 @@ use Oro\Component\ChainProcessor\ProcessorInterface;
 
 class AssertSharedDataExistInContext implements ProcessorInterface
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function process(ContextInterface $context): void
     {
         /** @var Context $context */
 
-        if ($context->isMasterRequest()) {
+        if ($context->isMainRequest()) {
             return;
         }
 

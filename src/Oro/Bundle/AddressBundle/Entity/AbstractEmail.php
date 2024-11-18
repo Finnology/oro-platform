@@ -3,48 +3,30 @@
 namespace Oro\Bundle\AddressBundle\Entity;
 
 use Doctrine\Common\Util\ClassUtils;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Oro\Bundle\EntityConfigBundle\Metadata\Annotation\ConfigField;
+use Oro\Bundle\EntityConfigBundle\Metadata\Attribute\ConfigField;
 use Oro\Bundle\FormBundle\Entity\EmptyItem;
 use Oro\Bundle\FormBundle\Entity\PrimaryItem;
 
 /**
- * @ORM\MappedSuperclass
- */
+* AbstractEmail abstract class
+*
+*/
+#[ORM\MappedSuperclass]
 abstract class AbstractEmail implements PrimaryItem, EmptyItem
 {
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
-    protected $id;
+    #[ORM\Column(name: 'id', type: Types::INTEGER)]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
+    protected ?int $id = null;
 
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="email", type="string", length=255, nullable=false)
-     * @ConfigField(
-     *      defaultValues={
-     *          "importexport"={
-     *              "identity"=true
-     *          },
-     *          "dataaudit"={
-     *              "auditable"=true
-     *          }
-     *      }
-     * )
-     */
-    protected $email;
+    #[ORM\Column(name: 'email', type: Types::STRING, length: 255, nullable: false)]
+    #[ConfigField(defaultValues: ['importexport' => ['identity' => true], 'dataaudit' => ['auditable' => true]])]
+    protected ?string $email = null;
 
-    /**
-     * @var boolean
-     *
-     * @ORM\Column(name="is_primary", type="boolean", nullable=true)
-     */
-    protected $primary;
+    #[ORM\Column(name: 'is_primary', type: Types::BOOLEAN, nullable: true)]
+    protected ?bool $primary = null;
 
     /**
      * @param string|null $email
@@ -102,6 +84,7 @@ abstract class AbstractEmail implements PrimaryItem, EmptyItem
      * @param bool $primary
      * @return AbstractEmail
      */
+    #[\Override]
     public function setPrimary($primary)
     {
         $this->primary = (bool)$primary;
@@ -112,6 +95,7 @@ abstract class AbstractEmail implements PrimaryItem, EmptyItem
     /**
      * @return bool
      */
+    #[\Override]
     public function isPrimary()
     {
         return $this->primary;
@@ -120,6 +104,7 @@ abstract class AbstractEmail implements PrimaryItem, EmptyItem
     /**
      * @return string
      */
+    #[\Override]
     public function __toString()
     {
         return (string)$this->getEmail();
@@ -130,6 +115,7 @@ abstract class AbstractEmail implements PrimaryItem, EmptyItem
      *
      * @return bool
      */
+    #[\Override]
     public function isEmpty()
     {
         return empty($this->email);

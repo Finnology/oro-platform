@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\ConfigBundle\Command;
@@ -27,6 +28,7 @@ class ConfigUpdateCommand extends Command
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     protected function configure()
     {
         $this
@@ -54,12 +56,13 @@ HELP
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      * @noinspection PhpMissingParentCallCommonInspection
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    #[\Override]
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $configManager = $this->configManager;
         $configManager->set($input->getArgument('name'), $input->getArgument('value'));
         $configManager->flush();
 
-        return 0;
+        return Command::SUCCESS;
     }
 }

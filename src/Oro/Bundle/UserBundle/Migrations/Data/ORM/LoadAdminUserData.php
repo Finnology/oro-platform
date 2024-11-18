@@ -5,52 +5,35 @@ namespace Oro\Bundle\UserBundle\Migrations\Data\ORM;
 use Doctrine\Common\DataFixtures\AbstractFixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
+use Oro\Bundle\OrganizationBundle\Entity\BusinessUnit;
 use Oro\Bundle\OrganizationBundle\Migrations\Data\ORM\LoadOrganizationAndBusinessUnitData;
 use Oro\Bundle\UserBundle\Entity\Role;
-use Oro\Bundle\UserBundle\Entity\UserManager;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\DependencyInjection\ContainerAwareTrait;
 
 /**
  * Loads default admin user.
  */
 class LoadAdminUserData extends AbstractFixture implements DependentFixtureInterface, ContainerAwareInterface
 {
-    const DEFAULT_ADMIN_USERNAME = 'admin';
-    const DEFAULT_ADMIN_EMAIL = 'admin@example.com';
+    use ContainerAwareTrait;
 
-    /**
-     * @var UserManager
-     */
-    protected $userManager;
+    public const DEFAULT_ADMIN_USERNAME = 'admin';
+    public const DEFAULT_ADMIN_EMAIL = 'admin@example.com';
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getDependencies()
+    #[\Override]
+    public function getDependencies(): array
     {
         return [
-            'Oro\Bundle\UserBundle\Migrations\Data\ORM\LoadRolesData',
-            'Oro\Bundle\OrganizationBundle\Migrations\Data\ORM\LoadOrganizationAndBusinessUnitData',
+            LoadRolesData::class,
+            LoadOrganizationAndBusinessUnitData::class,
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function setContainer(ContainerInterface $container = null)
+    #[\Override]
+    public function load(ObjectManager $manager): void
     {
-        $this->userManager = $container->get('oro_user.manager');
-    }
-
-    /**
-     * Load default administrator
-     *
-     * @throws \RuntimeException
-     */
-    public function load(ObjectManager $manager)
-    {
-        $adminRole = $manager->getRepository('OroUserBundle:Role')
+        $adminRole = $manager->getRepository(Role::class)
             ->findOneBy(['role' => LoadRolesData::ROLE_ADMINISTRATOR]);
 
         if (!$adminRole) {
@@ -61,14 +44,13 @@ class LoadAdminUserData extends AbstractFixture implements DependentFixtureInter
             return;
         }
 
-        $businessUnit = $manager
-            ->getRepository('OroOrganizationBundle:BusinessUnit')
+        $businessUnit = $manager->getRepository(BusinessUnit::class)
             ->findOneBy(['name' => LoadOrganizationAndBusinessUnitData::MAIN_BUSINESS_UNIT]);
 
         $organization = $this->getReference('default_organization');
 
-        $adminUser = $this->userManager->createUser();
-
+        $userManager = $this->container->get('oro_user.manager');
+        $adminUser = $userManager->createUser();
         $adminUser
             ->setUsername(self::DEFAULT_ADMIN_USERNAME)
             ->setEmail(self::DEFAULT_ADMIN_EMAIL)
@@ -79,17 +61,12 @@ class LoadAdminUserData extends AbstractFixture implements DependentFixtureInter
             ->addBusinessUnit($businessUnit)
             ->setOrganization($organization)
             ->addOrganization($organization);
-        $this->userManager->updatePassword($adminUser);
-        $this->userManager->updateUser($adminUser);
+        $userManager->updatePassword($adminUser);
+        $userManager->updateUser($adminUser);
     }
 
-    /**
-     * @param ObjectManager $manager
-     * @param Role $role
-     * @return bool
-     */
-    protected function isUserWithRoleExist(ObjectManager $manager, Role $role)
+    private function isUserWithRoleExist(ObjectManager $manager, Role $role): bool
     {
-        return null !== $manager->getRepository('OroUserBundle:Role')->getFirstMatchedUser($role);
+        return null !== $manager->getRepository(Role::class)->getFirstMatchedUser($role);
     }
 }

@@ -3,21 +3,24 @@
 namespace Oro\Bundle\SecurityBundle\Authentication\Token;
 
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
+use Oro\Bundle\UserBundle\Entity\AbstractUser;
+use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 
 /**
  * The factory to create UsernamePasswordOrganizationToken.
  */
 class UsernamePasswordOrganizationTokenFactory implements UsernamePasswordOrganizationTokenFactoryInterface
 {
-    /**
-     * {@inheritdoc}
-     */
-    public function create($user, $credentials, $providerKey, Organization $organization, array $roles = [])
-    {
+    #[\Override]
+    public function create(
+        AbstractUser $user,
+        $firewallName,
+        Organization $organization,
+        array $roles = []
+    ): TokenInterface {
         return new UsernamePasswordOrganizationToken(
             $user,
-            $credentials,
-            $providerKey,
+            $firewallName,
             $organization,
             $roles
         );

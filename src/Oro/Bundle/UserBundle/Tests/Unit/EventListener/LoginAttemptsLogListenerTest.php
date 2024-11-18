@@ -2,14 +2,14 @@
 
 namespace Oro\Bundle\UserBundle\Tests\Unit\EventListener;
 
+use Oro\Bundle\SecurityBundle\Authentication\Authenticator\UsernamePasswordOrganizationAuthenticator;
 use Oro\Bundle\UserBundle\EventListener\LoginAttemptsLogListener;
 use Oro\Bundle\UserBundle\Security\LoginAttemptsHandlerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
-use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
-use Symfony\Component\Security\Core\Event\AuthenticationFailureEvent;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\Security\Http\Event\InteractiveLoginEvent;
+use Symfony\Component\Security\Http\Event\LoginFailureEvent;
 
 class LoginAttemptsLogListenerTest extends \PHPUnit\Framework\TestCase
 {
@@ -19,6 +19,7 @@ class LoginAttemptsLogListenerTest extends \PHPUnit\Framework\TestCase
     /** @var LoginAttemptsLogListener */
     private $listener;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->handler = $this->createMock(LoginAttemptsHandlerInterface::class);
@@ -42,9 +43,13 @@ class LoginAttemptsLogListenerTest extends \PHPUnit\Framework\TestCase
 
     public function testOnAuthenticationFailure(): void
     {
-        $event = new AuthenticationFailureEvent(
-            $this->createMock(UsernamePasswordToken::class),
-            $this->createMock(AuthenticationException::class)
+        $authenticator = $this->createMock(UsernamePasswordOrganizationAuthenticator::class);
+        $event = new LoginFailureEvent(
+            $this->createMock(AuthenticationException::class),
+            $authenticator,
+            new Request(),
+            null,
+            'main'
         );
 
         $this->handler->expects(self::once())

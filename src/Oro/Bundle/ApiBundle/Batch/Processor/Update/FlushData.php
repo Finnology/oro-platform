@@ -35,9 +35,9 @@ class FlushData implements ProcessorInterface
     }
 
     /**
-     * {@inheritdoc}
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
+    #[\Override]
     public function process(ContextInterface $context): void
     {
         /** @var BatchUpdateContext $context */
@@ -133,7 +133,7 @@ class FlushData implements ProcessorInterface
                 $item = reset($items);
                 if ($isUniqueConstraintViolationException) {
                     $item->getContext()->addError(
-                        Error::createConflictValidationError('The entity already exists')
+                        Error::createConflictValidationError('The entity already exists.')
                             ->setInnerException($e)
                     );
                 } else {

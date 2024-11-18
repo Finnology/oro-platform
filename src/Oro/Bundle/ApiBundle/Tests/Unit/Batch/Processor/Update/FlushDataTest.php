@@ -35,6 +35,7 @@ class FlushDataTest extends BatchUpdateProcessorTestCase
     /** @var FlushData */
     private $processor;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -467,7 +468,7 @@ class FlushDataTest extends BatchUpdateProcessorTestCase
         self::assertFalse($this->context->hasErrors());
         self::assertTrue($item1->getContext()->hasErrors());
         self::assertEquals(
-            [Error::createConflictValidationError('The entity already exists')->setInnerException($exception)],
+            [Error::createConflictValidationError('The entity already exists.')->setInnerException($exception)],
             $item1->getContext()->getErrors()
         );
     }

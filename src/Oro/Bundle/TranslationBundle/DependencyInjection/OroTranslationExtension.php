@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\TranslationBundle\DependencyInjection;
@@ -11,9 +12,7 @@ use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 
 class OroTranslationExtension extends Extension
 {
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function load(array $configs, ContainerBuilder $container): void
     {
         $config = $this->processConfiguration($this->getConfiguration($configs, $container), $configs);
@@ -22,6 +21,7 @@ class OroTranslationExtension extends Extension
         $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
         $loader->load('form_types.yml');
         $loader->load('services.yml');
+        $loader->load('services_api.yml');
         $loader->load('importexport.yml');
         $loader->load('commands.yml');
         $loader->load('controllers.yml');

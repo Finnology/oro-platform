@@ -23,7 +23,7 @@ class ExtendSchema extends SchemaWithNameGenerator
      * @param ExtendDbIdentifierNameGenerator $nameGenerator
      * @param Table[]                         $tables
      * @param Sequence[]                      $sequences
-     * @param SchemaConfig                    $schemaConfig
+     * @param SchemaConfig|null $schemaConfig
      */
     public function __construct(
         ExtendOptionsManager $extendOptionsManager,
@@ -42,9 +42,7 @@ class ExtendSchema extends SchemaWithNameGenerator
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function createTableObject(array $args)
     {
         $args['extendOptionsManager'] = $this->extendOptionsManager;

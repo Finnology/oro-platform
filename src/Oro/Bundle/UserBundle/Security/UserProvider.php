@@ -5,7 +5,7 @@ namespace Oro\Bundle\UserBundle\Security;
 use Doctrine\ORM\ORMInvalidArgumentException;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
-use Symfony\Component\Security\Core\Exception\UsernameNotFoundException;
+use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 
@@ -26,23 +26,19 @@ class UserProvider implements UserProviderInterface
         $this->doctrine = $doctrine;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function loadUserByUsername($username)
+    #[\Override]
+    public function loadUserByIdentifier(string $username): UserInterface
     {
         $user = $this->userLoader->loadUser($username);
         if (null === $user) {
-            throw new UsernameNotFoundException(sprintf('User "%s" not found.', $username));
+            throw new UserNotFoundException(sprintf('User "%s" not found.', $username));
         }
 
         return $user;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function refreshUser(UserInterface $user)
+    #[\Override]
+    public function refreshUser(UserInterface $user): UserInterface
     {
         $userClass = $this->userLoader->getUserClass();
         if (!$user instanceof $userClass) {
@@ -72,16 +68,14 @@ class UserProvider implements UserProviderInterface
         }
 
         if (null === $user) {
-            throw new UsernameNotFoundException('User can not be loaded.');
+            throw new UserNotFoundException('User can not be loaded.');
         }
 
         return $user;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function supportsClass($class)
+    #[\Override]
+    public function supportsClass($class): bool
     {
         return is_a($class, $this->userLoader->getUserClass(), true);
     }

@@ -3,17 +3,33 @@
 namespace Oro\Bundle\LayoutBundle\Tests\Unit\Layout\Extension;
 
 use Oro\Bundle\LayoutBundle\Layout\Extension\ThemeConfiguration;
+use Oro\Bundle\ThemeBundle\Form\Provider\ConfigurationBuildersProvider;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Component\Config\Definition\Processor;
 
 /**
  * @SuppressWarnings(PHPMD.TooManyPublicMethods)
  */
-class ThemeConfigurationTest extends \PHPUnit\Framework\TestCase
+class ThemeConfigurationTest extends TestCase
 {
+    private ConfigurationBuildersProvider $configurationBuildersProvider;
+
+    #[\Override]
+    protected function setUp(): void
+    {
+        $this->configurationBuildersProvider = $this->createStub(ConfigurationBuildersProvider::class);
+        $this->configurationBuildersProvider
+            ->method('getConfigurationTypes')
+            ->willReturn(['type']);
+    }
+
     private function processConfiguration(array $config): array
     {
-        return (new Processor())->processConfiguration(new ThemeConfiguration(), [$config]);
+        return (new Processor())->processConfiguration(
+            new ThemeConfiguration($this->configurationBuildersProvider),
+            [$config]
+        );
     }
 
     public function testProcessEmptyConfiguration(): void
@@ -25,17 +41,19 @@ class ThemeConfigurationTest extends \PHPUnit\Framework\TestCase
     public function testProcessBaseConfiguration(): void
     {
         $themeConfig = [
-            'label'              => 'test label',
-            'description'        => 'test description',
-            'parent'             => 'test_parent',
-            'directory'          => 'test_directory',
-            'groups'             => ['test group'],
-            'icon'               => 'test.ico',
-            'image_placeholders' => ['placeholder' => '/path/to/test.img'],
-            'rtl_support'        => true,
-            'logo'               => 'test_logo.jpg',
-            'screenshot'         => 'test_screenshot.jpg',
-            'extra_js_builds'    => []
+            'label'               => 'test label',
+            'description'         => 'test description',
+            'parent'              => 'test_parent',
+            'directory'           => 'test_directory',
+            'groups'              => ['test group'],
+            'icon'                => 'test.ico',
+            'image_placeholders'  => ['placeholder' => '/path/to/test.img'],
+            'rtl_support'         => true,
+            'svg_icons_support'   => true,
+            'logo'                => 'test_logo.jpg',
+            'screenshot'          => 'test_screenshot.jpg',
+            'extra_js_builds'     => [],
+            'resolve_extra_paths' => ['/bundles/orothemedefault51']
         ];
         $result = $this->processConfiguration(['test_theme' => $themeConfig]);
         self::assertSame($themeConfig, $result['test_theme']);
@@ -300,5 +318,16 @@ class ThemeConfigurationTest extends \PHPUnit\Framework\TestCase
             ]
         ];
         $this->processConfiguration(['test_theme' => $themeConfig]);
+    }
+
+    public function testBuildOptionKey(): void
+    {
+        $sectionName = 'mainSection';
+        $optionKey = 'mainOption';
+
+        self::assertEquals(
+            sprintf('%s' . ThemeConfiguration::OPTION_KEY_DELIMITER . '%s', $sectionName, $optionKey),
+            ThemeConfiguration::buildOptionKey($sectionName, $optionKey)
+        );
     }
 }

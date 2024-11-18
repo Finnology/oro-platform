@@ -2,21 +2,20 @@
 
 namespace Oro\Bundle\CronBundle\Engine;
 
-use Symfony\Bundle\FrameworkBundle\Console\Application;
-use Symfony\Component\Console\Input\ArrayInput;
+use Oro\Component\Log\OutputLogger;
+use Oro\Component\PhpUtils\Tools\CommandExecutor\CommandExecutor;
 use Symfony\Component\Console\Output\BufferedOutput;
-use Symfony\Component\HttpKernel\KernelInterface;
 
+/**
+ * Runs isolated process and return output
+ */
 class CommandRunner implements CommandRunnerInterface
 {
-    /**
-     * @var KernelInterface
-     */
-    private $kernel;
+    private CommandExecutor $commandExecutor;
 
-    public function __construct(KernelInterface $kernel)
+    public function __construct(string $projectDir, string $environment)
     {
-        $this->kernel = $kernel;
+        $this->commandExecutor = new CommandExecutor($projectDir.'/bin/console', $environment);
     }
 
     /**
@@ -25,6 +24,7 @@ class CommandRunner implements CommandRunnerInterface
      *
      * @return string
      */
+    #[\Override]
     public function run($commandName, $commandArguments = [])
     {
         if (! $commandArguments) {
@@ -33,14 +33,9 @@ class CommandRunner implements CommandRunnerInterface
         if ($commandArguments && ! is_array($commandArguments)) {
             $commandArguments = [$commandArguments];
         }
-
-        $application = new Application($this->kernel);
-        $application->setAutoExit(false);
-
-        $input = new ArrayInput(array_merge(['command' => $commandName], $commandArguments));
-
+        $commandArguments['--ignore-errors'] = true;
         $output = new BufferedOutput();
-        $application->run($input, $output);
+        $this->commandExecutor->runCommand($commandName, $commandArguments, new OutputLogger($output));
 
         return $output->fetch();
     }

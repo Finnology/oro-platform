@@ -2,12 +2,11 @@
 
 namespace Oro\Bundle\ReportBundle\Tests\Unit\Grid;
 
-use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Common\EventManager;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\Configuration;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Mapping\Driver\AnnotationDriver;
+use Doctrine\ORM\Mapping\Driver\AttributeDriver;
 use Doctrine\ORM\Query;
 use Doctrine\Persistence\ManagerRegistry;
 use Oro\Bundle\DataGridBundle\Datagrid\DatagridInterface;
@@ -33,6 +32,7 @@ class ReportQueryExecutorTest extends \PHPUnit\Framework\TestCase
     /** @var ReportQueryExecutor */
     private $reportQueryExecutor;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->baseQueryExecutor = $this->createMock(QueryExecutorInterface::class);
@@ -49,7 +49,7 @@ class ReportQueryExecutorTest extends \PHPUnit\Framework\TestCase
     private function getEntityManager(): EntityManagerInterface
     {
         $config = new Configuration();
-        $config->setMetadataDriverImpl(new AnnotationDriver(new AnnotationReader()));
+        $config->setMetadataDriverImpl(new AttributeDriver([]));
         $config->setProxyDir($this->getTempDir('test_orm_proxies'));
         $config->setProxyNamespace('Doctrine\Tests\Proxies');
         $eventManager = $this->createMock(EventManager::class);

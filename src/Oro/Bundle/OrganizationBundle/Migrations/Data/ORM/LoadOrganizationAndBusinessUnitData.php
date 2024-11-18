@@ -1,4 +1,5 @@
 <?php
+
 namespace Oro\Bundle\OrganizationBundle\Migrations\Data\ORM;
 
 use Doctrine\Common\DataFixtures\AbstractFixture;
@@ -7,15 +8,16 @@ use Doctrine\Persistence\ObjectManager;
 use Oro\Bundle\OrganizationBundle\Entity\BusinessUnit;
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
 
+/**
+ * Loads default organization and business unit
+ */
 class LoadOrganizationAndBusinessUnitData extends AbstractFixture implements OrderedFixtureInterface
 {
     const MAIN_ORGANIZATION  = 'default';
     const MAIN_BUSINESS_UNIT = 'Main';
     const REFERENCE_DEFAULT_ORGANIZATION = 'default_organization';
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getOrder()
     {
         /*
@@ -25,9 +27,7 @@ class LoadOrganizationAndBusinessUnitData extends AbstractFixture implements Ord
         return -240;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function load(ObjectManager $manager)
     {
         // load default organization

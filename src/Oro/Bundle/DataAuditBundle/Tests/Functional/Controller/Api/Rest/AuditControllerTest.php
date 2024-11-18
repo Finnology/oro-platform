@@ -8,6 +8,7 @@ use Oro\Bundle\DataAuditBundle\Entity\AuditField;
 use Oro\Bundle\DataAuditBundle\Tests\Functional\Environment\Entity\TestAuditDataChild;
 use Oro\Bundle\DataAuditBundle\Tests\Functional\Environment\Entity\TestAuditDataOwner;
 use Oro\Bundle\TestFrameworkBundle\Test\WebTestCase;
+use Oro\Bundle\TestFrameworkBundle\Tests\Functional\DataFixtures\LoadUser;
 use Oro\Bundle\UserBundle\Entity\User;
 use Oro\Component\Testing\ResponseExtension;
 
@@ -19,11 +20,21 @@ class AuditControllerTest extends WebTestCase
 {
     use ResponseExtension;
 
+    #[\Override]
     protected function setUp(): void
     {
-        parent::setUp();
-
         $this->initClient([], $this->generateWsseAuthHeader());
+        $this->loadFixtures([LoadUser::class]);
+    }
+
+    private function getEntityManager(): EntityManagerInterface
+    {
+        return self::getContainer()->get('doctrine')->getManager();
+    }
+
+    private function getAdminUser(): User
+    {
+        return $this->getReference(LoadUser::USER);
     }
 
     public function testShouldReturn401IfNotAuthenticated()
@@ -38,9 +49,9 @@ class AuditControllerTest extends WebTestCase
 
     public function testShouldAllowGetAvailableAuditsAsArray()
     {
-        $em = $this->getEntityManager();
+        $user = $this->getAdminUser();
 
-        $user = $this->findAdmin();
+        $em = $this->getEntityManager();
 
         $audit = new Audit();
         $audit->setAction('anAction');
@@ -84,9 +95,9 @@ class AuditControllerTest extends WebTestCase
 
     public function testShouldAllowGetAuditById()
     {
-        $em = $this->getEntityManager();
+        $user = $this->getAdminUser();
 
-        $user = $this->findAdmin();
+        $em = $this->getEntityManager();
 
         $audit = new Audit();
         $audit->setAction('anAction');
@@ -132,9 +143,6 @@ class AuditControllerTest extends WebTestCase
     public function testShouldAllowGetInformationAboutChangedFields()
     {
         $em = $this->getEntityManager();
-
-        $user = $this->findAdmin();
-
         $audit = new Audit();
         $audit->setObjectName('aName');
         $audit->setObjectClass('aClass');
@@ -143,7 +151,6 @@ class AuditControllerTest extends WebTestCase
         $audit->addField(new AuditField('fooField', 'text', 'foo', null));
         $audit->addField(new AuditField('barField', 'text', 'bar2', 'bar1'));
         $em->persist($audit);
-
         $em->flush();
 
         //guard
@@ -517,9 +524,9 @@ class AuditControllerTest extends WebTestCase
 
     public function testShouldReturnAuditsWithUserEqualsToGivenOne()
     {
-        $em = $this->getEntityManager();
+        $user = $this->getAdminUser();
 
-        $user = $this->findAdmin();
+        $em = $this->getEntityManager();
 
         $audit = new Audit();
         $audit->setObjectName('aName');
@@ -563,10 +570,9 @@ class AuditControllerTest extends WebTestCase
 
     public function testShouldReturnNothingIfGivenUserDoesNotExist()
     {
+        $user = $this->getAdminUser();
+
         $em = $this->getEntityManager();
-
-        $user = $this->findAdmin();
-
         $audit = new Audit();
         $audit->setObjectName('aName');
         $audit->setObjectClass('aClass');
@@ -574,7 +580,6 @@ class AuditControllerTest extends WebTestCase
         $audit->setTransactionId('aTransactionId');
         $audit->setUser($user);
         $em->persist($audit);
-
         $em->flush();
 
         $this->client->jsonRequest(
@@ -589,17 +594,5 @@ class AuditControllerTest extends WebTestCase
         $this->assertIsArray($result);
 
         $this->assertCount(0, $result);
-    }
-
-    private function getEntityManager(): EntityManagerInterface
-    {
-        return $this->client->getContainer()->get('doctrine.orm.entity_manager');
-    }
-
-    private function findAdmin(): User
-    {
-        return $this->getEntityManager()->getRepository(User::class)->findOneBy([
-            'username' => 'admin'
-        ]);
     }
 }

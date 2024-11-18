@@ -4,182 +4,121 @@ namespace Oro\Bundle\EmailBundle\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Extend\Entity\Autocomplete\OroEmailBundle_Entity_EmailTemplate;
+use Oro\Bundle\EmailBundle\Entity\Repository\EmailTemplateRepository;
+use Oro\Bundle\EmailBundle\Model\EmailTemplate as EmailTemplateModel;
 use Oro\Bundle\EmailBundle\Model\EmailTemplateInterface;
-use Oro\Bundle\EntityConfigBundle\Metadata\Annotation\Config;
+use Oro\Bundle\EntityConfigBundle\Metadata\Attribute\Config;
 use Oro\Bundle\EntityExtendBundle\Entity\ExtendEntityInterface;
 use Oro\Bundle\EntityExtendBundle\Entity\ExtendEntityTrait;
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
+use Oro\Bundle\OrganizationBundle\Entity\OrganizationInterface;
 use Oro\Bundle\UserBundle\Entity\User;
 
 /**
  * Represents localizable email template which is used for template email notifications sending.
  *
- * @ORM\Table(name="oro_email_template",
- *      uniqueConstraints={@ORM\UniqueConstraint(name="UQ_NAME", columns={"name", "entityName"})},
- *      indexes={@ORM\Index(name="email_name_idx", columns={"name"}),
- * @ORM\Index(name="email_is_system_idx", columns={"isSystem"}),
- * @ORM\Index(name="email_entity_name_idx", columns={"entityName"})})
- * @ORM\Entity(repositoryClass="Oro\Bundle\EmailBundle\Entity\Repository\EmailTemplateRepository")
- * @Config(
- *      routeName="oro_email_emailtemplate_index",
- *      defaultValues={
- *          "ownership"={
- *              "owner_type"="USER",
- *              "owner_field_name"="owner",
- *              "owner_column_name"="user_owner_id",
- *              "organization_field_name"="organization",
- *              "organization_column_name"="organization_id"
- *          },
- *          "security"={
- *              "type"="ACL",
- *              "group_name"="",
- *              "category"="account_management"
- *          },
- *          "activity"={
- *              "immutable"=true
- *          },
- *          "attachment"={
- *              "immutable"=true
- *          }
- *      }
- * )
+ * @mixin OroEmailBundle_Entity_EmailTemplate
  */
-class EmailTemplate implements EmailTemplateInterface, ExtendEntityInterface
+#[ORM\Entity(repositoryClass: EmailTemplateRepository::class)]
+#[ORM\Table(name: 'oro_email_template')]
+#[ORM\Index(columns: ['name'], name: 'email_name_idx')]
+#[ORM\Index(columns: ['isSystem'], name: 'email_is_system_idx')]
+#[ORM\Index(columns: ['entityName'], name: 'email_entity_name_idx')]
+#[ORM\UniqueConstraint(name: 'UQ_NAME', columns: ['name', 'entityName'])]
+#[Config(
+    routeName: 'oro_email_emailtemplate_index',
+    defaultValues: [
+        'ownership' => [
+            'owner_type' => 'USER',
+            'owner_field_name' => 'owner',
+            'owner_column_name' => 'user_owner_id',
+            'organization_field_name' => 'organization',
+            'organization_column_name' => 'organization_id'
+        ],
+        'security' => ['type' => 'ACL', 'group_name' => '', 'category' => 'account_management'],
+        'activity' => ['immutable' => true],
+        'attachment' => ['immutable' => true]
+    ]
+)]
+class EmailTemplate extends EmailTemplateModel implements ExtendEntityInterface
 {
     use ExtendEntityTrait;
 
-    public const TYPE_HTML = 'html';
-    public const TYPE_TEXT = 'txt';
+    #[ORM\Column(name: 'id', type: Types::INTEGER)]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
+    protected ?int $id = null;
 
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
-    protected $id;
+    #[ORM\Column(name: 'isSystem', type: Types::BOOLEAN)]
+    protected ?bool $isSystem = null;
 
-    /**
-     * @var boolean
-     *
-     * @ORM\Column(name="isSystem", type="boolean")
-     */
-    protected $isSystem;
+    #[ORM\Column(name: 'isEditable', type: Types::BOOLEAN)]
+    protected ?bool $isEditable = null;
 
-    /**
-     * @var boolean
-     *
-     * @ORM\Column(name="isEditable", type="boolean")
-     */
-    protected $isEditable;
+    #[ORM\Column(name: 'name', type: Types::STRING, length: 255)]
+    protected ?string $name;
 
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="name", type="string", length=255)
-     */
-    protected $name;
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(name: 'user_owner_id', referencedColumnName: 'id', onDelete: 'SET NULL')]
+    protected ?User $owner = null;
 
-    /**
-     * @var User
-     *
-     * @ORM\ManyToOne(targetEntity="Oro\Bundle\UserBundle\Entity\User")
-     * @ORM\JoinColumn(name="user_owner_id", referencedColumnName="id", onDelete="SET NULL")
-     */
-    protected $owner;
+    #[ORM\Column(name: 'parent', type: Types::INTEGER, nullable: true)]
+    protected ?int $parent = null;
 
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="parent", type="integer", nullable=true)
-     */
-    protected $parent;
+    #[ORM\Column(name: 'subject', type: Types::STRING, length: 255, nullable: true)]
+    protected ?string $subject = null;
 
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="subject", type="string", length=255, nullable=true)
-     */
-    protected $subject;
+    #[ORM\Column(name: 'content', type: Types::TEXT, nullable: true)]
+    protected ?string $content = null;
 
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="content", type="text", nullable=true)
-     */
-    protected $content;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="entityName", type="string", length=255, nullable=true)
-     */
-    protected $entityName;
+    #[ORM\Column(name: 'entityName', type: Types::STRING, length: 255, nullable: true)]
+    protected ?string $entityName = null;
 
     /**
      * Template type:
      *  - html
      *  - text
-     *
-     * @var string
-     *
-     * @ORM\Column(name="type", type="string", length=20)
      */
-    protected $type = 'html';
+    #[ORM\Column(name: 'type', type: Types::STRING, length: 20)]
+    protected ?string $type = EmailTemplateInterface::TYPE_HTML;
 
     /**
-     * @ORM\OneToMany(
-     *     targetEntity="EmailTemplateTranslation",
-     *     mappedBy="template",
-     *     cascade={"persist", "remove"},
-     *     fetch="EXTRA_LAZY"
-     * )
+     * @var Collection<int, EmailTemplateTranslation>
      */
-    protected $translations;
+    #[ORM\OneToMany(
+        mappedBy: 'template',
+        targetEntity: EmailTemplateTranslation::class,
+        cascade: ['persist', 'remove'],
+        fetch: 'EXTRA_LAZY'
+    )]
+    protected ?Collection $translations = null;
 
-    /**
-     * @var Organization
-     *
-     * @ORM\ManyToOne(targetEntity="Oro\Bundle\OrganizationBundle\Entity\Organization")
-     * @ORM\JoinColumn(name="organization_id", referencedColumnName="id", onDelete="SET NULL")
-     */
-    protected $organization;
+    #[ORM\ManyToOne(targetEntity: Organization::class)]
+    #[ORM\JoinColumn(name: 'organization_id', referencedColumnName: 'id', onDelete: 'SET NULL')]
+    protected ?OrganizationInterface $organization = null;
 
-    /**
-     * @ORM\Column(type="boolean", options={"default"=true})
-     * @var bool
-     */
-    protected $visible = true;
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => true])]
+    protected ?bool $visible = true;
 
-    /**
-     * @param        $name
-     * @param string $content
-     * @param string $type
-     * @param bool $isSystem
-     */
-    public function __construct($name = '', $content = '', $type = 'html', $isSystem = false)
-    {
-        // name can be overridden from email template
-        $this->name = $name;
-        // isSystem can be overridden from email template
+    public function __construct(
+        string $name = '',
+        string $content = '',
+        string $type = EmailTemplateInterface::TYPE_HTML,
+        bool $isSystem = false
+    ) {
         $this->isSystem = $isSystem;
-        // isEditable can be overridden from email template
         $this->isEditable = false;
 
-        $parsedContent = self::parseContent($content);
-        foreach ($parsedContent['params'] as $param => $val) {
-            $this->$param = $val;
-        }
+        parent::__construct($name, $content, $type);
 
         // make sure that user's template is editable
         if (!$this->isSystem && !$this->isEditable) {
             $this->isEditable = true;
         }
 
-        $this->type = $type;
-        $this->content = $parsedContent['content'];
         $this->translations = new ArrayCollection();
     }
 
@@ -191,30 +130,6 @@ class EmailTemplate implements EmailTemplateInterface, ExtendEntityInterface
     public function getId()
     {
         return $this->id;
-    }
-
-    /**
-     * Set name
-     *
-     * @param string $name
-     *
-     * @return EmailTemplate
-     */
-    public function setName($name)
-    {
-        $this->name = $name;
-
-        return $this;
-    }
-
-    /**
-     * Get name
-     *
-     * @return string
-     */
-    public function getName()
-    {
-        return $this->name;
     }
 
     /**
@@ -263,66 +178,6 @@ class EmailTemplate implements EmailTemplateInterface, ExtendEntityInterface
     public function getParent()
     {
         return $this->parent;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setSubject($subject)
-    {
-        $this->subject = $subject;
-
-        return $this;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getSubject()
-    {
-        return $this->subject;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setContent($content)
-    {
-        $this->content = $content;
-
-        return $this;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getContent()
-    {
-        return $this->content;
-    }
-
-    /**
-     * Set entityName
-     *
-     * @param string $entityName
-     *
-     * @return EmailTemplate
-     */
-    public function setEntityName($entityName)
-    {
-        $this->entityName = $entityName;
-
-        return $this;
-    }
-
-    /**
-     * Get entityName
-     *
-     * @return string
-     */
-    public function getEntityName()
-    {
-        return $this->entityName;
     }
 
     /**
@@ -377,30 +232,6 @@ class EmailTemplate implements EmailTemplateInterface, ExtendEntityInterface
     }
 
     /**
-     * Set template type
-     *
-     * @param string $type
-     *
-     * @return EmailTemplate
-     */
-    public function setType($type)
-    {
-        $this->type = $type;
-
-        return $this;
-    }
-
-    /**
-     * Get template type
-     *
-     * @return string
-     */
-    public function getType()
-    {
-        return $this->type;
-    }
-
-    /**
      * @param Collection $translations
      * @return EmailTemplate
      */
@@ -425,10 +256,6 @@ class EmailTemplate implements EmailTemplateInterface, ExtendEntityInterface
         return $this->translations;
     }
 
-    /**
-     * @param EmailTemplateTranslation $translation
-     * @return EmailTemplate
-     */
     public function addTranslation(EmailTemplateTranslation $translation): self
     {
         if (!$this->translations->contains($translation)) {
@@ -439,10 +266,6 @@ class EmailTemplate implements EmailTemplateInterface, ExtendEntityInterface
         return $this;
     }
 
-    /**
-     * @param EmailTemplateTranslation $translation
-     * @return EmailTemplate
-     */
     public function removeTranslation(EmailTemplateTranslation $translation): self
     {
         if ($this->translations->contains($translation)) {
@@ -456,7 +279,7 @@ class EmailTemplate implements EmailTemplateInterface, ExtendEntityInterface
     /**
      * Set organization
      *
-     * @param Organization $organization
+     * @param Organization|null $organization
      *
      * @return EmailTemplate
      */
@@ -522,36 +345,9 @@ class EmailTemplate implements EmailTemplateInterface, ExtendEntityInterface
      *
      * @return string
      */
+    #[\Override]
     public function __toString()
     {
         return (string)$this->getName();
-    }
-
-    /**
-     * @param string $content
-     *
-     * @return array With keys 'content', 'params'
-     */
-    public static function parseContent($content)
-    {
-        $params = [];
-
-        $boolParams = ['isSystem', 'isEditable'];
-        $templateParams = ['name', 'subject', 'entityName', 'isSystem', 'isEditable'];
-        foreach ($templateParams as $templateParam) {
-            if (preg_match('#@' . $templateParam . '\s?=\s?(.*)\n#i', $content, $match)) {
-                $val = trim($match[1]);
-                if (isset($boolParams[$templateParam])) {
-                    $val = (bool)$val;
-                }
-                $params[$templateParam] = $val;
-                $content = trim(str_replace($match[0], '', $content));
-            }
-        }
-
-        return [
-            'content' => $content,
-            'params' => $params,
-        ];
     }
 }

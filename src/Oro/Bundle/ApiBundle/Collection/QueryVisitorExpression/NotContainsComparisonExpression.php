@@ -9,9 +9,7 @@ use Oro\Bundle\ApiBundle\Collection\QueryExpressionVisitor;
  */
 class NotContainsComparisonExpression implements ComparisonExpressionInterface
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function walkComparisonExpression(
         QueryExpressionVisitor $visitor,
         string $field,
@@ -19,9 +17,12 @@ class NotContainsComparisonExpression implements ComparisonExpressionInterface
         string $parameterName,
         mixed $value
     ): mixed {
-        $visitor->addParameter($parameterName, '%' . $value . '%');
+        $visitor->addParameter(
+            $parameterName,
+            '%' . ($value instanceof ExpressionValue ? $value->getValue() : $value) . '%'
+        );
 
         return $visitor->getExpressionBuilder()
-            ->notLike($expression, $visitor->buildPlaceholder($parameterName));
+            ->notLike($expression, $visitor->buildParameterExpression($parameterName, $value));
     }
 }

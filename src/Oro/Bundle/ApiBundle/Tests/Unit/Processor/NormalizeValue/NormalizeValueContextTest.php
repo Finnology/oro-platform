@@ -12,12 +12,13 @@ class NormalizeValueContextTest extends \PHPUnit\Framework\TestCase
 {
     private NormalizeValueContext $context;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->context = new NormalizeValueContext();
     }
 
-    public function testRequestType()
+    public function testRequestType(): void
     {
         self::assertTrue($this->context->has('requestType'));
         self::assertEquals(new RequestType([]), $this->context->getRequestType());
@@ -36,20 +37,20 @@ class NormalizeValueContextTest extends \PHPUnit\Framework\TestCase
         self::assertEquals(new RequestType(['test', 'another']), $this->context->get('requestType'));
     }
 
-    public function testVersionWhenItIsNotSet()
+    public function testVersionWhenItIsNotSet(): void
     {
         $this->expectException(\TypeError::class);
         $this->context->getVersion();
     }
 
-    public function testVersion()
+    public function testVersion(): void
     {
         $this->context->setVersion('test');
         self::assertEquals('test', $this->context->getVersion());
         self::assertEquals('test', $this->context->get('version'));
     }
 
-    public function testProcessed()
+    public function testProcessed(): void
     {
         self::assertFalse($this->context->isProcessed());
 
@@ -57,7 +58,7 @@ class NormalizeValueContextTest extends \PHPUnit\Framework\TestCase
         self::assertTrue($this->context->isProcessed());
     }
 
-    public function testArrayDelimiter()
+    public function testArrayDelimiter(): void
     {
         self::assertEquals(',', $this->context->getArrayDelimiter());
 
@@ -65,7 +66,7 @@ class NormalizeValueContextTest extends \PHPUnit\Framework\TestCase
         self::assertEquals('-', $this->context->getArrayDelimiter());
     }
 
-    public function testRangeDelimiter()
+    public function testRangeDelimiter(): void
     {
         self::assertEquals('..', $this->context->getRangeDelimiter());
 
@@ -73,20 +74,20 @@ class NormalizeValueContextTest extends \PHPUnit\Framework\TestCase
         self::assertEquals('|', $this->context->getRangeDelimiter());
     }
 
-    public function testDataTypeWhenItIsNotSet()
+    public function testDataTypeWhenItIsNotSet(): void
     {
         $this->expectException(\TypeError::class);
         $this->context->getDataType();
     }
 
-    public function testDataType()
+    public function testDataType(): void
     {
         $this->context->setDataType('string');
         self::assertEquals('string', $this->context->getDataType());
         self::assertEquals('string', $this->context->get('dataType'));
     }
 
-    public function testRequirement()
+    public function testRequirement(): void
     {
         self::assertFalse($this->context->hasRequirement());
         self::assertNull($this->context->getRequirement());
@@ -100,7 +101,7 @@ class NormalizeValueContextTest extends \PHPUnit\Framework\TestCase
         self::assertNull($this->context->getRequirement());
     }
 
-    public function testArrayAllowed()
+    public function testArrayAllowed(): void
     {
         self::assertFalse($this->context->isArrayAllowed());
 
@@ -108,11 +109,28 @@ class NormalizeValueContextTest extends \PHPUnit\Framework\TestCase
         self::assertTrue($this->context->isArrayAllowed());
     }
 
-    public function testRangeAllowed()
+    public function testRangeAllowed(): void
     {
         self::assertFalse($this->context->isRangeAllowed());
 
         $this->context->setRangeAllowed(true);
         self::assertTrue($this->context->isRangeAllowed());
+    }
+
+    public function testOptions(): void
+    {
+        self::assertSame([], $this->context->getOptions());
+
+        $this->context->addOption('option1', true);
+        self::assertSame(['option1' => true], $this->context->getOptions());
+
+        $this->context->addOption('option2', 'val');
+        self::assertSame(['option1' => true, 'option2' => 'val'], $this->context->getOptions());
+
+        $this->context->removeOption('option1');
+        self::assertSame(['option2' => 'val'], $this->context->getOptions());
+
+        $this->context->removeOption('option2');
+        self::assertSame([], $this->context->getOptions());
     }
 }

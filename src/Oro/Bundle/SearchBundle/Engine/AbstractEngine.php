@@ -72,6 +72,7 @@ abstract class AbstractEngine implements ExtendedEngineInterface
      *  <EntityFQCN> => <DocumentsCount>
      * ]
      */
+    #[\Override]
     public function getDocumentsCountGroupByEntityFQCN(Query $query): array
     {
         $event = new BeforeSearchEvent($query);
@@ -81,9 +82,7 @@ abstract class AbstractEngine implements ExtendedEngineInterface
         return $this->doGetDocumentsCountGroupByEntityFQCN($query);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function search(Query $query, array $context = [])
     {
         $event = new BeforeSearchEvent($query);
@@ -124,7 +123,7 @@ abstract class AbstractEngine implements ExtendedEngineInterface
     {
         $entityManager = $this->registry->getManagerForClass('Oro\Bundle\SearchBundle\Entity\Query');
 
-        $logRecord = new QueryLog;
+        $logRecord = new QueryLog();
         $logRecord->setEntity(implode(',', array_values($result->getQuery()->getFrom())));
         $logRecord->setQuery(serialize($result->getQuery()->getCriteria()));
         $logRecord->setResultCount($result->count());

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\ThemeBundle\Command;
@@ -26,6 +27,7 @@ class ThemeCommand extends Command
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     protected function configure()
     {
         $this
@@ -45,7 +47,8 @@ HELP
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      * @noinspection PhpMissingParentCallCommonInspection
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    #[\Override]
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $themes = $this->themeRegistry->getAllThemes();
         $activeTheme = $this->themeRegistry->getActiveTheme();
@@ -59,7 +62,7 @@ HELP
             $output->writeln('<info>No themes are available.</info>');
         }
 
-        return 0;
+        return Command::SUCCESS;
     }
 
     protected function outputTheme(OutputInterface $output, Theme $theme, bool $isActive): void

@@ -35,13 +35,13 @@ class ConsoleFatalErrorListenerTest extends \PHPUnit\Framework\TestCase
         E_USER_DEPRECATED => [null, LogLevel::INFO],
         E_NOTICE => [null, LogLevel::WARNING],
         E_USER_NOTICE => [null, LogLevel::WARNING],
-        E_STRICT => [null, LogLevel::WARNING],
         E_WARNING => [null, LogLevel::WARNING],
         E_USER_WARNING => [null, LogLevel::WARNING],
         E_COMPILE_WARNING => [null, LogLevel::WARNING],
         E_CORE_WARNING => [null, LogLevel::WARNING],
     ];
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->logger = $this->createMock(LoggerInterface::class);
@@ -52,6 +52,7 @@ class ConsoleFatalErrorListenerTest extends \PHPUnit\Framework\TestCase
         $this->output = $this->createMock(OutputInterface::class);
     }
 
+    #[\Override]
     protected function tearDown(): void
     {
         restore_error_handler();
@@ -67,7 +68,7 @@ class ConsoleFatalErrorListenerTest extends \PHPUnit\Framework\TestCase
             new ConsoleCommandEvent($this->createMock($command), $this->input, $this->output)
         );
 
-        $this->assertSame(
+        $this->assertEquals(
             self::$defaultLoggers + [
                 E_USER_ERROR => [$this->logger, LogLevel::CRITICAL],
                 E_RECOVERABLE_ERROR => [$this->logger, LogLevel::CRITICAL],
@@ -75,6 +76,7 @@ class ConsoleFatalErrorListenerTest extends \PHPUnit\Framework\TestCase
                 E_PARSE => [$this->logger, LogLevel::CRITICAL],
                 E_ERROR => [$this->logger, LogLevel::CRITICAL],
                 E_CORE_ERROR => [$this->logger, LogLevel::CRITICAL],
+                E_STRICT => [null, LogLevel::WARNING],
             ],
             $this->handler->setLoggers([])
         );
@@ -94,7 +96,7 @@ class ConsoleFatalErrorListenerTest extends \PHPUnit\Framework\TestCase
             new ConsoleCommandEvent($this->createMock(CleanupCommand::class), $this->input, $this->output)
         );
 
-        $this->assertSame(
+        $this->assertEquals(
             self::$defaultLoggers + [
                 E_USER_ERROR => [null, LogLevel::CRITICAL],
                 E_RECOVERABLE_ERROR => [null, LogLevel::CRITICAL],
@@ -102,6 +104,7 @@ class ConsoleFatalErrorListenerTest extends \PHPUnit\Framework\TestCase
                 E_PARSE => [null, LogLevel::CRITICAL],
                 E_ERROR => [null, LogLevel::CRITICAL],
                 E_CORE_ERROR => [null, LogLevel::CRITICAL],
+                E_STRICT => [null, LogLevel::WARNING],
             ],
             $this->handler->setLoggers([])
         );

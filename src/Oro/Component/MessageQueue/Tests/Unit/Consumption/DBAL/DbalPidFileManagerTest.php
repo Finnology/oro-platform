@@ -1,4 +1,5 @@
 <?php
+
 namespace Oro\Component\MessageQueue\Tests\Unit\Consumption\DBAL;
 
 use Oro\Component\MessageQueue\Consumption\Dbal\DbalPidFileManager;
@@ -14,6 +15,7 @@ class DbalPidFileManagerTest extends \PHPUnit\Framework\TestCase
      */
     private $pidDir;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

@@ -19,9 +19,7 @@ abstract class AbstractEntityConfigQuery extends ParametrizedMigrationQuery
 
     abstract public function processRow(array $row, LoggerInterface $logger);
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function execute(LoggerInterface $logger)
     {
         $steps = ceil($this->getEntityConfigCount() / $this->getRowBatchLimit());
@@ -33,7 +31,7 @@ abstract class AbstractEntityConfigQuery extends ParametrizedMigrationQuery
             $rows = $entityConfigQb
                 ->setFirstResult($i * $this->getRowBatchLimit())
                 ->execute()
-                ->fetchAll(\PDO::FETCH_ASSOC);
+                ->fetchAllAssociative();
 
             foreach ($rows as $row) {
                 $this->processRow($row, $logger);
@@ -57,7 +55,7 @@ abstract class AbstractEntityConfigQuery extends ParametrizedMigrationQuery
             ->setParameter('entity_id', $entityId)
             ->setParameter('field_name', $fieldName)
             ->execute()
-            ->fetch(\PDO::FETCH_ASSOC);
+            ->fetchAssociative();
 
         return $fieldConfigFromDb;
     }
@@ -72,7 +70,7 @@ abstract class AbstractEntityConfigQuery extends ParametrizedMigrationQuery
             ->where('ec.class_name = :entity_class_name')
             ->setParameter('entity_class_name', $entityClassName)
             ->execute()
-            ->fetch(\PDO::FETCH_ASSOC);
+            ->fetchAssociative();
     }
 
     /**
@@ -117,7 +115,7 @@ abstract class AbstractEntityConfigQuery extends ParametrizedMigrationQuery
         return $this->createEntityConfigQb()
             ->select('COUNT(1)')
             ->execute()
-            ->fetchColumn();
+            ->fetchOne();
     }
 
     /**

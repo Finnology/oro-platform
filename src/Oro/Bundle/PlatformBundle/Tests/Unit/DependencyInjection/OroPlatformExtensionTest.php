@@ -3,6 +3,8 @@
 namespace Oro\Bundle\PlatformBundle\Tests\Unit\DependencyInjection;
 
 use Oro\Bundle\PlatformBundle\DependencyInjection\OroPlatformExtension;
+use Oro\Bundle\SecurityBundle\DependencyInjection\OroSecurityExtension;
+use Oro\Component\Config\CumulativeResourceManager;
 use Oro\Component\DependencyInjection\ExtendedContainerBuilder;
 use Oro\Component\Testing\ReflectionUtil;
 
@@ -85,5 +87,162 @@ class OroPlatformExtensionTest extends \PHPUnit\Framework\TestCase
         );
 
         $this->assertEquals($expectedConfig, $containerBuilder->getExtensionConfig('security'));
+    }
+
+    public function testThatWebBackendPrefixIsUsedDefaultWhenParamNotPassed()
+    {
+        $extension = new OroPlatformExtension();
+
+        $containerBuilder = $this->createMock(ExtendedContainerBuilder::class);
+
+        $containerBuilder
+            ->expects($this->any())
+            ->method('getExtensionConfig')
+            ->willReturn([]);
+
+        $containerBuilder
+            ->expects($this->once())
+            ->method('hasParameter')
+            ->with($this->equalTo('web_backend_prefix'))
+            ->willReturn(false);
+
+        $containerBuilder
+            ->expects($this->once())
+            ->method('setParameter')
+            ->with($this->equalTo('web_backend_prefix'), $this->equalTo('/admin'))
+            ->willReturn(false);
+
+        $extension->prepend($containerBuilder);
+    }
+
+    public function testThatWebBackendPrefixIsNotUsedDefaultWhenParameterPassed()
+    {
+        $extension = new OroPlatformExtension();
+
+        $containerBuilder = $this->createMock(ExtendedContainerBuilder::class);
+
+        $containerBuilder
+            ->expects($this->any())
+            ->method('getExtensionConfig')
+            ->willReturn([]);
+
+        $containerBuilder
+            ->expects($this->once())
+            ->method('hasParameter')
+            ->with($this->equalTo('web_backend_prefix'))
+            ->willReturn(true);
+
+        $containerBuilder
+            ->expects($this->never())
+            ->method('setParameter')
+            ->with($this->equalTo('web_backend_prefix'), $this->equalTo('/admin'))
+            ->willReturn(false);
+
+        $extension->prepend($containerBuilder);
+    }
+
+    public function testAccessControlSorting()
+    {
+        $extension = new OroPlatformExtension();
+        $fooBundle = new Fixtures\FooBundle\FooBundle();
+        $barBundle = new Fixtures\BarBundle\BarBundle();
+        $fooBarBundle = new Fixtures\FooBarBundle\FooBarBundle();
+
+        CumulativeResourceManager::getInstance()
+            ->clear()
+            ->setBundles([
+                $fooBundle->getName() => get_class($fooBundle),
+                $barBundle->getName() => get_class($barBundle),
+                $fooBarBundle->getName() => get_class($fooBarBundle)
+            ]);
+
+        $containerBuilder = $this->createMock(ExtendedContainerBuilder::class);
+        $containerBuilder->method('getExtensions')->willReturn([
+            'oro_security' => $this->createMock(OroSecurityExtension::class)
+        ]);
+
+        $containerBuilder->method('hasExtension')->willReturnMap([
+            ['security', false],
+            ['oro_security', true],
+            ['jms_serializer', false],
+        ]);
+
+        $appLevelConfig = [
+            [
+                'access_control' => [
+                    [
+                        'path' => '^/test-us$',
+                        'roles' => 'APP_LEVEL_CONFIG_ROLE_130',
+                        'priority' => 130,
+                    ],
+                ],
+            ]
+        ];
+        $containerBuilder->method('getExtensionConfig')->willReturnMap(
+            [
+                ['oro_security', $appLevelConfig],
+                ['security', []],
+                ['doctrine', []],
+            ]
+        );
+
+        $containerBuilder->method('setExtensionConfig')->with('security', $this->getExpectedPrioritizedRules());
+        $extension->prepend($containerBuilder);
+    }
+
+    private function getExpectedPrioritizedRules(): array
+    {
+        return [
+            [
+                'access_control' => [
+                    [
+                        'path' => '^/test-us$',
+                        'roles' => 'APP_LEVEL_CONFIG_ROLE_130',
+                    ],
+                    [
+                        'path' => '^/test-us$',
+                        'roles' => 'FOO_ROLE_110',
+                    ],
+                    [
+                        'path' => '^/test-us$',
+                        'roles' => 'BAR_ROLE_50',
+                    ],
+                    [
+                        'path' => '^/contact-us$',
+                        'roles' => 'FOO_BAR_ROLE_20',
+                    ],
+                    [
+                        'path' => '^/contact-us$',
+                        'roles' => 'FOO_ROLE_0',
+                    ],
+                    [
+                        'path' => '^/test-us/test$',
+                        'roles' => 'FOO_ROLE_0',
+                    ],
+                    [
+                        'path' => '^/test-us/test$',
+                        'roles' => 'FOO_BAR_ROLE_0',
+                    ],
+                    [
+                        'path' => '^/test-us/test/us$',
+                        'roles' => 'FOO_BAR_ROLE_0',
+                    ],
+                    [
+                        'path' => '^/sort-us$',
+                        'roles' => 'FOO_BAR_ROLE_0',
+                    ],
+                    [
+                        'path' => '^/test-us$',
+                        'ip' => '127.0.0.1',
+                        'roles' => 'FOO_BAR_ROLE_-10',
+                    ],
+                    [
+                        'path' => '^/contact-us$',
+                        'ip' => '127.0.0.1',
+                        'roles' => 'BAR_ROLE_-100',
+                    ],
+                ],
+            ],
+        ];
     }
 }

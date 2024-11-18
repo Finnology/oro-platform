@@ -20,6 +20,7 @@ class SendEmailNotificationProcessorTest extends \PHPUnit\Framework\TestCase
 
     private SendEmailNotificationProcessor $processor;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->mailer = $this->createMock(MailerInterface::class);
@@ -40,9 +41,6 @@ class SendEmailNotificationProcessorTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @dataProvider processSendsEmailDataProvider
-     *
-     * @param array $messageBody
-     * @param SymfonyEmail $expectedSymfonyEmail
      */
     public function testProcessSendsEmailWhenSentCount(array $messageBody, SymfonyEmail $expectedSymfonyEmail): void
     {
@@ -133,7 +131,6 @@ class SendEmailNotificationProcessorTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @dataProvider processLogsErrorWhenMessageExceptionProvider
-     * @return void
      */
     public function testProcessLogsErrorWhenMessageException(
         array $messageBody,

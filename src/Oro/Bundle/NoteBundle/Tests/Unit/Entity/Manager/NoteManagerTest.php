@@ -17,22 +17,25 @@ use Oro\Bundle\NoteBundle\Tests\Unit\Fixtures\TestUser;
 use Oro\Bundle\NoteBundle\Tests\Unit\Stub\AttachmentProviderStub;
 use Oro\Bundle\SecurityBundle\ORM\Walker\AclHelper;
 use Oro\Component\Testing\ReflectionUtil;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 
-class NoteManagerTest extends \PHPUnit\Framework\TestCase
+class NoteManagerTest extends TestCase
 {
-    private EntityManager|\PHPUnit\Framework\MockObject\MockObject $em;
+    private EntityManager|MockObject $em;
 
-    private AuthorizationCheckerInterface|\PHPUnit\Framework\MockObject\MockObject $authorizationChecker;
+    private AuthorizationCheckerInterface|MockObject $authorizationChecker;
 
-    private AclHelper|\PHPUnit\Framework\MockObject\MockObject $aclHelper;
+    private AclHelper|MockObject $aclHelper;
 
-    private EntityNameResolver|\PHPUnit\Framework\MockObject\MockObject $entityNameResolver;
+    private EntityNameResolver|MockObject $entityNameResolver;
 
-    private PictureSourcesProviderInterface|\PHPUnit\Framework\MockObject\MockObject $pictureSourcesProvider;
+    private PictureSourcesProviderInterface|MockObject $pictureSourcesProvider;
 
     private NoteManager $manager;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->em = $this->createMock(EntityManager::class);
@@ -72,7 +75,7 @@ class NoteManagerTest extends \PHPUnit\Framework\TestCase
         $repo = $this->createMock(NoteRepository::class);
         $this->em->expects(self::once())
             ->method('getRepository')
-            ->with('OroNoteBundle:Note')
+            ->with(Note::class)
             ->willReturn($repo);
         $repo->expects(self::once())
             ->method('getAssociatedNotesQueryBuilder')

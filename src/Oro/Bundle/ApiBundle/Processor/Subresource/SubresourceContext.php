@@ -6,6 +6,7 @@ use Oro\Bundle\ApiBundle\Config\EntityDefinitionConfig;
 use Oro\Bundle\ApiBundle\Config\Extra\ConfigExtraCollection;
 use Oro\Bundle\ApiBundle\Config\Extra\ConfigExtraInterface;
 use Oro\Bundle\ApiBundle\Config\Extra\EntityDefinitionConfigExtra;
+use Oro\Bundle\ApiBundle\Config\Extra\FilterFieldsConfigExtra;
 use Oro\Bundle\ApiBundle\Config\Extra\HateoasConfigExtra;
 use Oro\Bundle\ApiBundle\Exception\RuntimeException;
 use Oro\Bundle\ApiBundle\Metadata\EntityMetadata;
@@ -45,9 +46,7 @@ class SubresourceContext extends Context
     private ?ConfigExtraCollection $parentConfigExtras = null;
     private ?MetadataExtraCollection $parentMetadataExtras = null;
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     protected function initialize(): void
     {
         parent::initialize();
@@ -147,9 +146,7 @@ class SubresourceContext extends Context
         return $associationMetadata->getBaseTargetClassName();
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getManageableEntityClass(DoctrineHelper $doctrineHelper): ?string
     {
         $entityClass = $this->getClassName();
@@ -250,9 +247,7 @@ class SubresourceContext extends Context
         $this->parentConfigExtras->removeConfigExtra($extraName);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function setHateoas(bool $flag): void
     {
         parent::setHateoas($flag);
@@ -311,7 +306,15 @@ class SubresourceContext extends Context
      */
     protected function createParentConfigExtras(): array
     {
-        $extras = [new EntityDefinitionConfigExtra($this->get(self::ACTION))];
+        $extras = [
+            new EntityDefinitionConfigExtra(
+                $this->get(self::ACTION),
+                $this->isCollection(),
+                $this->getParentClassName(),
+                $this->getAssociationName()
+            ),
+            new FilterFieldsConfigExtra([$this->getParentClassName() => [$this->getAssociationName()]])
+        ];
         if ($this->isHateoasEnabled()) {
             $extras[] = new HateoasConfigExtra();
         }

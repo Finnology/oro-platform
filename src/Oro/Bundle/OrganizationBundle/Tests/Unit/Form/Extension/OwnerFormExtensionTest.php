@@ -33,6 +33,7 @@ use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
 /**
@@ -87,6 +88,7 @@ class OwnerFormExtensionTest extends \PHPUnit\Framework\TestCase
     /** @var EntityOwnerAccessor|\PHPUnit\Framework\MockObject\MockObject */
     private $entityOwnerAccessor;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->doctrineHelper = $this->createMock(DoctrineHelper::class);
@@ -150,7 +152,6 @@ class OwnerFormExtensionTest extends \PHPUnit\Framework\TestCase
 
         $container = TestContainerBuilder::create()
             ->add('security.acl.voter.basic_permissions', $aclVoter)
-            ->add('oro_security.owner.ownership_metadata_provider', $this->ownershipMetadataProvider)
             ->add('oro_security.owner.entity_owner_accessor', $this->entityOwnerAccessor)
             ->add('oro_security.ownership_tree_provider', $treeProvider)
             ->add('oro_organization.business_unit_manager', $this->businessUnitManager)
@@ -160,6 +161,7 @@ class OwnerFormExtensionTest extends \PHPUnit\Framework\TestCase
             $this->doctrineHelper,
             $this->tokenAccessor,
             $this->authorizationChecker,
+            $this->ownershipMetadataProvider,
             $container
         );
     }
@@ -189,7 +191,7 @@ class OwnerFormExtensionTest extends \PHPUnit\Framework\TestCase
         $token = $this->createMock(TokenInterface::class);
         $token->expects($this->any())
             ->method('getUser')
-            ->willReturn('anon.');
+            ->willReturn($this->createMock(UserInterface::class));
 
         $this->ownershipMetadataProvider->expects($this->never())
             ->method('getMetadata');
@@ -300,7 +302,6 @@ class OwnerFormExtensionTest extends \PHPUnit\Framework\TestCase
 
         $container = TestContainerBuilder::create()
             ->add('security.acl.voter.basic_permissions', $aclVoter)
-            ->add('oro_security.owner.ownership_metadata_provider', $this->ownershipMetadataProvider)
             ->add('oro_security.owner.entity_owner_accessor', $this->entityOwnerAccessor)
             ->add('oro_security.ownership_tree_provider', $treeProvider)
             ->add('oro_organization.business_unit_manager', $this->businessUnitManager)
@@ -310,6 +311,7 @@ class OwnerFormExtensionTest extends \PHPUnit\Framework\TestCase
             $this->doctrineHelper,
             $this->tokenAccessor,
             $this->authorizationChecker,
+            $this->ownershipMetadataProvider,
             $container
         );
 
@@ -438,7 +440,6 @@ class OwnerFormExtensionTest extends \PHPUnit\Framework\TestCase
 
         $container = TestContainerBuilder::create()
             ->add('security.acl.voter.basic_permissions', $aclVoter)
-            ->add('oro_security.owner.ownership_metadata_provider', $this->ownershipMetadataProvider)
             ->add('oro_security.owner.entity_owner_accessor', $this->entityOwnerAccessor)
             ->add('oro_security.ownership_tree_provider', $treeProvider)
             ->add('oro_organization.business_unit_manager', $this->businessUnitManager)
@@ -448,6 +449,7 @@ class OwnerFormExtensionTest extends \PHPUnit\Framework\TestCase
             $this->doctrineHelper,
             $this->tokenAccessor,
             $this->authorizationChecker,
+            $this->ownershipMetadataProvider,
             $container
         );
     }
@@ -487,7 +489,7 @@ class OwnerFormExtensionTest extends \PHPUnit\Framework\TestCase
             ->willReturn(true);
         $form->expects($this->any())
             ->method('getParent')
-            ->willReturn(false);
+            ->willReturn(null);
         $form->expects($this->once())
             ->method('getNormData')
             ->willReturn($this->entityClassName);
@@ -517,7 +519,7 @@ class OwnerFormExtensionTest extends \PHPUnit\Framework\TestCase
             ->willReturn($this->builder);
         $form->expects($this->any())
             ->method('getParent')
-            ->willReturn(false);
+            ->willReturn(null);
         $form->expects($this->any())
             ->method('has')
             ->willReturn(true);
@@ -568,7 +570,6 @@ class OwnerFormExtensionTest extends \PHPUnit\Framework\TestCase
 
         $container = TestContainerBuilder::create()
             ->add('security.acl.voter.basic_permissions', $aclVoter)
-            ->add('oro_security.owner.ownership_metadata_provider', $this->ownershipMetadataProvider)
             ->add('oro_security.owner.entity_owner_accessor', $this->entityOwnerAccessor)
             ->add('oro_security.ownership_tree_provider', $treeProvider)
             ->add('oro_organization.business_unit_manager', $this->businessUnitManager)
@@ -578,6 +579,7 @@ class OwnerFormExtensionTest extends \PHPUnit\Framework\TestCase
             $this->doctrineHelper,
             $this->tokenAccessor,
             $this->authorizationChecker,
+            $this->ownershipMetadataProvider,
             $container
         );
 

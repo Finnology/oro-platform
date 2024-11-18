@@ -34,6 +34,7 @@ class UpdateAclEntriesMigrationQueryTest extends \PHPUnit\Framework\TestCase
     private $keys = ['id', 'class_id', 'object_identity_id', 'field_name', 'ace_order', 'security_identity_id',
         'mask', 'granting', 'granting_strategy', 'audit_success', 'audit_failure'];
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->connection = $this->createMock(Connection::class);
@@ -112,7 +113,7 @@ class UpdateAclEntriesMigrationQueryTest extends \PHPUnit\Framework\TestCase
     private function assertConnectionCalled(bool $noUpdates = false)
     {
         $this->connection->expects($this->once())
-            ->method('fetchAll')
+            ->method('fetchAllAssociative')
             ->with($this->isType('string'))
             ->willReturn($this->getAces());
 

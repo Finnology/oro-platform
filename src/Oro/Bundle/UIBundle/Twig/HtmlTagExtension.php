@@ -25,9 +25,7 @@ class HtmlTagExtension extends AbstractExtension implements ServiceSubscriberInt
         $this->container = $container;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getFilters()
     {
         return [
@@ -82,10 +80,8 @@ class HtmlTagExtension extends AbstractExtension implements ServiceSubscriberInt
         return $this->getHtmlTagHelper()->escape($string);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedServices()
+    #[\Override]
+    public static function getSubscribedServices(): array
     {
         return [
             'oro_ui.html_tag_helper' => HtmlTagHelper::class,

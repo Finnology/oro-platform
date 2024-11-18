@@ -12,10 +12,8 @@ use Symfony\Component\Security\Core\Authorization\Voter\VoterInterface;
  */
 class WorkflowEditVoter implements VoterInterface
 {
-    /**
-     * {@inheritDoc}
-     */
-    public function vote(TokenInterface $token, $subject, array $attributes)
+    #[\Override]
+    public function vote(TokenInterface $token, $subject, array $attributes): int
     {
         if (!$subject instanceof WorkflowDefinition) {
             return self::ACCESS_ABSTAIN;

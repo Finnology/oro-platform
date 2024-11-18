@@ -4,14 +4,13 @@ namespace Oro\Bundle\NotificationBundle\Migrations\Data\ORM;
 
 use Oro\Bundle\EmailBundle\Migrations\Data\ORM\AbstractEmailFixture;
 
+/**
+ * Loads email templates.
+ */
 class LoadEmailTemplates extends AbstractEmailFixture
 {
-    /**
-     * Return path to email templates
-     *
-     * @return string
-     */
-    public function getEmailsDir()
+    #[\Override]
+    public function getEmailsDir(): string
     {
         return $this->container
             ->get('kernel')

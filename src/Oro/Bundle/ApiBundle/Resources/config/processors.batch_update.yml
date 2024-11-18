@@ -75,6 +75,7 @@ services:
         arguments:
             - '@oro_api.batch.include_map_manager'
             - '@oro_api.value_normalizer'
+            - '@oro_api.entity_id_transformer_registry'
         tags:
             - { name: oro.api.processor, action: batch_update, group: save_data, priority: -20 }
 
@@ -88,6 +89,8 @@ services:
 
     oro_api.batch_update.update_summary_counters_after_flush:
         class: Oro\Bundle\ApiBundle\Batch\Processor\Update\UpdateSummaryCounters
+        arguments:
+            - '@oro_api.entity_id_helper'
         tags:
             - { name: oro.api.processor, action: batch_update, group: save_data, priority: -40 }
 

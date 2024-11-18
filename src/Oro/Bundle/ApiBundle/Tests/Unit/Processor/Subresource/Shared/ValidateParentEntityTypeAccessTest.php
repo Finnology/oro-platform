@@ -13,15 +13,16 @@ use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 class ValidateParentEntityTypeAccessTest extends GetSubresourceProcessorTestCase
 {
-    /** @var \PHPUnit\Framework\MockObject\MockObject|AuthorizationCheckerInterface */
+    /** @var AuthorizationCheckerInterface|\PHPUnit\Framework\MockObject\MockObject */
     private $authorizationChecker;
 
-    /** @var \PHPUnit\Framework\MockObject\MockObject|DoctrineHelper */
+    /** @var DoctrineHelper|\PHPUnit\Framework\MockObject\MockObject */
     private $doctrineHelper;
 
-    /** @var \PHPUnit\Framework\MockObject\MockObject|AclGroupProviderInterface */
+    /** @var AclGroupProviderInterface|\PHPUnit\Framework\MockObject\MockObject */
     private $aclGroupProvider;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -48,7 +49,7 @@ class ValidateParentEntityTypeAccessTest extends GetSubresourceProcessorTestCase
         );
     }
 
-    public function testProcessWhenAccessGrantedForManageableParentEntityWithoutConfigOfAclResource()
+    public function testProcessWhenAccessGrantedForManageableParentEntityWithoutConfigOfAclResource(): void
     {
         $parentClassName = Product::class;
         $parentConfig = new EntityDefinitionConfig();
@@ -63,7 +64,7 @@ class ValidateParentEntityTypeAccessTest extends GetSubresourceProcessorTestCase
         $this->getProcessor()->process($this->context);
     }
 
-    public function testProcessWhenAccessDeniedForManageableParentEntityWithoutConfigOfAclResource()
+    public function testProcessWhenAccessDeniedForManageableParentEntityWithoutConfigOfAclResource(): void
     {
         $this->expectException(AccessDeniedException::class);
         $parentClassName = Product::class;
@@ -79,7 +80,7 @@ class ValidateParentEntityTypeAccessTest extends GetSubresourceProcessorTestCase
         $this->getProcessor()->process($this->context);
     }
 
-    public function testProcessWhenAccessGrantedForParentEntityWithConfigOfAclResource()
+    public function testProcessWhenAccessGrantedForParentEntityWithConfigOfAclResource(): void
     {
         $parentClassName = Product::class;
         $aclResource = 'acme_product_test';
@@ -96,7 +97,7 @@ class ValidateParentEntityTypeAccessTest extends GetSubresourceProcessorTestCase
         $this->getProcessor()->process($this->context);
     }
 
-    public function testProcessWhenAccessDeniedForParentEntityWithConfigOfAclResource()
+    public function testProcessWhenAccessDeniedForParentEntityWithConfigOfAclResource(): void
     {
         $this->expectException(AccessDeniedException::class);
         $parentClassName = Product::class;
@@ -114,7 +115,7 @@ class ValidateParentEntityTypeAccessTest extends GetSubresourceProcessorTestCase
         $this->getProcessor()->process($this->context);
     }
 
-    public function testForcePermissionUsage()
+    public function testForcePermissionUsage(): void
     {
         $parentClassName = Product::class;
         $parentConfig = new EntityDefinitionConfig();
@@ -130,7 +131,7 @@ class ValidateParentEntityTypeAccessTest extends GetSubresourceProcessorTestCase
         $this->getProcessor(true)->process($this->context);
     }
 
-    public function testForcePermissionUsageWhenAclCheckIsDisabled()
+    public function testForcePermissionUsageWhenAclCheckIsDisabled(): void
     {
         $parentClassName = Product::class;
         $parentConfig = new EntityDefinitionConfig();

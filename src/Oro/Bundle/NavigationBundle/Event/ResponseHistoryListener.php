@@ -16,17 +16,11 @@ use Symfony\Contracts\Service\ServiceSubscriberInterface;
  */
 class ResponseHistoryListener implements ServiceSubscriberInterface
 {
-    /** @var TokenAccessorInterface */
-    private $tokenAccessor;
-
-    /** @var string */
-    private $userEntityClass;
-
-    /** @var ContainerInterface */
-    private $container;
-
+    private TokenAccessorInterface $tokenAccessor;
+    private string $userEntityClass;
+    private ContainerInterface $container;
     /** @var array [route name => true, ...] */
-    private $excludedRoutes = [];
+    private array $excludedRoutes = [];
 
     public function __construct(
         TokenAccessorInterface $tokenAccessor,
@@ -38,14 +32,10 @@ class ResponseHistoryListener implements ServiceSubscriberInterface
         $this->container = $container;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public static function getSubscribedServices()
+    #[\Override]
+    public static function getSubscribedServices(): array
     {
-        return [
-            'oro_navigation.navigation_history_logger' => NavigationHistoryLogger::class
-        ];
+        return [NavigationHistoryLogger::class];
     }
 
     /**
@@ -58,7 +48,7 @@ class ResponseHistoryListener implements ServiceSubscriberInterface
 
     public function onResponse(ResponseEvent $event): void
     {
-        if (!$event->isMasterRequest()) {
+        if (!$event->isMainRequest()) {
             return;
         }
 
@@ -69,7 +59,7 @@ class ResponseHistoryListener implements ServiceSubscriberInterface
         $request = $event->getRequest();
         if ($this->canAddToHistory($request, $event->getResponse())) {
             /** @var NavigationHistoryLogger $navigationHistoryLogger */
-            $navigationHistoryLogger = $this->container->get('oro_navigation.navigation_history_logger');
+            $navigationHistoryLogger = $this->container->get(NavigationHistoryLogger::class);
             $navigationHistoryLogger->logRequest($request);
         }
     }

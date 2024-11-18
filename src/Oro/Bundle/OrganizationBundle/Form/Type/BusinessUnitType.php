@@ -5,6 +5,7 @@ namespace Oro\Bundle\OrganizationBundle\Form\Type;
 use Oro\Bundle\FormBundle\Form\Type\EntityIdentifierType;
 use Oro\Bundle\OrganizationBundle\Entity\Manager\BusinessUnitManager;
 use Oro\Bundle\SecurityBundle\Authentication\TokenAccessorInterface;
+use Oro\Bundle\UserBundle\Entity\User;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -33,9 +34,7 @@ class BusinessUnitType extends AbstractType
         $this->tokenAccessor = $tokenAccessor;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
@@ -99,7 +98,7 @@ class BusinessUnitType extends AbstractType
                 'appendUsers',
                 EntityIdentifierType::class,
                 [
-                    'class'    => 'OroUserBundle:User',
+                    'class'    => User::class,
                     'required' => false,
                     'mapped'   => false,
                     'multiple' => true,
@@ -109,7 +108,7 @@ class BusinessUnitType extends AbstractType
                 'removeUsers',
                 EntityIdentifierType::class,
                 [
-                    'class'    => 'OroUserBundle:User',
+                    'class'    => User::class,
                     'required' => false,
                     'mapped'   => false,
                     'multiple' => true,
@@ -150,9 +149,7 @@ class BusinessUnitType extends AbstractType
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults(
@@ -163,10 +160,8 @@ class BusinessUnitType extends AbstractType
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return self::FORM_NAME;
     }

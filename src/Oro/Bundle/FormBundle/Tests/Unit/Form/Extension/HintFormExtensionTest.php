@@ -12,6 +12,7 @@ class HintFormExtensionTest extends \PHPUnit\Framework\TestCase
     /** @var Form|\PHPUnit\Framework\MockObject\MockObject */
     private $form;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->form = $this->createMock(Form::class);
@@ -58,7 +59,7 @@ class HintFormExtensionTest extends \PHPUnit\Framework\TestCase
         $view = new FormView();
         $this->form->expects($this->any())
             ->method('getParent')
-            ->willReturn(false);
+            ->willReturn(null);
 
         $extension = new HintFormExtension();
         $extension->buildView($view, $this->form, ['toolbar' => 'test']);

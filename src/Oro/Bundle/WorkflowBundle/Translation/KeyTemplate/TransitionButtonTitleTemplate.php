@@ -9,9 +9,7 @@ class TransitionButtonTitleTemplate extends TransitionTemplate
 {
     const NAME = 'transition_button_title';
 
-    /**
-     * @return string
-     */
+    #[\Override]
     public function getTemplate(): string
     {
         return parent::getTemplate() . '.button_title';

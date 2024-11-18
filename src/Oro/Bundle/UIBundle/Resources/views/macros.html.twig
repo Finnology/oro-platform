@@ -28,7 +28,7 @@
     </div>
 {% endmacro %}
 
-{% macro tooltip(tooltip_raw, tooltip_parameters, tooltip_placement, details_enabled, details_link, details_anchor, tooltip_translatable) %}
+{% macro tooltip(tooltip_raw, tooltip_parameters, tooltip_placement, details_enabled, details_link, details_anchor, tooltip_translatable, tooltip_type) %}
     {%- set tooltip = tooltip_raw -%}
     {%- if tooltip_translatable is not same as(false) -%}
         {% set tooltip = tooltip_raw|trans(tooltip_parameters|default({})) %}
@@ -49,7 +49,11 @@
             %}
         {% endif %}
         {% set tooltip = '<div class="oro-popover-content">' ~ tooltip ~ '</div>' -%}
-        <i class="fa-info-circle tooltip-icon"
+        {% if tooltip_type is defined and tooltip_type %}
+            <i class="fa-{{ tooltip_type }} tooltip-icon tooltip-icon--{{ tooltip_type }}"
+        {% else %}
+            <i class="fa-info-circle tooltip-icon"
+        {% endif %}
            {% if tooltip_placement %}data-placement="{{ tooltip_placement }}"{% endif %}
            data-content="{{ tooltip }}"
            data-toggle="popover"></i>
@@ -208,14 +212,17 @@
         <div class="collapse-block">
             {% import _self as UIMacro %}
 
-            {{ UIMacro.renderAttribute(title,
-                '<div class="control-label collapse-overflow collapse no-transition" data-toggle="false" data-check-overflow="true" ' ~
-                      'id="'~ collapseId ~'" data-state-id="'~ collapseKey ~'" data-collapsed-text="'~ moreText|trans ~ '" data-expanded-text="'~ lessText|trans ~'">' ~
-                    data|default('oro.ui.empty'|trans) ~
-                '</div>' ~
-                '<a href="#" role="button" class="control-label collapse-toggle" data-toggle="collapse" ' ~
-                   'data-target="#'~ collapseId ~'" aria-expanded="false" aria-controls="'~ collapseId ~'"><span data-text>' ~ moreText|trans ~ '</span></a>'
-            ) }}
+            {% set propertyHtml %}
+                <div class="control-label collapse-overflow collapse no-transition" data-toggle="false" data-check-overflow="true"
+                      id="{{ collapseId }}" data-state-id="{{ collapseKey }}" data-collapsed-text="{{ moreText|trans }}" data-expanded-text="{{ lessText|trans }}">
+                    {{ data|default('oro.ui.empty'|trans) }}
+                </div>
+                <a href="#" role="button" class="control-label collapse-toggle" data-toggle="collapse" data-target="#{{ collapseId }}" aria-expanded="false" aria-controls="{{ collapseId }}">
+                    <span data-text>{{ moreText|trans }}</span>
+                </a>
+            {% endset %}
+
+            {{ UIMacro.renderAttribute(title, propertyHtml) }}
         </div>
     {% endif %}
 {% endmacro %}
@@ -427,6 +434,9 @@
 
     {% if isDesktopVersion() or parameters.mobileEnabled|default(false) %}
         {% set options = parameters.options|default({}) %}
+        {% set rootClassName = parameters.rootClassName|default('pull-right pinned-dropdown') %}
+        {# formId - 'id 'attribute of form that dropdown associate with #}
+        {% set formId = parameters.formId is defined ? parameters.formId : null %}
         {% set options = options|merge({
             widgetModule: options.widgetModule|default('oroui/js/content-processor/pinned-dropdown-button'),
             widgetName: options.widgetName|default('pinnedDropdownButtonProcessor'),
@@ -434,7 +444,8 @@
             useMainButtonsClone: true
         }) %}
         {% apply spaceless %}
-            <div class="pull-right pinned-dropdown"
+            <div class="{{ rootClassName }}"
+                 {% if formId is not null %}data-form="{{ formId }}"{% endif %}
                  {{ UIMacro.renderAttributes(parameters.dataAttributes|default({})|merge({
                      'page-component-module': 'oroui/js/app/components/jquery-widget-component',
                      'page-component-options': options
@@ -674,7 +685,14 @@
             {%- endif -%}
             {{- UIMacro.clientControlAttrs(parameters) -}}>
             {{- UIMacro.clientControlIcon(parameters) -}}
-            {{- parameters.label is defined ? parameters.label : '' -}}
+            {% set renderLinkLabel %}
+                {{- parameters.label is defined ? parameters.label : '' -}}
+            {% endset %}
+            {% if parameters.labelClass is defined %}
+                <span class="{{ parameters.labelClass }}">{{ renderLinkLabel }}</span>
+            {% else %}
+                {{ renderLinkLabel }}
+            {% endif %}
         </a>
     {% endapply %}
 {% endmacro %}
@@ -814,6 +832,9 @@
         {% if (parameters.title is defined) %}
             title="{{ parameters.title }}"
         {% endif %}
+        {% if (parameters.form is defined) %}
+            form="{{ parameters.form }}"
+        {% endif %}
         {%- if (parameters.dataUrlRaw is defined) -%}
             data-url="{{ parameters.dataUrlRaw|raw }}"
         {% elseif (parameters.dataUrl is defined) %}
@@ -821,7 +842,14 @@
         {%- endif -%}
         >
             {{- UIMacro.clientControlIcon(parameters) -}}
-            {{- parameters.label is defined ? parameters.label : '' -}}
+            {% set renderLinkLabel %}
+                {{- parameters.label is defined ? parameters.label : '' -}}
+            {% endset %}
+            {% if parameters.labelClass is defined %}
+                <span class="{{ parameters.labelClass }}">{{ renderLinkLabel }}</span>
+            {% else %}
+                {{ renderLinkLabel }}
+            {% endif %}
         </button>
     {% endapply %}
 {% endmacro %}
@@ -1176,7 +1204,7 @@
 
     {% set cols = subblocks|length %}
     <div class="responsive-section"{% if options.initSectionInstantly is defined and options.initSectionInstantly %} data-init-section-instantly{% endif %}>
-        <h4 class="scrollspy-title">{{ title }}{% if headerLinkContent is defined %}{{ headerLinkContent }}{% endif %}</h4>
+        {% if title is defined %}<h4 class="scrollspy-title">{{ title }}{% if headerLinkContent is defined %}{{ headerLinkContent }}{% endif %}</h4>{% endif %}
         <div id="{{ blockId }}" class="scrollspy-nav-target"></div>
         <div class="section-content">
             <div class="row-fluid{% if (contentAttributes is defined and contentAttributes.class is defined and contentAttributes.class|length) %} {{ contentAttributes.class }}{% endif %}{% if cols > 1 and (useSubBlockDivider is not defined or useSubBlockDivider == true) %} row-fluid-divider{% endif %}" {{ UIMacro.attributes(contentAttributes, ['class']) }}>

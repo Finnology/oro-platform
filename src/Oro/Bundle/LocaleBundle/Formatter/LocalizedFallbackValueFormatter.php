@@ -35,9 +35,7 @@ class LocalizedFallbackValueFormatter implements FormatterInterface
         $this->propertyAccessor = $propertyAccessor;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function format($value, array $formatterArguments = []): string
     {
         $fieldName = $formatterArguments['associationName'] ?? null;
@@ -49,13 +47,10 @@ class LocalizedFallbackValueFormatter implements FormatterInterface
             }
         }
 
-
         return $this->getDefaultValue();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getDefaultValue(): string
     {
         return $this->translator->trans(self::DEFAULT_VALUE);

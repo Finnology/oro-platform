@@ -24,16 +24,14 @@ class TagListener implements ServiceSubscriberInterface
 
     public function preRemove(LifecycleEventArgs $args): void
     {
-        $entity = $args->getEntity();
+        $entity = $args->getObject();
         if ($this->getTaggableHelper()->isTaggable($entity)) {
             $this->getTagManager()->deleteTagging($entity, []);
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public static function getSubscribedServices()
+    #[\Override]
+    public static function getSubscribedServices(): array
     {
         return [
             'oro_tag.helper.taggable_helper' => TaggableHelper::class,

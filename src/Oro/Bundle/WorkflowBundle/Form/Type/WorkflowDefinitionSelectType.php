@@ -2,6 +2,7 @@
 
 namespace Oro\Bundle\WorkflowBundle\Form\Type;
 
+use Oro\Bundle\WorkflowBundle\Entity\WorkflowDefinition;
 use Oro\Bundle\WorkflowBundle\Helper\WorkflowTranslationHelper;
 use Oro\Bundle\WorkflowBundle\Model\Workflow;
 use Oro\Bundle\WorkflowBundle\Model\WorkflowRegistry;
@@ -33,15 +34,13 @@ class WorkflowDefinitionSelectType extends AbstractType
         $this->translator = $translator;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefined(['workflow_entity_class', 'workflow_name']);
         $resolver->setDefaults(
             [
-                'class' => 'OroWorkflowBundle:WorkflowDefinition',
+                'class' => WorkflowDefinition::class,
                 'choice_label' => 'label'
             ]
         );
@@ -80,33 +79,24 @@ class WorkflowDefinitionSelectType extends AbstractType
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getName()
     {
         return $this->getBlockPrefix();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return self::NAME;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getParent()
+    #[\Override]
+    public function getParent(): ?string
     {
         return EntityType::class;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function finishView(FormView $view, FormInterface $form, array $options)
     {
         /** @var ChoiceView $choiceView */

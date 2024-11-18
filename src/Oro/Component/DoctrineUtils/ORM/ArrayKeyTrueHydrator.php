@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Component\DoctrineUtils\ORM;
@@ -28,10 +29,11 @@ class ArrayKeyTrueHydrator extends AbstractHydrator
 {
     public const NAME = 'ArrayKeyTrueHydrator';
 
+    #[\Override]
     protected function hydrateAllData(): array
     {
         $result = [];
-        while ($data = $this->_stmt->fetch(\PDO::FETCH_COLUMN)) {
+        while ($data = $this->_stmt->fetchOne()) {
             $result[$data] = true;
         }
 

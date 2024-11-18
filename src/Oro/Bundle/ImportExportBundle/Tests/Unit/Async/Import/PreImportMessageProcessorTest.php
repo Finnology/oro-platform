@@ -6,6 +6,7 @@ use Doctrine\Persistence\ManagerRegistry;
 use Oro\Bundle\EmailBundle\Model\From;
 use Oro\Bundle\ImportExportBundle\Async\Import\PreImportMessageProcessor;
 use Oro\Bundle\ImportExportBundle\Async\ImportExportResultSummarizer;
+use Oro\Bundle\ImportExportBundle\Async\Topic\FinishImportTopic;
 use Oro\Bundle\ImportExportBundle\Async\Topic\ImportTopic;
 use Oro\Bundle\ImportExportBundle\Async\Topic\PreImportTopic;
 use Oro\Bundle\ImportExportBundle\Async\Topic\SaveImportExportResultTopic;
@@ -63,6 +64,7 @@ class PreImportMessageProcessorTest extends \PHPUnit\Framework\TestCase
 
     private PreImportMessageProcessor $preImportMessageProcessor;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->jobRunner = $this->createMock(JobRunner::class);
@@ -428,9 +430,13 @@ class PreImportMessageProcessorTest extends \PHPUnit\Framework\TestCase
             );
 
         $dependentContext = $this->createMock(DependentJobContext::class);
-        $dependentContext->expects(self::exactly(2))
+        $dependentContext->expects(self::exactly(3))
             ->method('addDependentJob')
-            ->withConsecutive([SendImportNotificationTopic::getName()], [SaveImportExportResultTopic::getName()]);
+            ->withConsecutive(
+                [SendImportNotificationTopic::getName()],
+                [SaveImportExportResultTopic::getName()],
+                [FinishImportTopic::getName()],
+            );
 
         $this->dependentJob->expects(self::once())
             ->method('createDependentJobContext')

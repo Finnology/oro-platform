@@ -11,10 +11,8 @@ class ScheduleIntervalsIntersection extends Constraint
 {
     public $message = 'oro.cron.validators.schedule_intervals_overlap.message';
 
-    /**
-     * {@inheritDoc}
-     */
-    public function getTargets()
+    #[\Override]
+    public function getTargets(): string|array
     {
         return [self::CLASS_CONSTRAINT];
     }

@@ -19,6 +19,7 @@ class ErrorLogNotificationHandlerWrapperTest extends \PHPUnit\Framework\TestCase
 
     private ErrorLogNotificationHandlerWrapper $handlerWrapper;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->recipientsProvider = $this->createMock(ErrorLogNotificationRecipientsProvider::class);
@@ -67,8 +68,6 @@ class ErrorLogNotificationHandlerWrapperTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @dataProvider throwableDataProvider
-     *
-     * @param \Throwable $throwable
      */
     public function testHandleBatchLogsWarningWhenCannotSendEmail(\Throwable $throwable): void
     {
@@ -144,8 +143,6 @@ class ErrorLogNotificationHandlerWrapperTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @dataProvider throwableDataProvider
-     *
-     * @param \Throwable $throwable
      */
     public function testHandleLogsWarningWhenCannotSendEmail(\Throwable $throwable): void
     {

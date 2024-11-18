@@ -14,6 +14,7 @@ class ControllersTest extends WebTestCase
 {
     use MessageQueueExtension;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->initClient(
@@ -23,6 +24,7 @@ class ControllersTest extends WebTestCase
         $this->client->useHashNavigation(true);
     }
 
+    #[\Override]
     protected function tearDown(): void
     {
         parent::tearDown();
@@ -86,11 +88,6 @@ class ControllersTest extends WebTestCase
         return self::getContainer()->get('oro_datagrid.tests.datagrid_orm_query_collector');
     }
 
-    /**
-     * @param Crawler $crawler
-     *
-     * @return Form
-     */
     private function getReportForm(Crawler $crawler): Form
     {
         return $crawler->selectButton('Save and Close')->form();

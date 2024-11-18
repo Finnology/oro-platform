@@ -1,4 +1,5 @@
 <?php
+
 namespace Oro\Bundle\AddressBundle\Tests\Unit\Form\Type;
 
 use Oro\Bundle\AddressBundle\Form\Type\EmailType;
@@ -12,6 +13,7 @@ class EmailTypeTest extends \PHPUnit\Framework\TestCase
     /** @var EmailType */
     private $type;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->type = new EmailType();

@@ -2,6 +2,7 @@
 
 namespace Oro\Bundle\EntityExtendBundle\Validator\Constraints;
 
+use Attribute;
 use Symfony\Component\Validator\Constraint;
 
 /**
@@ -9,6 +10,7 @@ use Symfony\Component\Validator\Constraint;
  *
  * Constraint to check is given value correct decimal number with expected precision and scale
  */
+#[Attribute]
 class Decimal extends Constraint
 {
     /**
@@ -35,9 +37,6 @@ class Decimal extends Constraint
      */
     public $scale = 0;
 
-    /**
-     * {@inheritdoc}
-     */
     public function __construct($options = null)
     {
         if (is_array($options)) {

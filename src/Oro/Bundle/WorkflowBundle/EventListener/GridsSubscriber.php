@@ -16,10 +16,8 @@ class GridsSubscriber implements EventSubscriberInterface
         $this->featureChecker = $featureChecker;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedEvents()
+    #[\Override]
+    public static function getSubscribedEvents(): array
     {
         return [
             implode('.', [OrmResultBeforeQuery::NAME, 'process-definitions-grid'])  => 'onProcessesResultBeforeQuery',

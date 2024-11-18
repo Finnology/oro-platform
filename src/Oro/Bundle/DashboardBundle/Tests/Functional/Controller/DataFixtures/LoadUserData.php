@@ -23,29 +23,26 @@ class LoadUserData extends AbstractFixture implements ContainerAwareInterface, D
      */
     private $container;
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function setContainer(ContainerInterface $container = null)
     {
         $this->container = $container;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getDependencies()
     {
         return [LoadOrganization::class, LoadBusinessUnit::class];
     }
 
+    #[\Override]
     public function load(ObjectManager $manager)
     {
         /** @var UserManager $userManager */
         $userManager = $this->container->get('oro_user.manager');
 
         $role = $manager->getRepository(Role::class)
-            ->findBy(array('role' => 'IS_AUTHENTICATED_ANONYMOUSLY'));
+            ->findBy(array('role' => 'PUBLIC_ACCESS'));
 
         $user = $userManager->createUser();
         $organization = $this->getReference('organization');

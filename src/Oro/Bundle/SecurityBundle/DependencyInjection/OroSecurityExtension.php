@@ -11,9 +11,7 @@ use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 
 class OroSecurityExtension extends Extension implements PrependExtensionInterface
 {
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function load(array $configs, ContainerBuilder $container): void
     {
         $config = $this->processConfiguration($this->getConfiguration($configs, $container), $configs);
@@ -35,13 +33,17 @@ class OroSecurityExtension extends Extension implements PrependExtensionInterfac
         }
 
         $this->configureCookieTokenStorage($container, $config);
+        $this->configurePermissionsPolicy($container, $config);
 
         $container->setParameter('oro_security.login_target_path_excludes', $config['login_target_path_excludes']);
+
+        $container->setParameter(
+            'oro_security.session.storage.options',
+            $container->getParameter('session.storage.options')
+        );
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function prepend(ContainerBuilder $container): void
     {
         $container->setParameter('session_handler', 'oro.session_handler');
@@ -52,5 +54,12 @@ class OroSecurityExtension extends Extension implements PrependExtensionInterfac
         $container->getDefinition('oro_security.csrf.cookie_token_storage')
             ->replaceArgument(0, $config['csrf_cookie']['cookie_secure'])
             ->replaceArgument(2, $config['csrf_cookie']['cookie_samesite']);
+    }
+
+    private function configurePermissionsPolicy(ContainerBuilder $container, array $config): void
+    {
+        $container->getDefinition('oro_security.permission_policy_header_provider')
+            ->replaceArgument(0, $config['permissions_policy']['enable'])
+            ->replaceArgument(1, $config['permissions_policy']['directives']);
     }
 }

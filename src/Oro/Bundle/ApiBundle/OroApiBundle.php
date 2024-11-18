@@ -7,6 +7,7 @@ use Oro\Bundle\ApiBundle\DependencyInjection\Compiler;
 use Oro\Bundle\ApiBundle\Util\DependencyInjectionUtil;
 use Oro\Component\ChainProcessor\DependencyInjection\CleanUpProcessorsCompilerPass;
 use Oro\Component\ChainProcessor\DependencyInjection\LoadApplicableCheckersCompilerPass;
+use Oro\Component\DependencyInjection\Compiler\PriorityNamedTaggedServiceCompilerPass;
 use Oro\Component\DependencyInjection\Compiler\PriorityNamedTaggedServiceWithHandlerCompilerPass;
 use Symfony\Component\DependencyInjection\Compiler\PassConfig;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -17,10 +18,9 @@ class OroApiBundle extends Bundle
     use Compiler\ApiTaggedServiceTrait;
 
     /**
-     * {@inheritdoc}
-     *
      * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      */
+    #[\Override]
     public function build(ContainerBuilder $container): void
     {
         parent::build($container);
@@ -88,6 +88,7 @@ class OroApiBundle extends Bundle
             'oro_api.association_access_exclusion_provider_registry',
             'oro_api.association_access_exclusion_provider'
         ));
+        $container->addCompilerPass(new Compiler\SyncProcessingCompilerPass());
         $container->addCompilerPass(new Compiler\ChunkSizeProviderCompilerPass());
         $container->addCompilerPass(new Compiler\CleanupAsyncOperationCompilerPass());
         $container->addCompilerPass(new Compiler\RequestTypeDependedTaggedServiceCompilerPass(
@@ -117,6 +118,17 @@ class OroApiBundle extends Bundle
             'oro_api.processor_bag',
             'oro.api.processor.applicable_checker'
         ));
+        $container->addCompilerPass(new Compiler\OpenApiCompilerPass());
+        $container->addCompilerPass(new PriorityNamedTaggedServiceCompilerPass(
+            'oro_api.api_doc.open_api.formatter_registry',
+            'oro.api.open_api.formatter',
+            'format'
+        ));
+        $container->addCompilerPass(new PriorityNamedTaggedServiceCompilerPass(
+            'oro_api.api_doc.open_api.generator_registry',
+            'oro.api.open_api.generator',
+            'view'
+        ));
         $container->addCompilerPass(
             new CleanUpProcessorsCompilerPass(
                 'oro_api.simple_processor_registry',
@@ -138,7 +150,7 @@ class OroApiBundle extends Bundle
         if ('test' === $container->getParameter('kernel.environment')) {
             $container->addCompilerPass(new Compiler\MakeTestLoggerServicePersistentPass());
             $container->addCompilerPass(
-                DoctrineOrmMappingsPass::createAnnotationMappingDriver(
+                DoctrineOrmMappingsPass::createAttributeMappingDriver(
                     ['Oro\Bundle\ApiBundle\Tests\Functional\Environment\Entity'],
                     [$this->getPath() . '/Tests/Functional/Environment/Entity']
                 )

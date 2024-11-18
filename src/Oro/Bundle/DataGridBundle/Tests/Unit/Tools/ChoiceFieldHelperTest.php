@@ -3,7 +3,7 @@
 namespace Oro\Bundle\DataGridBundle\Tests\Unit\Tools;
 
 use Doctrine\ORM\AbstractQuery;
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Query;
@@ -24,6 +24,7 @@ class ChoiceFieldHelperTest extends \PHPUnit\Framework\TestCase
     /** @var ChoiceFieldHelper */
     private $choiceHelper;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->aclHelper = $this->createMock(AclHelper::class);
@@ -77,7 +78,7 @@ class ChoiceFieldHelperTest extends \PHPUnit\Framework\TestCase
 
     public function testGetChoices()
     {
-        $em = $this->createMock(EntityManager::class);
+        $em = $this->createMock(EntityManagerInterface::class);
         $qb = $this->createMock(QueryBuilder::class);
         $query = $this->createMock(AbstractQuery::class);
         $repo = $this->createMock(EntityRepository::class);
@@ -110,7 +111,7 @@ class ChoiceFieldHelperTest extends \PHPUnit\Framework\TestCase
 
     public function testGetTranslatedChoices()
     {
-        $em = $this->createMock(EntityManager::class);
+        $em = $this->createMock(EntityManagerInterface::class);
         $qb = $this->createMock(QueryBuilder::class);
         $query = $this->createMock(AbstractQuery::class);
         $repo = $this->createMock(EntityRepository::class);

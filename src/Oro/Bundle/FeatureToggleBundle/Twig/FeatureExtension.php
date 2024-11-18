@@ -31,9 +31,7 @@ class FeatureExtension extends AbstractExtension implements ServiceSubscriberInt
         return $this->container->get(FeatureChecker::class);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getFunctions()
     {
         return [
@@ -63,10 +61,8 @@ class FeatureExtension extends AbstractExtension implements ServiceSubscriberInt
         return $this->getFeatureChecker()->isResourceEnabled($resource, $resourceType, $scopeIdentifier);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedServices()
+    #[\Override]
+    public static function getSubscribedServices(): array
     {
         return [
             FeatureChecker::class,

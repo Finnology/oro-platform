@@ -14,6 +14,7 @@ class WorkflowEntityAclTest extends \PHPUnit\Framework\TestCase
     /** @var WorkflowEntityAcl */
     private $entityAcl;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->entityAcl = new WorkflowEntityAcl();
@@ -46,7 +47,7 @@ class WorkflowEntityAclTest extends \PHPUnit\Framework\TestCase
             ['attribute', 'test'],
             ['step', new WorkflowStep()],
             ['definition', new WorkflowDefinition()],
-            ['entityClass', new \DateTime()],
+            ['entityClass', \DateTime::class],
             ['updatable', false],
             ['deletable', false],
         ];

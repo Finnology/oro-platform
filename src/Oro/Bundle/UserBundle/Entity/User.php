@@ -4,14 +4,16 @@ namespace Oro\Bundle\UserBundle\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Event\PreUpdateEventArgs;
 use Doctrine\ORM\Mapping as ORM;
+use Extend\Entity\Autocomplete\OroUserBundle_Entity_User;
 use Oro\Bundle\EmailBundle\Entity\EmailOrigin;
 use Oro\Bundle\EmailBundle\Entity\EmailOwnerInterface;
 use Oro\Bundle\EmailBundle\Model\EmailHolderInterface;
-use Oro\Bundle\EntityConfigBundle\Metadata\Annotation\Config;
-use Oro\Bundle\EntityConfigBundle\Metadata\Annotation\ConfigField;
-use Oro\Bundle\EntityExtendBundle\Entity\AbstractEnumValue;
+use Oro\Bundle\EntityConfigBundle\Metadata\Attribute\Config;
+use Oro\Bundle\EntityConfigBundle\Metadata\Attribute\ConfigField;
+use Oro\Bundle\EntityExtendBundle\Entity\EnumOptionInterface;
 use Oro\Bundle\EntityExtendBundle\Entity\ExtendEntityInterface;
 use Oro\Bundle\EntityExtendBundle\Entity\ExtendEntityTrait;
 use Oro\Bundle\ImapBundle\Entity\UserEmailOrigin;
@@ -20,6 +22,8 @@ use Oro\Bundle\LocaleBundle\Model\FullNameInterface;
 use Oro\Bundle\OrganizationBundle\Entity\BusinessUnit;
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
 use Oro\Bundle\OrganizationBundle\Entity\OrganizationInterface;
+use Oro\Bundle\UserBundle\Entity\Repository\UserRepository;
+use Oro\Bundle\UserBundle\Form\Type\UserSelectType;
 use Oro\Bundle\UserBundle\Security\AdvancedApiUserInterface;
 
 /**
@@ -31,58 +35,35 @@ use Oro\Bundle\UserBundle\Security\AdvancedApiUserInterface;
  * @SuppressWarnings(PHPMD.TooManyFields)
  * @SuppressWarnings(PHPMD.TooManyPublicMethods)
  *
- * @ORM\Entity(repositoryClass="Oro\Bundle\UserBundle\Entity\Repository\UserRepository")
- * @ORM\Table(name="oro_user", indexes = {
- *      @ORM\Index("user_first_name_last_name_idx", columns = {"first_name", "last_name"}),
- *      @ORM\Index(name="idx_oro_user_email_lowercase", columns={"email_lowercase"}),
- *      @ORM\Index(name="idx_oro_user_username_lowercase", columns={"username_lowercase"}),
- * })
- * @ORM\HasLifecycleCallbacks()
- * @Config(
- *      routeName="oro_user_index",
- *      routeView="oro_user_view",
- *      defaultValues={
- *          "entity"={
- *              "icon"="fa-user"
- *          },
- *          "grouping"={
- *              "groups"={"dictionary"}
- *          },
- *          "dictionary"={
- *              "virtual_fields"={"id"},
- *              "search_fields"={"firstName", "lastName"},
- *              "representation_field"="fullName",
- *              "activity_support"=true
- *          },
- *          "ownership"={
- *              "owner_type"="BUSINESS_UNIT",
- *              "owner_field_name"="owner",
- *              "owner_column_name"="business_unit_owner_id",
- *              "organization_field_name"="organization",
- *              "organization_column_name"="organization_id"
- *          },
- *          "dataaudit"={"auditable"=true},
- *          "security"={
- *              "type"="ACL",
- *              "group_name"="",
- *              "category"="account_management"
- *          },
- *          "form"={
- *              "form_type"="Oro\Bundle\UserBundle\Form\Type\UserSelectType",
- *              "grid_name"="users-select-grid"
- *          },
- *          "grid"={
- *              "default"="users-grid",
- *              "context"="users-for-context-grid"
- *          },
- *          "tag"={
- *              "enabled"=true
- *          }
- *      }
- * )
- * @method setAuthStatus(AbstractEnumValue $enum)
- * @method AbstractEnumValue getAuthStatus()
+ * @method setAuthStatus(EnumOptionInterface $enum)
+ * @method EnumOptionInterface getAuthStatus()
+ * @mixin OroUserBundle_Entity_User
  */
+#[ORM\Entity(repositoryClass: UserRepository::class)]
+#[ORM\Table(name: 'oro_user')]
+#[ORM\Index(columns: ['first_name', 'last_name'], name: 'user_first_name_last_name_idx')]
+#[ORM\Index(columns: ['email_lowercase'], name: 'idx_oro_user_email_lowercase')]
+#[ORM\Index(columns: ['username_lowercase'], name: 'idx_oro_user_username_lowercase')]
+#[ORM\HasLifecycleCallbacks]
+#[Config(
+    routeName: 'oro_user_index',
+    routeView: 'oro_user_view',
+    defaultValues: [
+        'entity' => ['icon' => 'fa-user'],
+        'ownership' => [
+            'owner_type' => 'BUSINESS_UNIT',
+            'owner_field_name' => 'owner',
+            'owner_column_name' => 'business_unit_owner_id',
+            'organization_field_name' => 'organization',
+            'organization_column_name' => 'organization_id'
+        ],
+        'dataaudit' => ['auditable' => true],
+        'security' => ['type' => 'ACL', 'group_name' => '', 'category' => 'account_management'],
+        'form' => ['form_type' => UserSelectType::class, 'grid_name' => 'users-select-grid'],
+        'grid' => ['default' => 'users-grid', 'context' => 'users-for-context-grid'],
+        'tag' => ['enabled' => true]
+    ]
+)]
 class User extends AbstractUser implements
     EmailOwnerInterface,
     EmailHolderInterface,
@@ -94,328 +75,132 @@ class User extends AbstractUser implements
 
     const ROLE_DEFAULT = 'ROLE_USER';
     const ROLE_ADMINISTRATOR = 'ROLE_ADMINISTRATOR';
-    const ROLE_ANONYMOUS = 'IS_AUTHENTICATED_ANONYMOUSLY';
+    const ROLE_ANONYMOUS = 'PUBLIC_ACCESS';
+
+    #[ORM\Id]
+    #[ORM\Column(type: Types::INTEGER)]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
+    protected ?int $id = null;
+
+    #[ORM\Column(type: Types::STRING, length: 255, unique: true)]
+    #[ConfigField(defaultValues: ['dataaudit' => ['auditable' => true], 'importexport' => ['identity' => true]])]
+    protected ?string $username = null;
+
+    #[ORM\Column(name: 'username_lowercase', type: Types::STRING, length: 255)]
+    #[ConfigField(
+        defaultValues: ['dataaudit' => ['auditable' => false], 'importexport' => ['excluded' => true]],
+        mode: 'hidden'
+    )]
+    protected ?string $usernameLowercase = null;
+
+    #[ORM\Column(type: Types::STRING, length: 255, unique: true)]
+    #[ConfigField(defaultValues: ['dataaudit' => ['auditable' => true]])]
+    protected ?string $email = null;
+
+    #[ORM\Column(name: 'email_lowercase', type: Types::STRING, length: 255)]
+    #[ConfigField(
+        defaultValues: ['dataaudit' => ['auditable' => false], 'importexport' => ['excluded' => true]],
+        mode: 'hidden'
+    )]
+    protected ?string $emailLowercase = null;
+
+    #[ORM\Column(name: 'name_prefix', type: Types::STRING, length: 255, nullable: true)]
+    #[ConfigField(defaultValues: ['dataaudit' => ['auditable' => true]])]
+    protected ?string $namePrefix = null;
+
+    #[ORM\Column(name: 'first_name', type: Types::STRING, length: 255, nullable: true)]
+    #[ConfigField(defaultValues: ['dataaudit' => ['auditable' => true]])]
+    protected ?string $firstName = null;
+
+    #[ORM\Column(name: 'middle_name', type: Types::STRING, length: 255, nullable: true)]
+    #[ConfigField(defaultValues: ['dataaudit' => ['auditable' => true]])]
+    protected ?string $middleName = null;
+
+    #[ORM\Column(name: 'last_name', type: Types::STRING, length: 255, nullable: true)]
+    #[ConfigField(defaultValues: ['dataaudit' => ['auditable' => true]])]
+    protected ?string $lastName = null;
+
+    #[ORM\Column(name: 'name_suffix', type: Types::STRING, length: 255, nullable: true)]
+    #[ConfigField(defaultValues: ['dataaudit' => ['auditable' => true]])]
+    protected ?string $nameSuffix = null;
 
     /**
-     * @ORM\Id
-     * @ORM\Column(type="integer")
-     * @ORM\GeneratedValue(strategy="AUTO")
+     * @var Collection<int, Group>
      */
-    protected $id;
+    #[ORM\ManyToMany(targetEntity: Group::class)]
+    #[ORM\JoinTable(name: 'oro_user_access_group')]
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
+    #[ORM\InverseJoinColumn(name: 'group_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
+    #[ConfigField(defaultValues: ['dataaudit' => ['auditable' => true]])]
+    protected ?Collection $groups = null;
+
+    #[ORM\Column(name: 'birthday', type: Types::DATE_MUTABLE, nullable: true)]
+    #[ConfigField(defaultValues: ['dataaudit' => ['auditable' => true]])]
+    protected ?\DateTimeInterface $birthday = null;
+
+    #[ORM\Column(type: Types::BOOLEAN)]
+    #[ConfigField(defaultValues: ['dataaudit' => ['auditable' => true]])]
+    protected ?bool $enabled = true;
+
+    #[ORM\Column(name: 'last_login', type: Types::DATETIME_MUTABLE, nullable: true)]
+    #[ConfigField(defaultValues: ['importexport' => ['excluded' => true]])]
+    protected ?\DateTimeInterface $lastLogin = null;
+
+    #[ORM\ManyToOne(targetEntity: BusinessUnit::class, cascade: ['persist'])]
+    #[ORM\JoinColumn(name: 'business_unit_owner_id', referencedColumnName: 'id', onDelete: 'SET NULL')]
+    #[ConfigField(defaultValues: ['importexport' => ['excluded' => true]])]
+    protected ?BusinessUnit $owner = null;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(type="string", length=255, unique=true)
-     * @ConfigField(
-     *      defaultValues={
-     *          "dataaudit"={
-     *              "auditable"=true
-     *          },
-     *          "importexport"={
-     *              "identity"=true
-     *          }
-     *      }
-     * )
+     * @var Collection<int, UserApi>
      */
-    protected $username;
+    #[ORM\OneToMany(
+        mappedBy: 'user',
+        targetEntity: UserApi::class,
+        cascade: ['persist', 'remove'],
+        fetch: 'EXTRA_LAZY',
+        orphanRemoval: true
+    )]
+    #[ConfigField(
+        defaultValues: ['importexport' => ['excluded' => true], 'email' => ['available_in_template' => false]]
+    )]
+    protected ?Collection $apiKeys = null;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(name="username_lowercase", type="string", length=255)
-     * @ConfigField(
-     *      defaultValues={
-     *          "dataaudit"={
-     *              "auditable"=false
-     *          },
-     *          "importexport"={
-     *              "excluded"=true
-     *          }
-     *      },
-     *      mode="hidden"
-     * )
+     * @var Collection<int, Email>
      */
-    protected $usernameLowercase;
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Email::class, cascade: ['persist'], orphanRemoval: true)]
+    #[ConfigField(defaultValues: ['dataaudit' => ['auditable' => true]])]
+    protected ?Collection $emails = null;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(type="string", length=255, unique=true)
-     * @ConfigField(
-     *      defaultValues={
-     *          "dataaudit"={
-     *              "auditable"=true
-     *          }
-     *      }
-     * )
+     * @var Collection<int, BusinessUnit>
      */
-    protected $email;
+    #[ORM\ManyToMany(targetEntity: BusinessUnit::class, inversedBy: 'users')]
+    #[ORM\JoinTable(name: 'oro_user_business_unit')]
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
+    #[ORM\InverseJoinColumn(name: 'business_unit_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
+    #[ConfigField(defaultValues: ['dataaudit' => ['auditable' => true]])]
+    protected ?Collection $businessUnits = null;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(name="email_lowercase", type="string", length=255)
-     * @ConfigField(
-     *      defaultValues={
-     *          "dataaudit"={
-     *              "auditable"=false
-     *          },
-     *          "importexport"={
-     *              "excluded"=true
-     *          }
-     *      },
-     *      mode="hidden"
-     * )
+     * @var Collection<int, EmailOrigin>
      */
-    protected $emailLowercase;
+    #[ORM\OneToMany(mappedBy: 'owner', targetEntity: EmailOrigin::class, cascade: ['persist', 'remove'])]
+    protected ?Collection $emailOrigins = null;
 
-    /**
-     * Name prefix
-     *
-     * @var string
-     *
-     * @ORM\Column(name="name_prefix", type="string", length=255, nullable=true)
-     * @ConfigField(
-     *      defaultValues={
-     *          "dataaudit"={
-     *              "auditable"=true
-     *          }
-     *      }
-     * )
-     */
-    protected $namePrefix;
-
-    /**
-     * First name
-     *
-     * @var string
-     *
-     * @ORM\Column(name="first_name", type="string", length=255, nullable=true)
-     * @ConfigField(
-     *      defaultValues={
-     *          "dataaudit"={
-     *              "auditable"=true
-     *          }
-     *      }
-     * )
-     */
-    protected $firstName;
-
-    /**
-     * Middle name
-     *
-     * @var string
-     *
-     * @ORM\Column(name="middle_name", type="string", length=255, nullable=true)
-     * @ConfigField(
-     *      defaultValues={
-     *          "dataaudit"={
-     *              "auditable"=true
-     *          }
-     *      }
-     * )
-     */
-    protected $middleName;
-
-    /**
-     * Last name
-     *
-     * @var string
-     *
-     * @ORM\Column(name="last_name", type="string", length=255, nullable=true)
-     * @ConfigField(
-     *      defaultValues={
-     *          "dataaudit"={
-     *              "auditable"=true
-     *          }
-     *      }
-     * )
-     */
-    protected $lastName;
-
-    /**
-     * Name suffix
-     *
-     * @var string
-     *
-     * @ORM\Column(name="name_suffix", type="string", length=255, nullable=true)
-     * @ConfigField(
-     *      defaultValues={
-     *          "dataaudit"={
-     *              "auditable"=true
-     *          }
-     *      }
-     * )
-     */
-    protected $nameSuffix;
-
-    /**
-     * @var Group[]|Collection
-     *
-     * @ORM\ManyToMany(targetEntity="Oro\Bundle\UserBundle\Entity\Group")
-     * @ORM\JoinTable(name="oro_user_access_group",
-     *      joinColumns={@ORM\JoinColumn(name="user_id", referencedColumnName="id", onDelete="CASCADE")},
-     *      inverseJoinColumns={@ORM\JoinColumn(name="group_id", referencedColumnName="id", onDelete="CASCADE")}
-     * )
-     * @ConfigField(
-     *      defaultValues={
-     *          "dataaudit"={
-     *              "auditable"=true
-     *          }
-     *      }
-     * )
-     */
-    protected $groups;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="birthday", type="date", nullable=true)
-     * @ConfigField(
-     *      defaultValues={
-     *          "dataaudit"={
-     *              "auditable"=true
-     *          }
-     *      }
-     * )
-     */
-    protected $birthday;
-
-    /**
-     * @var bool
-     *
-     * @ORM\Column(type="boolean")
-     * @ConfigField(
-     *      defaultValues={
-     *          "dataaudit"={
-     *              "auditable"=true
-     *          }
-     *      }
-     * )
-     */
-    protected $enabled = true;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="last_login", type="datetime", nullable=true)
-     * @ConfigField(
-     *      defaultValues={
-     *          "importexport"={
-     *              "excluded"=true
-     *          }
-     *      }
-     * )
-     */
-    protected $lastLogin;
-
-    /**
-     * @var BusinessUnit
-     * @ORM\ManyToOne(targetEntity="Oro\Bundle\OrganizationBundle\Entity\BusinessUnit", cascade={"persist"})
-     * @ORM\JoinColumn(name="business_unit_owner_id", referencedColumnName="id", onDelete="SET NULL")
-     * @ConfigField(
-     *      defaultValues={
-     *          "importexport"={
-     *              "excluded"=true
-     *          }
-     *      }
-     * )
-     */
-    protected $owner;
-
-    /**
-     * @var UserApi[]|Collection
-     *
-     * @ORM\OneToMany(
-     *  targetEntity="UserApi", mappedBy="user", cascade={"persist", "remove"}, orphanRemoval=true, fetch="EXTRA_LAZY"
-     * )
-     * @ConfigField(
-     *      defaultValues={
-     *          "importexport"={
-     *              "excluded"=true
-     *          },
-     *          "email"={
-     *              "available_in_template"=false
-     *          }
-     *      }
-     * )
-     */
-    protected $apiKeys;
-
-    /**
-     * @var Email[]|Collection
-     *
-     * @ORM\OneToMany(targetEntity="Email", mappedBy="user", orphanRemoval=true, cascade={"persist"})
-     * @ConfigField(
-     *      defaultValues={
-     *          "dataaudit"={
-     *              "auditable"=true
-     *          }
-     *      }
-     * )
-     */
-    protected $emails;
-
-    /**
-     * @var BusinessUnit[]|Collection
-     *
-     * @ORM\ManyToMany(targetEntity="Oro\Bundle\OrganizationBundle\Entity\BusinessUnit", inversedBy="users")
-     * @ORM\JoinTable(name="oro_user_business_unit",
-     *      joinColumns={@ORM\JoinColumn(name="user_id", referencedColumnName="id", onDelete="CASCADE")},
-     *      inverseJoinColumns={@ORM\JoinColumn(name="business_unit_id", referencedColumnName="id", onDelete="CASCADE")}
-     * )
-     * @ConfigField(
-     *      defaultValues={
-     *          "dataaudit"={
-     *              "auditable"=true
-     *          }
-     *      }
-     * )
-     */
-    protected $businessUnits;
-
-    /**
-     * @var EmailOrigin[]|Collection
-     *
-     * @ORM\OneToMany(
-     *      targetEntity="Oro\Bundle\EmailBundle\Entity\EmailOrigin", mappedBy="owner", cascade={"persist", "remove"}
-     * )
-     */
-    protected $emailOrigins;
-
-    /**
-     * @var \DateTime $createdAt
-     *
-     * @ORM\Column(type="datetime")
-     * @ConfigField(
-     *      defaultValues={
-     *          "entity"={
-     *              "label"="oro.ui.created_at"
-     *          }
-     *      }
-     * )
-     */
-    protected $createdAt;
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[ConfigField(defaultValues: ['entity' => ['label' => 'oro.ui.created_at']])]
+    protected ?\DateTimeInterface $createdAt = null;
 
     /**
      * @var AccountTypeModel
      */
     protected $imapAccountType;
 
-    /**
-     * @var \DateTime $updatedAt
-     *
-     * @ORM\Column(type="datetime")
-     * @ConfigField(
-     *      defaultValues={
-     *          "entity"={
-     *              "label"="oro.ui.updated_at"
-     *          }
-     *      }
-     * )
-     */
-    protected $updatedAt;
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[ConfigField(defaultValues: ['entity' => ['label' => 'oro.ui.updated_at']])]
+    protected ?\DateTimeInterface $updatedAt = null;
 
     /**
      * @var OrganizationInterface
@@ -425,22 +210,14 @@ class User extends AbstractUser implements
     protected $currentOrganization;
 
     /**
-     * @var Collection|Organization[]
-     *
-     * @ORM\ManyToMany(targetEntity="Oro\Bundle\OrganizationBundle\Entity\Organization", inversedBy="users")
-     * @ORM\JoinTable(name="oro_user_organization",
-     *      joinColumns={@ORM\JoinColumn(name="user_id", referencedColumnName="id", onDelete="CASCADE")},
-     *      inverseJoinColumns={@ORM\JoinColumn(name="organization_id", referencedColumnName="id", onDelete="CASCADE")}
-     * )
-     * @ConfigField(
-     *      defaultValues={
-     *          "dataaudit"={
-     *              "auditable"=true
-     *          }
-     *      }
-     * )
+     * @var Collection<int, Organization>
      */
-    protected $organizations;
+    #[ORM\ManyToMany(targetEntity: Organization::class, inversedBy: 'users')]
+    #[ORM\JoinTable(name: 'oro_user_organization')]
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
+    #[ORM\InverseJoinColumn(name: 'organization_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
+    #[ConfigField(defaultValues: ['dataaudit' => ['auditable' => true]])]
+    protected ?Collection $organizations = null;
 
     public function __construct()
     {
@@ -454,18 +231,14 @@ class User extends AbstractUser implements
         $this->groups = new ArrayCollection();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getEmailFields()
     {
         return ['email'];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function setUsername($username): self
+    #[\Override]
+    public function setUsername($username): static
     {
         parent::setUsername($username);
         $this->usernameLowercase = $username
@@ -480,9 +253,7 @@ class User extends AbstractUser implements
         return $this->usernameLowercase;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getFirstName()
     {
         return $this->firstName;
@@ -500,9 +271,7 @@ class User extends AbstractUser implements
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getLastName()
     {
         return $this->lastName;
@@ -520,9 +289,7 @@ class User extends AbstractUser implements
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getMiddleName()
     {
         return $this->middleName;
@@ -542,9 +309,7 @@ class User extends AbstractUser implements
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getNamePrefix()
     {
         return $this->namePrefix;
@@ -564,9 +329,7 @@ class User extends AbstractUser implements
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getNameSuffix()
     {
         return $this->nameSuffix;
@@ -597,7 +360,7 @@ class User extends AbstractUser implements
     }
 
     /**
-     * @param \DateTime $birthday [optional] New birthday value. Null by default.
+     * @param \DateTime|null $birthday [optional] New birthday value. Null by default.
      *
      * @return User
      */
@@ -652,9 +415,7 @@ class User extends AbstractUser implements
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getApiKeys()
     {
         return $this->apiKeys;
@@ -695,9 +456,8 @@ class User extends AbstractUser implements
 
     /**
      * Pre persist event listener
-     *
-     * @ORM\PrePersist
      */
+    #[ORM\PrePersist]
     public function beforeSave()
     {
         $this->createdAt = new \DateTime('now', new \DateTimeZone('UTC'));
@@ -707,9 +467,8 @@ class User extends AbstractUser implements
 
     /**
      * Invoked before the entity is updated.
-     *
-     * @ORM\PreUpdate
      */
+    #[ORM\PreUpdate]
     public function preUpdate(PreUpdateEventArgs $event)
     {
         $excludedFields = ['lastLogin', 'loginCount'];
@@ -849,9 +608,7 @@ class User extends AbstractUser implements
         return $this;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getEmail()
     {
         return $this->email;
@@ -1072,9 +829,7 @@ class User extends AbstractUser implements
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getUserRoles(): array
     {
         $roles[] = parent::getUserRoles();
@@ -1141,9 +896,7 @@ class User extends AbstractUser implements
         return $this->organizations->contains($organization);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getOrganizations(bool $onlyEnabled = false)
     {
         if ($onlyEnabled) {
@@ -1187,9 +940,7 @@ class User extends AbstractUser implements
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function __unserialize(array $serialized): void
     {
         parent::__unserialize($serialized);

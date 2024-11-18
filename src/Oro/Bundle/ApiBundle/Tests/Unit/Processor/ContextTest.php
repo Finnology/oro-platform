@@ -43,6 +43,7 @@ class ContextTest extends \PHPUnit\Framework\TestCase
     /** @var Context */
     private $context;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->configProvider = $this->createMock(ConfigProvider::class);
@@ -650,7 +651,7 @@ class ContextTest extends \PHPUnit\Framework\TestCase
     {
         self::assertNotNull($this->context->getFilterValues());
         self::assertFalse($this->context->getFilterValues()->has('test'));
-        self::assertNull($this->context->getFilterValues()->get('test'));
+        self::assertNull($this->context->getFilterValues()->getOne('test'));
     }
 
     public function testFilterValues()
@@ -663,11 +664,11 @@ class ContextTest extends \PHPUnit\Framework\TestCase
 
     public function testMasterRequest()
     {
-        self::assertFalse($this->context->isMasterRequest());
+        self::assertFalse($this->context->isMainRequest());
         self::assertFalse($this->context->get('masterRequest'));
 
         $this->context->setMasterRequest(true);
-        self::assertTrue($this->context->isMasterRequest());
+        self::assertTrue($this->context->isMainRequest());
         self::assertTrue($this->context->get('masterRequest'));
     }
 

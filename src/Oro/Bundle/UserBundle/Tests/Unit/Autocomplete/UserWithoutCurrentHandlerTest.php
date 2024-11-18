@@ -18,26 +18,30 @@ use Oro\Bundle\SearchBundle\Query\Result\Item;
 use Oro\Bundle\SecurityBundle\Authentication\TokenAccessorInterface;
 use Oro\Bundle\SecurityBundle\ORM\Walker\AclHelper;
 use Oro\Bundle\UserBundle\Autocomplete\UserWithoutCurrentHandler;
+use Oro\Bundle\UserBundle\Entity\User;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 
-class UserWithoutCurrentHandlerTest extends \PHPUnit\Framework\TestCase
+class UserWithoutCurrentHandlerTest extends TestCase
 {
-    private const NAME = 'OroUserBundle:User';
+    private const NAME = User::class;
 
-    /** @var TokenAccessorInterface|\PHPUnit\Framework\MockObject\MockObject */
+    /** @var TokenAccessorInterface|MockObject */
     private $tokenAccessor;
 
-    /** @var Indexer|\PHPUnit\Framework\MockObject\MockObject */
+    /** @var Indexer|MockObject */
     private $indexer;
 
-    /** @var EntityRepository|\PHPUnit\Framework\MockObject\MockObject */
+    /** @var EntityRepository|MockObject */
     private $repository;
 
-    /** @var AclHelper|\PHPUnit\Framework\MockObject\MockObject */
+    /** @var AclHelper|MockObject */
     private $aclHelper;
 
     /** @var UserWithoutCurrentHandler */
     private $handler;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->tokenAccessor = $this->createMock(TokenAccessorInterface::class);

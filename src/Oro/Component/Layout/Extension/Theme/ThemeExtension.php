@@ -56,12 +56,10 @@ class ThemeExtension extends AbstractExtension
         $this->visitors[] = $visitor;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function loadLayoutUpdates(LayoutItemInterface $item)
     {
-        $idOrAlias = $item->getAlias() ? : $item->getId();
+        $idOrAlias = $item->getAlias() ?: $item->getId();
         $context = $item->getContext();
         $contextHash = $context->getHash();
         $this->updates[$contextHash] = [];

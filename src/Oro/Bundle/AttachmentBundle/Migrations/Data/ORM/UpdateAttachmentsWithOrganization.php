@@ -4,25 +4,24 @@ namespace Oro\Bundle\AttachmentBundle\Migrations\Data\ORM;
 
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
+use Oro\Bundle\AttachmentBundle\Entity\Attachment;
+use Oro\Bundle\OrganizationBundle\Migrations\Data\ORM\LoadOrganizationAndBusinessUnitData;
 use Oro\Bundle\OrganizationBundle\Migrations\Data\ORM\UpdateWithOrganization;
 
+/**
+ * Sets a default organization to Attachment entity.
+ */
 class UpdateAttachmentsWithOrganization extends UpdateWithOrganization implements DependentFixtureInterface
 {
-    /**
-     * {@inheritdoc}
-     */
-    public function getDependencies()
+    #[\Override]
+    public function getDependencies(): array
     {
-        return [
-            'Oro\Bundle\OrganizationBundle\Migrations\Data\ORM\LoadOrganizationAndBusinessUnitData'
-        ];
+        return [LoadOrganizationAndBusinessUnitData::class];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function load(ObjectManager $manager)
+    #[\Override]
+    public function load(ObjectManager $manager): void
     {
-        $this->update($manager, 'OroAttachmentBundle:Attachment');
+        $this->update($manager, Attachment::class);
     }
 }

@@ -3,7 +3,7 @@
 namespace Oro\Bundle\DataGridBundle\Datagrid;
 
 use Oro\Bundle\CacheBundle\Provider\MemoryCacheProviderAwareInterface;
-use Oro\Bundle\CacheBundle\Provider\MemoryCacheProviderAwareTrait;
+use Oro\Bundle\CacheBundle\Provider\MemoryCacheProviderInterface;
 use Oro\Bundle\DataGridBundle\Datagrid\Common\DatagridConfiguration;
 use Oro\Bundle\DataGridBundle\Datagrid\Common\MetadataObject;
 use Oro\Bundle\DataGridBundle\Datagrid\Common\ResultsObject;
@@ -17,16 +17,8 @@ use Oro\Bundle\EntityExtendBundle\PropertyAccess;
  */
 class Datagrid implements DatagridInterface, MemoryCacheProviderAwareInterface
 {
-    use MemoryCacheProviderAwareTrait;
-
-    /** @var DatasourceInterface */
-    protected $datasource;
-
     /** @var string */
     protected $name;
-
-    /** @var string */
-    protected $scope;
 
     /** @var DatagridConfiguration */
     protected $config;
@@ -34,24 +26,34 @@ class Datagrid implements DatagridInterface, MemoryCacheProviderAwareInterface
     /** @var ParameterBag */
     protected $parameters;
 
+    /** @var MemoryCacheProviderInterface|null */
+    protected $memoryCacheProvider;
+
+    /** @var string */
+    protected $scope;
+
+    /** @var DatasourceInterface */
+    protected $datasource;
+
     /** @var Acceptor */
     protected $acceptor;
 
     /** @var MetadataObject|null */
     protected $metadata;
 
-    /**
-     * @param string                $name
-     * @param DatagridConfiguration $config
-     * @param ParameterBag          $parameters
-     */
-    public function __construct($name, DatagridConfiguration $config, ParameterBag $parameters)
+    public function __construct(string $name, DatagridConfiguration $config, ParameterBag $parameters)
     {
-        $this->name       = $name;
-        $this->config     = $config;
+        $this->name = $name;
+        $this->config = $config;
         $this->parameters = $parameters;
 
         $this->initialize();
+    }
+
+    #[\Override]
+    public function setMemoryCacheProvider(?MemoryCacheProviderInterface $memoryCacheProvider): void
+    {
+        $this->memoryCacheProvider = $memoryCacheProvider;
     }
 
     /**
@@ -63,17 +65,13 @@ class Datagrid implements DatagridInterface, MemoryCacheProviderAwareInterface
     {
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getName()
     {
         return $this->name;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function setScope($scope)
     {
         $this->scope = $scope;
@@ -81,37 +79,28 @@ class Datagrid implements DatagridInterface, MemoryCacheProviderAwareInterface
         return $this;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getScope()
     {
         return $this->scope;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getData()
     {
-        return $this->getMemoryCacheProvider()->get(
+        if (null === $this->memoryCacheProvider) {
+            return $this->loadData();
+        }
+
+        return $this->memoryCacheProvider->get(
             ['datagrid_results' => $this->getParameters()],
             function () {
-                $rows = $this->getAcceptedDatasource()->getResults();
-                $results = ResultsObject::create(
-                    ['data' => $rows],
-                    PropertyAccess::createPropertyAccessorWithDotSyntax()
-                );
-                $this->acceptor->acceptResult($results);
-
-                return $results;
+                return $this->loadData();
             }
         );
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getMetadata()
     {
         if (null === $this->metadata) {
@@ -122,9 +111,7 @@ class Datagrid implements DatagridInterface, MemoryCacheProviderAwareInterface
         return $this->metadata;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getResolvedMetadata()
     {
         $data = MetadataObject::createNamed($this->getName(), [MetadataObject::LAZY_KEY => false]);
@@ -133,28 +120,22 @@ class Datagrid implements DatagridInterface, MemoryCacheProviderAwareInterface
         return $data;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function setDatasource(DatasourceInterface $source)
     {
-        $this->getMemoryCacheProvider()->reset();
+        $this->memoryCacheProvider?->reset();
         $this->datasource = $source;
 
         return $this;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getDatasource()
     {
         return $this->datasource;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getAcceptedDatasource()
     {
         $this->acceptDatasource();
@@ -162,9 +143,7 @@ class Datagrid implements DatagridInterface, MemoryCacheProviderAwareInterface
         return $this->getDatasource();
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function acceptDatasource()
     {
         $this->acceptor->acceptDatasource($this->getDatasource());
@@ -172,17 +151,13 @@ class Datagrid implements DatagridInterface, MemoryCacheProviderAwareInterface
         return $this;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getAcceptor()
     {
         return $this->acceptor;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function setAcceptor(Acceptor $acceptor)
     {
         $this->acceptor = $acceptor;
@@ -190,19 +165,27 @@ class Datagrid implements DatagridInterface, MemoryCacheProviderAwareInterface
         return $this;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getParameters()
     {
         return $this->parameters;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getConfig()
     {
         return $this->config;
+    }
+
+    protected function loadData(): ResultsObject
+    {
+        $rows = $this->getAcceptedDatasource()->getResults();
+        $results = ResultsObject::create(
+            ['data' => $rows],
+            PropertyAccess::createPropertyAccessorWithDotSyntax()
+        );
+        $this->acceptor->acceptResult($results);
+
+        return $results;
     }
 }

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\LocaleBundle\Action;
@@ -29,6 +30,7 @@ class IsDefaultLanguageCondition extends AbstractLanguageCondition
         parent::__construct($doctrine);
     }
 
+    #[\Override]
     protected function isConditionAllowed($context): bool
     {
         $language = $this->getLanguage($context);
@@ -43,6 +45,7 @@ class IsDefaultLanguageCondition extends AbstractLanguageCondition
         return $language->getCode() === $defaultLanguageCode;
     }
 
+    #[\Override]
     public function getName(): string
     {
         return 'is_default_language';

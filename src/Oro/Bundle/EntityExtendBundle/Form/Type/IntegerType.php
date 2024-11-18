@@ -19,9 +19,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
  */
 class IntegerType extends AbstractConfigType
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         parent::configureOptions($resolver);
@@ -33,26 +31,19 @@ class IntegerType extends AbstractConfigType
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getName()
     {
         return $this->getBlockPrefix();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return 'oro_entity_extend_integer';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getParent()
+    #[\Override]
+    public function getParent(): ?string
     {
         return SymfonyIntegerType::class;
     }

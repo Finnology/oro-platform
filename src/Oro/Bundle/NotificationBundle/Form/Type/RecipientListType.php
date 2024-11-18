@@ -3,6 +3,7 @@
 namespace Oro\Bundle\NotificationBundle\Form\Type;
 
 use Oro\Bundle\NotificationBundle\Entity\RecipientList;
+use Oro\Bundle\UserBundle\Entity\Group;
 use Oro\Bundle\UserBundle\Form\Type\OrganizationUserAclMultiSelectType;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
@@ -17,9 +18,7 @@ class RecipientListType extends AbstractType
 {
     const NAME = 'oro_notification_recipient_list';
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder->add(
@@ -37,7 +36,7 @@ class RecipientListType extends AbstractType
             EntityType::class,
             [
                 'label'        => 'oro.user.group.entity_plural_label',
-                'class'        => 'OroUserBundle:Group',
+                'class'        => Group::class,
                 'choice_label' => 'name',
                 'multiple'     => true,
                 'expanded'     => true,
@@ -54,9 +53,7 @@ class RecipientListType extends AbstractType
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults(
@@ -68,18 +65,13 @@ class RecipientListType extends AbstractType
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getName()
     {
         return $this->getBlockPrefix();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return self::NAME;
     }

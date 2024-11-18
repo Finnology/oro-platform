@@ -1,4 +1,5 @@
 <?php
+
 namespace Oro\Bundle\EmbeddedFormBundle\Form\Type;
 
 use Symfony\Component\Form\AbstractType;
@@ -7,27 +8,23 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
+/**
+ * Embedded form type
+ */
 class EmbeddedFormType extends AbstractType
 {
-    /**
-     * {@inheritdoc}
-     */
     public function getName()
     {
         return $this->getBlockPrefix();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return 'embedded_form';
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
@@ -61,9 +58,7 @@ class EmbeddedFormType extends AbstractType
         ;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults(

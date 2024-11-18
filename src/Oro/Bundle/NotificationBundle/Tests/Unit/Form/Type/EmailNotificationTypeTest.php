@@ -44,6 +44,7 @@ class EmailNotificationTypeTest extends FormIntegrationTestCase
     /** @var EmailNotificationType */
     private $formType;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->configProvider = $this->createMock(ConfigProvider::class);
@@ -159,12 +160,10 @@ class EmailNotificationTypeTest extends FormIntegrationTestCase
 
     private function getToken(): UsernamePasswordOrganizationToken
     {
-        return new UsernamePasswordOrganizationToken(new User(), 'test', 'key', new Organization());
+        return new UsernamePasswordOrganizationToken(new User(), 'test', new Organization());
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     protected function getExtensions(): array
     {
         return [

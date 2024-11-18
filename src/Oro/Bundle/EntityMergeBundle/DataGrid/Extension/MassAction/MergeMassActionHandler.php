@@ -7,9 +7,13 @@ use Oro\Bundle\DataGridBundle\Datasource\ResultRecord;
 use Oro\Bundle\DataGridBundle\Extension\MassAction\MassActionHandlerArgs;
 use Oro\Bundle\DataGridBundle\Extension\MassAction\MassActionHandlerInterface;
 use Oro\Bundle\DataGridBundle\Extension\MassAction\MassActionResponse;
+use Oro\Bundle\DataGridBundle\Extension\MassAction\MassActionResponseInterface;
 use Oro\Bundle\EntityMergeBundle\Doctrine\DoctrineHelper;
 use Oro\Bundle\EntityMergeBundle\Exception\InvalidArgumentException;
 
+/**
+ * The "merge" mass action handler.
+ */
 class MergeMassActionHandler implements MassActionHandlerInterface
 {
     /**
@@ -22,10 +26,8 @@ class MergeMassActionHandler implements MassActionHandlerInterface
         $this->doctrineHelper = $doctrineHelper;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function handle(MassActionHandlerArgs $args)
+    #[\Override]
+    public function handle(MassActionHandlerArgs $args): MassActionResponseInterface
     {
         $massAction = $args->getMassAction();
         $options = $massAction->getOptions()->toArray();

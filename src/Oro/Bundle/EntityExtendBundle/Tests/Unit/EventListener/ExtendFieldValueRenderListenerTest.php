@@ -42,6 +42,7 @@ class ExtendFieldValueRenderListenerTest extends \PHPUnit\Framework\TestCase
     /** @var ExtendFieldValueRenderListener */
     private $listener;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->configManger = $this->createMock(ConfigManager::class);
@@ -322,9 +323,7 @@ class ExtendFieldValueRenderListenerTest extends \PHPUnit\Framework\TestCase
                     ->willReturn($entity['shownFieldValues'][$field]);
             }
 
-            if ($entity['permitted']) {
-                $grantedEntitiesMap[] = ['VIEW', $item, true];
-            }
+            $grantedEntitiesMap[] = ['VIEW', $item, $entity['permitted']];
             $item->expects($this->any())
                 ->method('getId')
                 ->willReturn($entity['id']);

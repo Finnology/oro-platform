@@ -5,37 +5,42 @@ namespace Oro\Bundle\SecurityBundle\Owner\Metadata;
 use Oro\Bundle\SecurityBundle\Exception\UnsupportedMetadataProviderException;
 
 /**
- * Chain of ownership metadata providers
+ * Represents a chain of ownership metadata providers.
  */
 class ChainOwnershipMetadataProvider implements OwnershipMetadataProviderInterface
 {
+    private ?OwnershipMetadataProviderInterface $defaultProvider = null;
     /** @var OwnershipMetadataProviderInterface[] */
-    protected $providers = [];
+    private array $providers = [];
+    private ?OwnershipMetadataProviderInterface $supportedProvider = null;
+    private ?OwnershipMetadataProviderInterface $emulatedProvider = null;
 
-    /** @var OwnershipMetadataProviderInterface */
-    protected $supportedProvider;
+    public function setDefaultProvider(OwnershipMetadataProviderInterface $defaultProvider): void
+    {
+        $this->defaultProvider = $defaultProvider;
+    }
 
-    /** @var OwnershipMetadataProviderInterface */
-    protected $defaultProvider;
-
-    /** @var OwnershipMetadataProviderInterface */
-    protected $emulatedProvider;
-
-    /**
-     * Adds all providers that marked by tag: oro_security.owner.metadata_provider
-     *
-     * @param string $alias
-     * @param OwnershipMetadataProviderInterface $provider
-     */
-    public function addProvider($alias, OwnershipMetadataProviderInterface $provider)
+    public function addProvider(string $alias, OwnershipMetadataProviderInterface $provider): void
     {
         $this->providers[$alias] = $provider;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function supports()
+    public function startProviderEmulation(string $providerAlias): void
+    {
+        if (!isset($this->providers[$providerAlias])) {
+            throw new \InvalidArgumentException(sprintf('Provider with "%s" alias not registered', $providerAlias));
+        }
+
+        $this->emulatedProvider = $this->providers[$providerAlias];
+    }
+
+    public function stopProviderEmulation(): void
+    {
+        $this->emulatedProvider = null;
+    }
+
+    #[\Override]
+    public function supports(): bool
     {
         if ($this->defaultProvider) {
             return true;
@@ -50,73 +55,63 @@ class ChainOwnershipMetadataProvider implements OwnershipMetadataProviderInterfa
         return false;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function getMetadata($className)
+    #[\Override]
+    public function getMetadata(?string $className): OwnershipMetadataInterface
     {
         return $this->getSupportedProvider()->getMetadata($className);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getUserClass()
+    #[\Override]
+    public function getUserClass(): string
     {
         return $this->getSupportedProvider()->getUserClass();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBusinessUnitClass()
+    #[\Override]
+    public function getBusinessUnitClass(): string
     {
         return $this->getSupportedProvider()->getBusinessUnitClass();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getOrganizationClass()
+    #[\Override]
+    public function getOrganizationClass(): ?string
     {
         return $this->getSupportedProvider()->getOrganizationClass();
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function getMaxAccessLevel($accessLevel, $className = null)
+    #[\Override]
+    public function getMaxAccessLevel(int $accessLevel, string $className = null): int
     {
         return $this->getSupportedProvider()->getMaxAccessLevel($accessLevel, $className);
     }
 
-    /**
-     * @param string $providerAlias
-     */
-    public function startProviderEmulation($providerAlias)
+    #[\Override]
+    public function clearCache(?string $className = null): void
     {
-        if (!isset($this->providers[$providerAlias])) {
-            throw new \InvalidArgumentException(sprintf('Provider with "%s" alias not registered', $providerAlias));
+        foreach ($this->providers as $provider) {
+            $provider->clearCache($className);
         }
 
-        $this->emulatedProvider = $this->providers[$providerAlias];
+        $this->defaultProvider?->clearCache($className);
     }
 
-    public function stopProviderEmulation()
+    #[\Override]
+    public function warmUpCache(?string $className = null): void
     {
-        $this->emulatedProvider = null;
+        foreach ($this->providers as $provider) {
+            $provider->warmUpCache($className);
+        }
+
+        $this->defaultProvider?->warmUpCache($className);
     }
 
-    /**
-     * @return OwnershipMetadataProviderInterface
-     */
-    protected function getSupportedProvider()
+    private function getSupportedProvider(): OwnershipMetadataProviderInterface
     {
-        if ($this->emulatedProvider) {
+        if (null !== $this->emulatedProvider) {
             return $this->emulatedProvider;
         }
 
-        if ($this->supportedProvider) {
+        if (null !== $this->supportedProvider) {
             return $this->supportedProvider;
         }
 
@@ -128,46 +123,10 @@ class ChainOwnershipMetadataProvider implements OwnershipMetadataProviderInterfa
             }
         }
 
-        if ($this->defaultProvider) {
+        if (null !== $this->defaultProvider) {
             return $this->defaultProvider;
         }
 
         throw new UnsupportedMetadataProviderException('Supported provider not found in chain');
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function clearCache($className = null)
-    {
-        foreach ($this->providers as $provider) {
-            $provider->clearCache($className);
-        }
-
-        if ($this->defaultProvider) {
-            $this->defaultProvider->clearCache($className);
-        }
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function warmUpCache($className = null)
-    {
-        foreach ($this->providers as $provider) {
-            $provider->warmUpCache($className);
-        }
-
-        if ($this->defaultProvider) {
-            $this->defaultProvider->warmUpCache($className);
-        }
-    }
-
-    /**
-     * @param OwnershipMetadataProviderInterface $defaultProvider
-     */
-    public function setDefaultProvider($defaultProvider)
-    {
-        $this->defaultProvider = $defaultProvider;
     }
 }

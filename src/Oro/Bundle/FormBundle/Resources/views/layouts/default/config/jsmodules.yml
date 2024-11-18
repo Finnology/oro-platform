@@ -19,6 +19,9 @@ dynamic-imports:
         - oroform/js/app/components/inline-editable-view-component
         - oroform/js/app/components/select-create-inline-type-async-component
         - oroform/js/app/components/select-create-inline-type-component
+        - oroform/js/app/components/captcha-turnstile-component
+        - oroform/js/app/components/captcha-hcaptcha-component
+        - oroform/js/app/components/captcha-recaptcha-component
         - oroform/js/app/views/editor/text-editor-view
         - oroform/js/app/views/form-validate-view
         - oroform/js/app/views/lazy-validation-collection-view
@@ -43,5 +46,7 @@ dynamic-imports:
 map:
     '*':
         jquery.validate: oroform/js/extend/validate
+        oroform/templates/error-template.html: oroform/default/templates/error-template.html
+        oroform/templates/floating-error-message.html: oroform/default/templates/floating-error-message.html
     oroform/js/extend/validate:
         jquery.validate: jquery.validate

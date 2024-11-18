@@ -1,4 +1,5 @@
 <?php
+
 namespace Oro\Bundle\EmbeddedFormBundle\Tests\Unit\Entity;
 
 use Oro\Bundle\EmbeddedFormBundle\Entity\EmbeddedForm;
@@ -9,6 +10,7 @@ class EmbeddedFormTest extends \PHPUnit\Framework\TestCase
     /** @var EmbeddedForm */
     private $entity;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->entity = new EmbeddedForm();

@@ -34,6 +34,7 @@ class EntityMetadataTest extends \PHPUnit\Framework\TestCase
         $association1 = new AssociationMetadata('association1');
         $entityMetadata->addAssociation($association1);
         $entityMetadata->addLink('link1', new ExternalLinkMetadata('url1'));
+        $entityMetadata->setHints(['HINT_TEST']);
 
         $entityMetadataClone = clone $entityMetadata;
 
@@ -63,9 +64,7 @@ class EntityMetadataTest extends \PHPUnit\Framework\TestCase
         $objValue = new \stdClass();
         $objValue->someProp = 123;
         $entityMetadata->set('test_object', $objValue);
-        $metaProperty1 = new MetaPropertyMetadata('metaProperty1');
-        $metaProperty1->setDataType('testDataType');
-        $entityMetadata->addMetaProperty($metaProperty1);
+        $entityMetadata->addMetaProperty(new MetaPropertyMetadata('metaProperty1', 'testDataType'));
         $field1 = new FieldMetadata('field1');
         $field1->setDataType('testDataType');
         $entityMetadata->addField($field1);
@@ -73,6 +72,7 @@ class EntityMetadataTest extends \PHPUnit\Framework\TestCase
         $association1->setDataType('testDataType');
         $entityMetadata->addAssociation($association1);
         $entityMetadata->addLink('link1', new ExternalLinkMetadata('url1'));
+        $entityMetadata->setHints(['HINT_TEST']);
 
         self::assertEquals(
             [
@@ -82,6 +82,7 @@ class EntityMetadataTest extends \PHPUnit\Framework\TestCase
                 'identifiers'              => ['field1'],
                 'test_scalar'              => 'value',
                 'test_object'              => $objValue,
+                'hints'                    => ['HINT_TEST'],
                 'meta_properties'          => [
                     'metaProperty1' => [
                         'data_type' => 'testDataType'
@@ -289,18 +290,15 @@ class EntityMetadataTest extends \PHPUnit\Framework\TestCase
     public function testRenameMetaProperty()
     {
         $entityMetadata = new EntityMetadata('Test\Class');
-        $property1 = $entityMetadata->addMetaProperty(new MetaPropertyMetadata('property1'));
-        $property1->setDataType('string');
+        $entityMetadata->addMetaProperty(new MetaPropertyMetadata('property1', 'string'));
 
         $entityMetadata->renameMetaProperty('property1', 'newProperty1');
         self::assertFalse($entityMetadata->hasMetaProperty('property1'));
         self::assertFalse($entityMetadata->hasProperty('property1'));
         self::assertTrue($entityMetadata->hasMetaProperty('newProperty1'));
         self::assertTrue($entityMetadata->hasProperty('newProperty1'));
-        $expectedNewProperty1 = new MetaPropertyMetadata('newProperty1');
-        $expectedNewProperty1->setDataType('string');
         self::assertEquals(
-            $expectedNewProperty1,
+            new MetaPropertyMetadata('newProperty1', 'string'),
             $entityMetadata->getMetaProperty('newProperty1')
         );
     }
@@ -308,18 +306,15 @@ class EntityMetadataTest extends \PHPUnit\Framework\TestCase
     public function testRenameMetaPropertyViaProperty()
     {
         $entityMetadata = new EntityMetadata('Test\Class');
-        $property1 = $entityMetadata->addMetaProperty(new MetaPropertyMetadata('property1'));
-        $property1->setDataType('string');
+        $entityMetadata->addMetaProperty(new MetaPropertyMetadata('property1', 'string'));
 
         $entityMetadata->renameProperty('property1', 'newProperty1');
         self::assertFalse($entityMetadata->hasMetaProperty('property1'));
         self::assertFalse($entityMetadata->hasProperty('property1'));
         self::assertTrue($entityMetadata->hasMetaProperty('newProperty1'));
         self::assertTrue($entityMetadata->hasProperty('newProperty1'));
-        $expectedNewProperty1 = new MetaPropertyMetadata('newProperty1');
-        $expectedNewProperty1->setDataType('string');
         self::assertEquals(
-            $expectedNewProperty1,
+            new MetaPropertyMetadata('newProperty1', 'string'),
             $entityMetadata->getMetaProperty('newProperty1')
         );
     }
@@ -486,6 +481,15 @@ class EntityMetadataTest extends \PHPUnit\Framework\TestCase
         $entityMetadata->removeLink('link2');
         self::assertCount(0, $entityMetadata->getLinks());
         self::assertFalse($entityMetadata->hasLink('link2'));
+    }
+
+    public function testHints()
+    {
+        $entityMetadata = new EntityMetadata('Test\Class');
+        self::assertSame([], $entityMetadata->getHints());
+
+        $entityMetadata->setHints(['HINT_TEST']);
+        self::assertSame(['HINT_TEST'], $entityMetadata->getHints());
     }
 
     public function testHasIdentifierFieldsOnlyForEmptyMetadata()

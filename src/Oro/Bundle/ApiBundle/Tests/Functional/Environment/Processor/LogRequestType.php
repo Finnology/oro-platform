@@ -16,9 +16,7 @@ class LogRequestType implements ProcessorInterface
         $this->logger = $logger;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function process(ContextInterface $context): void
     {
         /** @var Context $context */
@@ -28,7 +26,7 @@ class LogRequestType implements ProcessorInterface
                 'Process "%s" action for "%s" (%s)',
                 $context->getAction(),
                 $context->getClassName(),
-                $context->isMasterRequest() ? 'MASTER_REQUEST' : 'SUB_REQUEST'
+                $context->isMainRequest() ? 'MAIN_REQUEST' : 'SUB_REQUEST'
             ),
             [
                 'requestType' => (string)$context->getRequestType(),

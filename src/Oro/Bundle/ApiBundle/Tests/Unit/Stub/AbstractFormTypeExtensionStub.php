@@ -10,18 +10,22 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 abstract class AbstractFormTypeExtensionStub implements FormTypeExtensionInterface
 {
+    #[\Override]
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
     }
 
+    #[\Override]
     public function buildView(FormView $view, FormInterface $form, array $options)
     {
     }
 
+    #[\Override]
     public function finishView(FormView $view, FormInterface $form, array $options)
     {
     }
 
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
     }
@@ -45,6 +49,6 @@ abstract class AbstractFormTypeExtensionStub implements FormTypeExtensionInterfa
             };
         EOF);
 
-        return new $extensionClass;
+        return new $extensionClass();
     }
 }

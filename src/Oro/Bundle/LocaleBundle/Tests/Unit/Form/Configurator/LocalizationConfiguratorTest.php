@@ -26,6 +26,7 @@ class LocalizationConfiguratorTest extends FormIntegrationTestCase
     /** @var LocalizationConfigurator|\PHPUnit\Framework\MockObject\MockObject */
     private $configurator;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -54,11 +55,13 @@ class LocalizationConfiguratorTest extends FormIntegrationTestCase
         $builder->expects($this->any())
             ->method('addEventListener')
             ->willReturnCallback(
-                function (string $eventName, callable $listener, $priority) use (&$callable) {
+                function (string $eventName, callable $listener, $priority) use (&$callable, $builder) {
                     $this->assertEquals(FormEvents::PRE_SET_DATA, $eventName);
                     $this->assertEquals(0, $priority);
 
                     $callable = $listener;
+
+                    return $builder;
                 }
             );
 
@@ -118,9 +121,7 @@ class LocalizationConfiguratorTest extends FormIntegrationTestCase
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function getExtensions(): array
     {
         /** @var LocalizationManager|\PHPUnit\Framework\MockObject\MockObject $localizationManager */

@@ -1,8 +1,10 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\EntityExtendBundle\Command;
 
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -16,6 +18,7 @@ class CacheWarmupCommand extends CacheCommand
     protected static $defaultName = 'oro:entity-extend:cache:warmup';
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     public function configure()
     {
         $this
@@ -40,7 +43,8 @@ HELP
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
-    public function execute(InputInterface $input, OutputInterface $output)
+    #[\Override]
+    public function execute(InputInterface $input, OutputInterface $output): int
     {
         $output->writeln('Warm up extended entity cache.');
 
@@ -48,6 +52,6 @@ HELP
 
         $this->warmup($output);
 
-        return 0;
+        return Command::SUCCESS;
     }
 }

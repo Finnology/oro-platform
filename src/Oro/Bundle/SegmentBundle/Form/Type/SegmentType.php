@@ -18,9 +18,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
  */
 class SegmentType extends AbstractQueryDesignerType
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
@@ -30,7 +28,7 @@ class SegmentType extends AbstractQueryDesignerType
                 'type',
                 EntityType::class,
                 [
-                    'class'       => 'OroSegmentBundle:SegmentType',
+                    'class'       => \Oro\Bundle\SegmentBundle\Entity\SegmentType::class,
                     'choice_label'    => 'label',
                     'required'    => true,
                     'placeholder' => 'oro.segment.form.choose_segment_type',
@@ -48,6 +46,7 @@ class SegmentType extends AbstractQueryDesignerType
      *
      * @return array
      */
+    #[\Override]
     public function getDefaultOptions()
     {
         return [
@@ -59,9 +58,7 @@ class SegmentType extends AbstractQueryDesignerType
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         parent::configureOptions($resolver);
@@ -78,18 +75,13 @@ class SegmentType extends AbstractQueryDesignerType
         $resolver->setDefaults($options);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getName()
     {
         return $this->getBlockPrefix();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return 'oro_segment';
     }

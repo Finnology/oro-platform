@@ -2,7 +2,7 @@
 
 namespace Oro\Bundle\DraftBundle\Tests\Unit\EventListener;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\FilterCollection;
 use Oro\Bundle\DraftBundle\Doctrine\DraftableFilter;
@@ -13,6 +13,7 @@ use Oro\Bundle\DraftBundle\Tests\Unit\Stub\StubController;
 use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\ControllerEvent;
+use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 
 class DraftableFilterListenerTest extends \PHPUnit\Framework\TestCase
@@ -23,6 +24,7 @@ class DraftableFilterListenerTest extends \PHPUnit\Framework\TestCase
     /** @var DraftableFilterListener */
     private $listener;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->doctrineHelper = $this->createMock(DoctrineHelper::class);
@@ -32,7 +34,7 @@ class DraftableFilterListenerTest extends \PHPUnit\Framework\TestCase
 
     public function testOnKernelControllerWithoutId(): void
     {
-        $request = Request::create('/entity/draftable/index', 'GET', []);
+        $request = Request::create('/entity/draftable/index');
 
         $event = new ControllerEvent(
             $this->createMock(HttpKernelInterface::class),
@@ -139,6 +141,93 @@ class DraftableFilterListenerTest extends \PHPUnit\Framework\TestCase
         $this->listener->onKernelController($event);
     }
 
+    public function testOnKernelRequestWithoutId(): void
+    {
+        $request = Request::create('/entity/draftable/index');
+
+        $event = new RequestEvent(
+            $this->createMock(HttpKernelInterface::class),
+            $request,
+            HttpKernelInterface::MAIN_REQUEST
+        );
+
+        $this->doctrineHelper->expects(self::never())
+            ->method('getEntityManagerForClass');
+
+        $this->listener->onKernelRequest($event);
+    }
+
+    public function testOnKernelRequestByEntityId(): void
+    {
+        $entityId = 1;
+        $request = Request::create(
+            '/entity/draftable/view/' . $entityId,
+            'GET',
+            ['entityId' => ['id' => $entityId ], 'entityClass' => DraftableEntityStub::class]
+        );
+
+        $event = new RequestEvent(
+            $this->createMock(HttpKernelInterface::class),
+            $request,
+            HttpKernelInterface::MAIN_REQUEST
+        );
+
+        $filters = $this->createMock(FilterCollection::class);
+        $filters->expects(self::once())
+            ->method('isEnabled')
+            ->with(DraftableFilter::FILTER_ID)
+            ->willReturn(true);
+        $filters->expects(self::never())
+            ->method('enable');
+        $this->mockEntityManager($entityId, $filters);
+
+        $this->listener->onKernelRequest($event);
+    }
+
+    public function testOnKernelRequestByEntityIdNotExistentEntity(): void
+    {
+        $entityId = 1;
+        $request = Request::create(
+            '/entity/draftable/view/' . $entityId,
+            'GET',
+            ['entityId' => ['id' => $entityId ], 'entityClass' => DraftableEntityStub::class]
+        );
+
+        $event = new RequestEvent(
+            $this->createMock(HttpKernelInterface::class),
+            $request,
+            HttpKernelInterface::MAIN_REQUEST
+        );
+
+        $filters = $this->createMock(FilterCollection::class);
+        $filters->expects(self::once())
+            ->method('isEnabled')
+            ->with(DraftableFilter::FILTER_ID)
+            ->willReturn(true);
+        $filters->expects(self::never())
+            ->method('enable');
+        $this->mockEntityManager($entityId, $filters);
+
+        $this->listener->onKernelRequest($event);
+    }
+
+    public function testOnKernelRequestById(): void
+    {
+        $entityId = 1;
+        $request = Request::create('/entity/draftable/view/' . $entityId, 'GET', ['id' => $entityId]);
+
+        $event = new RequestEvent(
+            $this->createMock(HttpKernelInterface::class),
+            $request,
+            HttpKernelInterface::MAIN_REQUEST
+        );
+
+        $this->doctrineHelper->expects(self::never())
+            ->method('getEntityManagerForClass');
+
+        $this->listener->onKernelRequest($event);
+    }
+
     private function getFilters(): FilterCollection|\PHPUnit\Framework\MockObject\MockObject
     {
         $filters = $this->createMock(FilterCollection::class);
@@ -164,7 +253,7 @@ class DraftableFilterListenerTest extends \PHPUnit\Framework\TestCase
             ->with($id)
             ->willReturn($expectedEntity);
 
-        $em = $this->createMock(EntityManager::class);
+        $em = $this->createMock(EntityManagerInterface::class);
         $em->expects(self::once())
             ->method('getFilters')
             ->willReturn($filters);

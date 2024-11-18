@@ -22,14 +22,6 @@ class SyncProcessor extends AbstractSyncProcessor
     /** @var ManagerRegistry */
     protected $doctrineRegistry;
 
-    /**
-     * @param ManagerRegistry          $doctrineRegistry
-     * @param ProcessorRegistry        $processorRegistry
-     * @param Executor                 $jobExecutor
-     * @param TypesRegistry            $registry
-     * @param LoggerStrategy           $logger
-     * @param EventDispatcherInterface $eventDispatcher
-     */
     public function __construct(
         ManagerRegistry $doctrineRegistry,
         ProcessorRegistry $processorRegistry,
@@ -47,10 +39,10 @@ class SyncProcessor extends AbstractSyncProcessor
      * Process integration synchronization
      * By default, if $connector is empty, will process all connectors of given integration
      *
-     * {@inheritdoc}
      *
      * @return boolean
      */
+    #[\Override]
     public function process(Integration $integration, $connector = null, array $parameters = [])
     {
         if (!$integration->isEnabled()) {
@@ -82,7 +74,7 @@ class SyncProcessor extends AbstractSyncProcessor
      *
      * @param Integration $integration Integration object
      * @param array       $parameters  Connector additional parameters
-     * @param callable    $callback    Callback to filter connectors
+     * @param callable|null $callback Callback to filter connectors
      *
      * @return boolean
      */
@@ -126,7 +118,7 @@ class SyncProcessor extends AbstractSyncProcessor
 
     /**
      * @param Integration $integration
-     * @param callable    $callback
+     * @param callable|null $callback
      *
      * @return ConnectorInterface[]
      */
@@ -144,7 +136,7 @@ class SyncProcessor extends AbstractSyncProcessor
 
     /**
      * @param Integration $integration
-     * @param callable    $callback
+     * @param callable|null $callback
      *
      * @return string[]
      */
@@ -323,9 +315,7 @@ class SyncProcessor extends AbstractSyncProcessor
         return $status;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function formatResultMessage(ContextInterface $context = null)
     {
         return sprintf(
@@ -346,7 +336,7 @@ class SyncProcessor extends AbstractSyncProcessor
     protected function addConnectorStatusAndFlush(Integration $integration, Status $status)
     {
         $this->doctrineRegistry
-            ->getRepository('OroIntegrationBundle:Channel')
+            ->getRepository(Integration::class)
             ->addStatusAndFlush($integration, $status);
     }
 }

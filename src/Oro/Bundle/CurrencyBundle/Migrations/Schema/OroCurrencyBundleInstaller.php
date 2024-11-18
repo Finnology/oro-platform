@@ -3,7 +3,7 @@
 namespace Oro\Bundle\CurrencyBundle\Migrations\Schema;
 
 use Doctrine\DBAL\Schema\Schema;
-use Oro\Bundle\CurrencyBundle\Migrations\Schema\v1_0\CurrencyConfigOrganizationMigration;
+use Oro\Bundle\ConfigBundle\Migration\RenameConfigNameQuery;
 use Oro\Bundle\DistributionBundle\Handler\ApplicationState;
 use Oro\Bundle\MigrationBundle\Migration\Installation;
 use Oro\Bundle\MigrationBundle\Migration\QueryBag;
@@ -14,21 +14,24 @@ class OroCurrencyBundleInstaller implements Installation, ContainerAwareInterfac
 {
     use ContainerAwareTrait;
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getMigrationVersion()
+    #[\Override]
+    public function getMigrationVersion(): string
     {
         return 'v1_0';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function up(Schema $schema, QueryBag $queries)
+    #[\Override]
+    public function up(Schema $schema, QueryBag $queries): void
     {
         if ($this->container->get(ApplicationState::class)->isInstalled()) {
-            CurrencyConfigOrganizationMigration::migrateOrganizationCurrencyConfig($queries);
+            $this->migrateOrganizationCurrencyConfig($queries);
         }
+    }
+
+    private function migrateOrganizationCurrencyConfig(QueryBag $queries): void
+    {
+        $queries->addPreQuery(
+            new RenameConfigNameQuery('currency', 'default_currency', 'oro_locale', 'oro_currency')
+        );
     }
 }

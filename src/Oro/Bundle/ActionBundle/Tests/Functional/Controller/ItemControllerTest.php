@@ -10,6 +10,7 @@ use Symfony\Component\DomCrawler\Crawler;
 
 class ItemControllerTest extends WebTestCase
 {
+    #[\Override]
     protected function setUp(): void
     {
         $this->initClient([], $this->generateBasicAuthHeader());
@@ -137,12 +138,12 @@ class ItemControllerTest extends WebTestCase
 
     private function assertPageContainsOperations(Crawler $crawler, array $operations)
     {
-        $node = $crawler->filter('a.operation-button');
+        $node = $crawler->filter('button.operation-button');
 
         $this->assertCount(count($operations), $node);
 
         $router = $this->getContainer()->get('router');
-        $container = $node->parents()->parents()->html();
+        $container = $node->ancestors()->ancestors()->html();
 
         foreach ($operations as $operation) {
             self::assertStringContainsString(

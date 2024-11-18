@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\UserBundle\Command;
@@ -49,6 +50,7 @@ class ImpersonateUserCommand extends Command
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     public function configure()
     {
         $this
@@ -99,7 +101,8 @@ HELP
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
-    public function execute(InputInterface $input, OutputInterface $output)
+    #[\Override]
+    public function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
 
@@ -127,7 +130,7 @@ HELP
             $io->text([
                 \sprintf(
                     'To login as <info>%s</info> open the following URL (expires <info>%s</info>):',
-                    $user->getUsername(),
+                    $user->getUserIdentifier(),
                     $this->dateTimeFormatter->format(
                         $impersonation->getExpireAt(),
                         \IntlDateFormatter::MEDIUM,
@@ -143,7 +146,7 @@ HELP
                 $io->warning('User account is disabled. You will not be able to login as this user.');
             }
 
-            if ($user->getAuthStatus() && $user->getAuthStatus()->getId() !== UserManager::STATUS_ACTIVE) {
+            if ($user->getAuthStatus() && $user->getAuthStatus()->getInternalId() !== UserManager::STATUS_ACTIVE) {
                 $io->warning([
                     \sprintf('The user\'s auth status is "%s".', $user->getAuthStatus()->getName()),
                     'You will not be able to login as this user until the auth status is changed to "Active".',
@@ -155,7 +158,7 @@ HELP
             return $e->getCode() ?: 1;
         }
 
-        return 0;
+        return Command::SUCCESS;
     }
 
     protected function createImpersonation(

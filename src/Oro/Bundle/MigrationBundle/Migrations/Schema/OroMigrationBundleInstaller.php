@@ -8,18 +8,14 @@ use Oro\Bundle\MigrationBundle\Migration\QueryBag;
 
 class OroMigrationBundleInstaller implements Installation
 {
-    /**
-     * {@inheritdoc}
-     */
-    public function getMigrationVersion()
+    #[\Override]
+    public function getMigrationVersion(): string
     {
         return 'v1_1';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function up(Schema $schema, QueryBag $queries)
+    #[\Override]
+    public function up(Schema $schema, QueryBag $queries): void
     {
         $this->createOroMigrationsDataTable($schema);
     }
@@ -27,7 +23,7 @@ class OroMigrationBundleInstaller implements Installation
     /**
      * Create oro_migrations_data table
      */
-    protected function createOroMigrationsDataTable(Schema $schema)
+    private function createOroMigrationsDataTable(Schema $schema): void
     {
         $table = $schema->createTable('oro_migrations_data');
         $table->addColumn('id', 'integer', ['notnull' => true, 'autoincrement' => true]);

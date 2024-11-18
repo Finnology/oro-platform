@@ -4,19 +4,24 @@ namespace Oro\Bundle\ApiBundle\Processor;
 
 use Oro\Component\ChainProcessor\ApplicableCheckerInterface;
 use Oro\Component\ChainProcessor\ContextInterface as ComponentContextInterface;
+use Oro\Component\ChainProcessor\ParameterBag;
+use Oro\Component\ChainProcessor\ParameterBagInterface;
 use Oro\Component\ChainProcessor\ProcessorBagAwareIteratorFactoryInterface;
 use Oro\Component\ChainProcessor\ProcessorBagInterface;
 use Oro\Component\ChainProcessor\ProcessorIterator;
 use Oro\Component\ChainProcessor\ProcessorIteratorFactoryInterface;
 use Oro\Component\ChainProcessor\ProcessorRegistryInterface;
+use Symfony\Contracts\Service\ResetInterface;
 
 /**
  * The factory to create an instance of OptimizedProcessorIterator class.
  */
 class OptimizedProcessorIteratorFactory implements
     ProcessorIteratorFactoryInterface,
-    ProcessorBagAwareIteratorFactoryInterface
+    ProcessorBagAwareIteratorFactoryInterface,
+    ResetInterface
 {
+    private array $actionsWithApplicableCacheMap;
     private ProcessorBagInterface $processorBag;
     /** @var array [action => [[processor id, [attribute name => attribute value, ...]], ...], ...] */
     private array $processors;
@@ -24,10 +29,15 @@ class OptimizedProcessorIteratorFactory implements
     private array $groups;
     /** @var array [action => [processor index => group name, ...], ...] */
     private array $processorGroups;
+    /** @var ParameterBagInterface[] [action => cache object, ...] */
+    private array $applicableCaches = [];
 
-    /**
-     * {@inheritDoc}
-     */
+    public function __construct(array $actionsWithApplicableCache = [])
+    {
+        $this->actionsWithApplicableCacheMap = array_fill_keys($actionsWithApplicableCache, true);
+    }
+
+    #[\Override]
     public function createProcessorIterator(
         array $processors,
         ComponentContextInterface $context,
@@ -41,25 +51,35 @@ class OptimizedProcessorIteratorFactory implements
             $this->groups[$action] = $this->loadGroups($this->processorBag->getActionGroups($action));
         }
 
+        if (isset($this->actionsWithApplicableCacheMap[$action]) && !isset($this->applicableCaches[$action])) {
+            $this->applicableCaches[$action] = new ParameterBag();
+        }
+
         return new OptimizedProcessorIterator(
             $this->processors[$action],
             $this->groups[$action],
             $this->processorGroups[$action],
             $context,
             $applicableChecker,
-            $processorRegistry
+            $processorRegistry,
+            $this->applicableCaches[$action] ?? null
         );
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function setProcessorBag(ProcessorBagInterface $processorBag): void
     {
         $this->processorBag = $processorBag;
         $this->processors = [];
         $this->groups = [];
         $this->processorGroups = [];
+        $this->applicableCaches = [];
+    }
+
+    #[\Override]
+    public function reset(): void
+    {
+        $this->applicableCaches = [];
     }
 
     /**

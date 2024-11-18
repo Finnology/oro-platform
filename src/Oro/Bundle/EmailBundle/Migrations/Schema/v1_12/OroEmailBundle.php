@@ -10,29 +10,22 @@ use Oro\Bundle\MigrationBundle\Migration\QueryBag;
 
 class OroEmailBundle implements Migration, OrderedMigrationInterface
 {
-    /**
-     * {@inheritdoc}
-     */
-    public function getOrder()
+    #[\Override]
+    public function getOrder(): int
     {
         return 1;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function up(Schema $schema, QueryBag $queries)
+    #[\Override]
+    public function up(Schema $schema, QueryBag $queries): void
     {
-        self::changeEmailToEmailBodyRelation($schema);
-        self::splitEmailEntity($schema);
-        self::updateEntityConfigs($queries);
-        self::addPostQueries($queries);
+        $this->changeEmailToEmailBodyRelation($schema);
+        $this->splitEmailEntity($schema);
+        $this->updateEntityConfigs($queries);
+        $this->addPostQueries($queries);
     }
 
-    /**
-     * @throws \Doctrine\DBAL\Schema\SchemaException
-     */
-    public static function changeEmailToEmailBodyRelation(Schema $schema)
+    private function changeEmailToEmailBodyRelation(Schema $schema): void
     {
         $emailTable = $schema->getTable('oro_email');
         $emailBodyTable = $schema->getTable('oro_email_body');
@@ -48,10 +41,7 @@ class OroEmailBundle implements Migration, OrderedMigrationInterface
         $emailTable->addUniqueIndex(['email_body_id'], 'UNIQ_2A30C17126A2754B');
     }
 
-    /**
-     * @throws \Doctrine\DBAL\Schema\SchemaException
-     */
-    public static function splitEmailEntity(Schema $schema)
+    private function splitEmailEntity(Schema $schema): void
     {
         $emailUserTable = $schema->createTable('oro_email_user');
         $emailUserTable->addColumn('id', 'integer', ['autoincrement' => true]);
@@ -81,7 +71,7 @@ class OroEmailBundle implements Migration, OrderedMigrationInterface
         );
     }
 
-    public static function updateEntityConfigs(QueryBag $queries)
+    private function updateEntityConfigs(QueryBag $queries): void
     {
         $queries->addQuery(
             new UpdateEntityConfigEntityValueQuery(
@@ -101,7 +91,7 @@ class OroEmailBundle implements Migration, OrderedMigrationInterface
         );
     }
 
-    public static function addPostQueries(QueryBag $queries)
+    private function addPostQueries(QueryBag $queries): void
     {
         $queries->addPostQuery(new UpdateEmailBodyRelationQuery());
         $queries->addPostQuery(new DeleteEmailPermissionConfig());

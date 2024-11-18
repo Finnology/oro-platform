@@ -9,9 +9,7 @@ use Psr\Log\LoggerInterface;
 
 class FixRestoredFieldsQuery extends ParametrizedMigrationQuery
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getDescription()
     {
         $logger = new ArrayLogger();
@@ -20,9 +18,7 @@ class FixRestoredFieldsQuery extends ParametrizedMigrationQuery
         return $logger->getMessages();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function execute(LoggerInterface $logger)
     {
         $this->doExecute($logger);
@@ -103,10 +99,10 @@ class FixRestoredFieldsQuery extends ParametrizedMigrationQuery
         $fieldSql = 'SELECT entity_id, id, field_name as name, data FROM oro_entity_config_field';
 
         $this->logQuery($logger, $entitySql);
-        $entityRows = $this->connection->fetchAll($entitySql);
+        $entityRows = $this->connection->fetchAllAssociative($entitySql);
 
         $this->logQuery($logger, $fieldSql);
-        $fieldRows = $this->connection->fetchAll($fieldSql);
+        $fieldRows = $this->connection->fetchAllAssociative($fieldSql);
 
         $result = [];
         foreach ($entityRows as $row) {

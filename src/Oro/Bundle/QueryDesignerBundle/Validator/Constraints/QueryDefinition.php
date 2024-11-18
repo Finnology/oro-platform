@@ -16,10 +16,8 @@ class QueryDefinition extends Constraint
     /** @var string */
     public $messageColumn = 'oro.query_designer.columns.not_accessible';
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getTargets()
+    #[\Override]
+    public function getTargets(): string|array
     {
         return self::CLASS_CONSTRAINT;
     }

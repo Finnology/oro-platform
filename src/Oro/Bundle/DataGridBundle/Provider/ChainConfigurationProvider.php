@@ -21,17 +21,13 @@ class ChainConfigurationProvider implements ConfigurationProviderInterface
         $this->providers = $providers;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function isApplicable(string $gridName): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getConfiguration(string $gridName): DatagridConfiguration
     {
         foreach ($this->providers as $provider) {
@@ -49,5 +45,17 @@ class ChainConfigurationProvider implements ConfigurationProviderInterface
     public function getProviders()
     {
         return $this->providers;
+    }
+
+    #[\Override]
+    public function isValidConfiguration(string $gridName): bool
+    {
+        foreach ($this->providers as $provider) {
+            if ($provider->isApplicable($gridName) && $provider->isValidConfiguration($gridName)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

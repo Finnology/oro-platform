@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\WorkflowBundle\Command;
@@ -32,6 +33,7 @@ class WorkflowTransitCommand extends Command
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     public function configure()
     {
         $this
@@ -51,7 +53,8 @@ HELP
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
-    public function execute(InputInterface $input, OutputInterface $output)
+    #[\Override]
+    public function execute(InputInterface $input, OutputInterface $output): int
     {
         $workflowItemId = $input->getOption('workflow-item');
         $transitionName = $input->getOption('transition');
@@ -103,6 +106,6 @@ HELP
             throw $e;
         }
 
-        return 0;
+        return Command::SUCCESS;
     }
 }

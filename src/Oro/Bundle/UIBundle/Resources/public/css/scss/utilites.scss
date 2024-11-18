@@ -10,6 +10,10 @@
     @extend %hide;
 }
 
+.empty-hidden:empty {
+    display: none;
+}
+
 .nowrap {
     white-space: nowrap;
 }
@@ -29,4 +33,8 @@
 .no-transition {
     // stylelint-disable-next-line declaration-no-important
     transition: none !important;
+}
+
+.ellipsis {
+    @include ellipsis;
 }

@@ -7,28 +7,24 @@ use Oro\Bundle\MigrationBundle\Migration\Migration;
 use Oro\Bundle\MigrationBundle\Migration\OrderedMigrationInterface;
 use Oro\Bundle\MigrationBundle\Migration\QueryBag;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\DependencyInjection\ContainerAwareTrait;
 
 class Test2BundleMigration11 implements Migration, ContainerAwareInterface, OrderedMigrationInterface
 {
-    /** @var ContainerInterface */
-    protected $container;
+    use ContainerAwareTrait;
 
+    #[\Override]
     public function getOrder()
     {
         return 2;
     }
 
+    #[\Override]
     public function up(Schema $schema, QueryBag $queries)
     {
         $sqls = $this->container->get('test_service')->getQueries();
         foreach ($sqls as $sql) {
             $queries->addQuery($sql);
         }
-    }
-
-    public function setContainer(ContainerInterface $container = null)
-    {
-        $this->container = $container;
     }
 }

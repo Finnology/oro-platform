@@ -17,7 +17,7 @@ use Psr\Log\NullLogger;
 use Ratchet\ConnectionInterface;
 use Ratchet\Wamp\Topic;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
-use Symfony\Component\Security\Core\Exception\UsernameNotFoundException;
+use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
@@ -70,11 +70,11 @@ class ClientManipulator implements ClientManipulatorInterface, LoggerAwareInterf
     /**
      * Overrides original implementation because Sync authentication tickets cannot be used for re-authentication.
      *
-     * {@inheritDoc}
      *
      * @throws ClientNotFoundException
      * @throws StorageException
      */
+    #[\Override]
     public function getClient(ConnectionInterface $connection): TokenInterface
     {
         $storageId = $this->clientStorage->getStorageId($connection);
@@ -103,33 +103,25 @@ class ClientManipulator implements ClientManipulatorInterface, LoggerAwareInterf
         return $token;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getAll(Topic $topic, bool $anonymous = false): array
     {
         return $this->decoratedClientManipulator->getAll($topic, $anonymous);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function findByRoles(Topic $topic, array $roles): array
     {
         return $this->decoratedClientManipulator->findByRoles($topic, $roles);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function findAllByUsername(Topic $topic, string $username): array
     {
         return $this->decoratedClientManipulator->findAllByUsername($topic, $username);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getUser(ConnectionInterface $connection)
     {
         return $this->getClient($connection)->getUser();
@@ -147,10 +139,10 @@ class ClientManipulator implements ClientManipulatorInterface, LoggerAwareInterf
         }
 
         try {
-            $user = $this->userProvider->loadUserByUsername($connection->WAMP->username);
+            $user = $this->userProvider->loadUserByIdentifier($connection->WAMP->username);
 
             return $this->addUserToClientStorage($connection, $user);
-        } catch (UsernameNotFoundException $exception) {
+        } catch (UserNotFoundException $exception) {
             return $this->addUserToClientStorage($connection);
         }
     }
@@ -170,7 +162,7 @@ class ClientManipulator implements ClientManipulatorInterface, LoggerAwareInterf
 
             return true;
         } catch (StorageException $exception) {
-            $username = $token->getUsername();
+            $username = $token->getUserIdentifier();
 
             $this->logger->error(
                 'Failed to add user to client storage for {username} for connection {storage_id}',

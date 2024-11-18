@@ -64,12 +64,12 @@ Feature: Password complexity feature
   Scenario: Check customer user creation with full password complexity
     Given I proceed as the Buyer
     And I am on the homepage
-    And click "Register"
+    And click "Sign Up"
     And I fill "Registration Form" with:
       | Company Name  | TestCompany              |
       | First Name    | Amanda                   |
       | Last Name     | Cole                     |
-      | Email Address | AmandaRCole1@example.org |
+      | Email         | AmandaRCole1@example.org |
 
   Scenario Outline:
     Given I fill "Registration Form" with:
@@ -77,10 +77,10 @@ Feature: Password complexity feature
       | Confirm Password | <Confirm Password> |
     Then I should see validation errors:
       | Password | <Validation error> |
-    When I click "Create An Account"
+    When I click "Create Account"
     Then I should see validation errors:
       | Password | <Validation error> |
-    And Page title equals to "Registration"
+    And Page title equals to "Sign Up"
 
     Examples:
       | Password | Confirm Password | Validation error                                                                                                   |
@@ -96,18 +96,19 @@ Feature: Password complexity feature
     Given I fill "Registration Form" with:
       | Password         | AAAAa1! |
       | Confirm Password | AAAAa1! |
-    When I click "Create An Account"
+    When I click "Create Account"
     Then I should see "Please check your email to complete registration" flash message
     And I proceed as the Admin
     And go to Customers/Customer Users
     And click view "AmandaRCole1@example.org" in grid
     And click "Confirm"
     And I proceed as the Buyer
-    When fill form with:
-      | Email Address | AmandaRCole1@example.org |
-      | Password      | AAAAa1!                  |
-    And click "Sign In"
-    Then should see "Signed in as: Amanda Cole"
+    When fill "Customer Login Form" with:
+      | Email    | AmandaRCole1@example.org |
+      | Password | AAAAa1!                  |
+    And click "Log In"
+    Then should see "Amanda Cole"
+    And I click "Account Dropdown"
     And click "Sign Out"
 
   Scenario: Uncheck all user password complexity options (dashboard user)
@@ -164,7 +165,7 @@ Feature: Password complexity feature
 
   Scenario: Uncheck all user password complexity options (Frontstore user)
     Given I proceed as the Buyer
-    And click "Register"
+    And click "Sign Up"
     And I fill "Registration Form" with:
       | Company Name  | TestCompany              |
       | First Name    | Ellen                    |
@@ -191,16 +192,17 @@ Feature: Password complexity feature
     Given I fill "Registration Form" with:
       | Password         | 1111 |
       | Confirm Password | 1111 |
-    When I click "Create An Account"
+    When I click "Create Account"
     Then I should see "Please check your email to complete registration" flash message
     And I proceed as the Admin
     And go to Customers/Customer Users
     And click view "EllenRRowel1@example.org" in grid
     And click "Confirm"
     And I proceed as the Buyer
-    When fill form with:
-      | Email Address | EllenRRowel1@example.org |
-      | Password      | 1111                     |
-    And click "Sign In"
-    Then should see "Signed in as: Ellen Rowel"
+    When fill "Customer Login Form" with:
+      | Email    | EllenRRowel1@example.org |
+      | Password | 1111                     |
+    And click "Log In"
+    Then should see "Ellen Rowel"
+    And I click "Account Dropdown"
     And click "Sign Out"

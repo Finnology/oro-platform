@@ -30,10 +30,8 @@ class OAuthSubscriber implements EventSubscriberInterface
         $this->oauthManagerRegistry = $oauthManagerRegistry;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedEvents()
+    #[\Override]
+    public static function getSubscribedEvents(): array
     {
         return [
             FormEvents::PRE_SUBMIT    => 'setToken',

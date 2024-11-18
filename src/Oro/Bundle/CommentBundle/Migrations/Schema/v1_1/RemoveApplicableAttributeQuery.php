@@ -8,9 +8,7 @@ use Psr\Log\LoggerInterface;
 
 class RemoveApplicableAttributeQuery extends ParametrizedMigrationQuery
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getDescription()
     {
         $logger = new ArrayLogger();
@@ -19,9 +17,7 @@ class RemoveApplicableAttributeQuery extends ParametrizedMigrationQuery
         return $logger->getMessages();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function execute(LoggerInterface $logger)
     {
         $this->doExecute($logger);
@@ -58,6 +54,6 @@ class RemoveApplicableAttributeQuery extends ParametrizedMigrationQuery
         $sql = 'SELECT id, data FROM oro_entity_config';
         $this->logQuery($logger, $sql);
 
-        return $this->connection->fetchAll($sql);
+        return $this->connection->fetchAllAssociative($sql);
     }
 }

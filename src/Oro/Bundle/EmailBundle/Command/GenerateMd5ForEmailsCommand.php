@@ -1,9 +1,11 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\EmailBundle\Command;
 
 use Oro\Bundle\EmailBundle\Entity\EmailTemplate;
+use Oro\Bundle\EmailBundle\Entity\EmailTemplateTranslation;
 use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -26,6 +28,7 @@ class GenerateMd5ForEmailsCommand extends Command
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     protected function configure()
     {
         $this
@@ -46,15 +49,23 @@ HELP
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      * @noinspection PhpMissingParentCallCommonInspection
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    #[\Override]
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $emailTemplates = $this->doctrineHelper->getEntityRepository(EmailTemplate::class)->findAll();
 
         /** @var EmailTemplate $template */
         foreach ($emailTemplates as $template) {
-            $output->write($template->getName() . ':'. \md5($template->getContent()), true);
+            $content = $template->getContent();
+            /** @var EmailTemplateTranslation $templateTranslation */
+            foreach ($template->getTranslations()->getValues() as $templateTranslation) {
+                if (!$templateTranslation->isContentFallback()) {
+                    $content .= $templateTranslation->getContent();
+                }
+            }
+            $output->write($template->getName() . ':'. \md5($content), true);
         }
 
-        return 0;
+        return Command::SUCCESS;
     }
 }

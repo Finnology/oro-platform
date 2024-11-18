@@ -13,6 +13,7 @@ class ReminderTest extends \PHPUnit\Framework\TestCase
     /** @var Reminder */
     private $entity;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->entity = new Reminder();
@@ -120,8 +121,8 @@ class ReminderTest extends \PHPUnit\Framework\TestCase
         string $getter = null,
         string $setter = null
     ) {
-        $getter = $getter ? : 'get' . \ucfirst($property);
-        $setter = $setter ? : 'set' . \ucfirst($property);
+        $getter = $getter ?: 'get' . \ucfirst($property);
+        $setter = $setter ?: 'set' . \ucfirst($property);
 
         self::assertEquals($this->entity, $this->entity->$setter($value));
         self::assertEquals($value, $this->entity->$getter());

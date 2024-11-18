@@ -22,9 +22,7 @@ class TicketProvider implements TicketProviderInterface
         $this->secret = $secret;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function generateTicket(?UserInterface $user = null): string
     {
         $created = date('c');
@@ -35,7 +33,7 @@ class TicketProvider implements TicketProviderInterface
             $password = $this->secret;
         } else {
             $password = $user->getPassword();
-            $userName = $user->getUsername();
+            $userName = $user->getUserIdentifier();
         }
 
         $passwordDigest = $this->ticketDigestGenerator->generateDigest($nonce, $created, $password);

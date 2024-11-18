@@ -39,6 +39,7 @@ class RelatedEmailsProviderTest extends \PHPUnit\Framework\TestCase
     /** @var RelatedEmailsProvider */
     private $provider;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->authorizationChecker = $this->createMock(AuthorizationCheckerInterface::class);
@@ -164,7 +165,6 @@ class RelatedEmailsProviderTest extends \PHPUnit\Framework\TestCase
             ->method('isObjectAllowedForOrganization')
             ->with($object, $organization)
             ->willReturn(true);
-
 
         $this->authorizationChecker->expects(self::exactly($permissionsChecksNumberOfCalls))
             ->method('isGranted')

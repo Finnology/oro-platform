@@ -9,7 +9,7 @@ use Doctrine\Persistence\Mapping\ClassMetadata;
 use Oro\Bundle\EntityExtendBundle\EntityPropertyInfo;
 
 /**
- * The resolver for entity names(titles) that works based on the "oro_entity.entity_name_representation" configuration.
+ * Provides a text representation of entities based on the "oro_entity.entity_name_representation" configuration.
  */
 class ConfigurableEntityNameProvider implements EntityNameProviderInterface
 {
@@ -28,9 +28,7 @@ class ConfigurableEntityNameProvider implements EntityNameProviderInterface
         $this->inflector = $inflector;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getName($format, $locale, $entity)
     {
         $className = ClassUtils::getClass($entity);
@@ -57,9 +55,7 @@ class ConfigurableEntityNameProvider implements EntityNameProviderInterface
         return false;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getNameDQL($format, $locale, $className, $alias)
     {
         if (!isset($this->fields[$className][$format])) {
@@ -72,7 +68,7 @@ class ConfigurableEntityNameProvider implements EntityNameProviderInterface
         }
 
         $nameDQL = reset($fieldNames);
-        if (count($fieldNames) > 1) {
+        if (\count($fieldNames) > 1) {
             $nameDQL = sprintf("CONCAT_WS(' ', %s)", implode(', ', $fieldNames));
         }
 
@@ -87,7 +83,7 @@ class ConfigurableEntityNameProvider implements EntityNameProviderInterface
         }
 
         $identifierFieldNames = $metadata->getIdentifierFieldNames();
-        if (count($identifierFieldNames) !== 1) {
+        if (\count($identifierFieldNames) !== 1) {
             return null;
         }
 
@@ -107,12 +103,7 @@ class ConfigurableEntityNameProvider implements EntityNameProviderInterface
 
     private function getClassMetadata(string $className): ?ClassMetadata
     {
-        $manager = $this->doctrine->getManagerForClass($className);
-        if (null === $manager) {
-            return null;
-        }
-
-        return $manager->getClassMetadata($className);
+        return $this->doctrine->getManagerForClass($className)?->getClassMetadata($className);
     }
 
     private function getFieldValue(object $entity, string $fieldName): mixed

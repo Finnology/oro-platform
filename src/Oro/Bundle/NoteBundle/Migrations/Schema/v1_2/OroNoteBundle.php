@@ -3,7 +3,6 @@
 namespace Oro\Bundle\NoteBundle\Migrations\Schema\v1_2;
 
 use Doctrine\DBAL\Schema\Schema;
-use Oro\Bundle\AttachmentBundle\Migration\Extension\AttachmentExtension;
 use Oro\Bundle\AttachmentBundle\Migration\Extension\AttachmentExtensionAwareInterface;
 use Oro\Bundle\AttachmentBundle\Migration\Extension\AttachmentExtensionAwareTrait;
 use Oro\Bundle\MigrationBundle\Migration\Migration;
@@ -13,20 +12,9 @@ class OroNoteBundle implements Migration, AttachmentExtensionAwareInterface
 {
     use AttachmentExtensionAwareTrait;
 
-    /**
-     * {@inheritdoc}
-     */
-    public function up(Schema $schema, QueryBag $queries)
+    #[\Override]
+    public function up(Schema $schema, QueryBag $queries): void
     {
-        self::addAttachment($schema, $this->attachmentExtension);
-    }
-
-    public static function addAttachment(Schema $schema, AttachmentExtension $attachmentExtension)
-    {
-        $attachmentExtension->addFileRelation(
-            $schema,
-            'oro_note',
-            'attachment'
-        );
+        $this->attachmentExtension->addFileRelation($schema, 'oro_note', 'attachment');
     }
 }

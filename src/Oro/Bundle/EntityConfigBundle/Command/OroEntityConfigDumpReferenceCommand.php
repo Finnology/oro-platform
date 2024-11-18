@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\EntityConfigBundle\Command;
@@ -27,6 +28,7 @@ class OroEntityConfigDumpReferenceCommand extends Command
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     protected function configure()
     {
         $this
@@ -43,7 +45,8 @@ HELP
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    #[\Override]
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $output = new SymfonyStyle($input, $output);
 
@@ -73,6 +76,6 @@ HELP
             }
         }
 
-        return 0;
+        return Command::SUCCESS;
     }
 }

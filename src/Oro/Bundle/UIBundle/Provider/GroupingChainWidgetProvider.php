@@ -29,13 +29,6 @@ class GroupingChainWidgetProvider implements WidgetProviderInterface
     /** @var EventDispatcherInterface|null */
     private $eventDispatcher;
 
-    /**
-     * @param array                         $providers
-     * @param ContainerInterface            $providerContainer
-     * @param LabelProviderInterface|null   $groupNameProvider
-     * @param EventDispatcherInterface|null $eventDispatcher
-     * @param int                           $pageType
-     */
     public function __construct(
         array $providers,
         ContainerInterface $providerContainer,
@@ -50,21 +43,13 @@ class GroupingChainWidgetProvider implements WidgetProviderInterface
         $this->pageType = $pageType;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function supports($object)
     {
         return !empty($this->providers);
     }
 
-    /**
-     * {@inheritdoc}
-     *
-     * The format of returning array:
-     *      [group name] =>
-     *          'widgets' => array
-     */
+    #[\Override]
     public function getWidgets($object)
     {
         $widgets = $this->getWidgetsOrderedByPriority($object);

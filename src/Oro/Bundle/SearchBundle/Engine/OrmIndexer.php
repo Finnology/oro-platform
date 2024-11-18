@@ -18,9 +18,7 @@ class OrmIndexer extends AbstractIndexer
     /** @var OroEntityManager */
     private $indexManager;
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function save($entity, array $context = [])
     {
         $entities = $this->getEntitiesArray($entity);
@@ -40,9 +38,7 @@ class OrmIndexer extends AbstractIndexer
         return $hasSavedEntities;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function delete($entity, array $context = [])
     {
         $entities = $this->getEntitiesArray($entity);
@@ -74,9 +70,7 @@ class OrmIndexer extends AbstractIndexer
         return $hasDeletedEntities;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function resetIndex($class = null, array $context = [])
     {
         if (null === $class) {
@@ -192,7 +186,7 @@ EOF;
             return $this->indexRepository;
         }
 
-        $this->indexRepository = $this->getIndexManager()->getRepository('OroSearchBundle:Item');
+        $this->indexRepository = $this->getIndexManager()->getRepository(Item::class);
 
         return $this->indexRepository;
     }
@@ -208,7 +202,7 @@ EOF;
             return $this->indexManager;
         }
 
-        $this->indexManager = $this->registry->getManagerForClass('OroSearchBundle:Item');
+        $this->indexManager = $this->registry->getManagerForClass(Item::class);
 
         return $this->indexManager;
     }

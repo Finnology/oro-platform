@@ -14,48 +14,40 @@ use Symfony\Component\Routing\Annotation\Route;
 
 /**
  * Workflow controller
- * @Route("/workflow")
  */
+#[Route(path: '/workflow')]
 class WorkflowController extends AbstractController
 {
     /**
-     * @Route(
-     *      "/start/{workflowName}/{transitionName}",
-     *      name="oro_workflow_start_transition_form"
-     * )
      * @param string $workflowName
      * @param string $transitionName
      * @param Request $request
-     *
      * @return Response
      */
+    #[Route(path: '/start/{workflowName}/{transitionName}', name: 'oro_workflow_start_transition_form')]
     public function startTransitionAction($workflowName, $transitionName, Request $request)
     {
         return $this->buildResponse(
-            $this->get(StartTransitionPageDataProvider::class)
+            $this->container->get(StartTransitionPageDataProvider::class)
                 ->getData($workflowName, $transitionName, $request->get('entityId', 0))
         );
     }
 
     /**
-     * @Route(
-     *      "/transit/{workflowItemId}/{transitionName}",
-     *      name="oro_workflow_transition_form"
-     * )
-     * @ParamConverter("workflowItem", options={"id"="workflowItemId"})
      *
      * @param string $transitionName
      * @param WorkflowItem $workflowItem
      *
      * @return Response
-     *
      * @throws \LogicException
      * @throws \Oro\Bundle\WorkflowBundle\Exception\WorkflowException
      */
+    #[Route(path: '/transit/{workflowItemId}/{transitionName}', name: 'oro_workflow_transition_form')]
+    #[ParamConverter('workflowItem', options: ['id' => 'workflowItemId'])]
     public function transitionAction($transitionName, WorkflowItem $workflowItem)
     {
         return $this->buildResponse(
-            $this->get(TransitionPageDataProvider::class)->getData($transitionName, $workflowItem)
+            $this->container->get(TransitionPageDataProvider::class)->getData($transitionName, $workflowItem)
         );
     }
 
@@ -74,9 +66,7 @@ class WorkflowController extends AbstractController
         );
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public static function getSubscribedServices(): array
     {
         return array_merge(parent::getSubscribedServices(), [

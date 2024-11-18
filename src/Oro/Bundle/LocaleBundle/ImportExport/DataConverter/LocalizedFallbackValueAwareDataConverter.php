@@ -72,9 +72,7 @@ class LocalizedFallbackValueAwareDataConverter extends PropertyPathTitleDataConv
         return $this->names;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function getRelatedEntityRules(
         $entityName,
         $singleRelationDeepLevel,
@@ -97,20 +95,20 @@ class LocalizedFallbackValueAwareDataConverter extends PropertyPathTitleDataConv
         $localizationCodes = $this->getNames();
         $targetField = $this->fieldHelper->getConfigValue($entityName, $field['name'], 'fallback_field', 'string');
         $fieldName = $field['name'];
+        $fieldLabel = $field['label'];
 
         list($rules, $backendHeaders) = $this->processLocalizationCodes(
             $fieldOrder,
             $localizationCodes,
             $fieldName,
+            $fieldLabel,
             $targetField
         );
 
         return $rules;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function getRelatedEntityRulesAndBackendHeaders(
         $entityName,
         $singleRelationDeepLevel,
@@ -123,11 +121,13 @@ class LocalizedFallbackValueAwareDataConverter extends PropertyPathTitleDataConv
             $localizationCodes = $this->getNames();
             $targetField = $this->fieldHelper->getConfigValue($entityName, $field['name'], 'fallback_field', 'string');
             $fieldName = $field['name'];
+            $fieldLabel = $field['label'];
 
             list($rules, $backendHeaders) = $this->processLocalizationCodes(
                 $fieldOrder,
                 $localizationCodes,
                 $fieldName,
+                $fieldLabel,
                 $targetField
             );
 
@@ -168,6 +168,7 @@ class LocalizedFallbackValueAwareDataConverter extends PropertyPathTitleDataConv
         $fieldOrder,
         array $localizationCodes,
         $fieldName,
+        $fieldLabel,
         $targetField
     ) {
         $rules = [];
@@ -176,7 +177,7 @@ class LocalizedFallbackValueAwareDataConverter extends PropertyPathTitleDataConv
 
         foreach ($localizationCodes as $localizationCode) {
             $frontendHeader = $this->getHeader(
-                $fieldName,
+                $fieldLabel,
                 $localizationCode,
                 self::FIELD_FALLBACK,
                 $this->relationDelimiter
@@ -195,7 +196,7 @@ class LocalizedFallbackValueAwareDataConverter extends PropertyPathTitleDataConv
             $backendHeaders[] = $rules[$frontendHeader];
 
             $frontendHeader = $this->getHeader(
-                $fieldName,
+                $fieldLabel,
                 $localizationCode,
                 self::FIELD_VALUE,
                 $this->relationDelimiter
@@ -216,5 +217,17 @@ class LocalizedFallbackValueAwareDataConverter extends PropertyPathTitleDataConv
         }
 
         return [$rules, $backendHeaders];
+    }
+
+    #[\Override]
+    protected function getFieldHeader($entityName, $field): string
+    {
+        if (!is_array($field) || !array_key_exists('name', $field)) {
+            throw new \InvalidArgumentException('Property is not array or key "name" does not exist.');
+        }
+
+        $fieldHeader = $this->fieldHelper->getConfigValue($entityName, $field['name'], 'header', $field['label']);
+
+        return $fieldHeader ?? $field['label'];
     }
 }

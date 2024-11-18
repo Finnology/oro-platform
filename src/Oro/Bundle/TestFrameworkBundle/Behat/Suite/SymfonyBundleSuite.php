@@ -26,9 +26,7 @@ class SymfonyBundleSuite implements Suite
         $this->settings = $settings;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getName()
     {
         return $this->name;
@@ -36,35 +34,29 @@ class SymfonyBundleSuite implements Suite
 
     /**
      * Returns suite bundle.
-     *
-     * @return BundleInterface
      */
     public function getBundle(): BundleInterface
     {
         return $this->bundle;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getSettings()
     {
         return $this->settings;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function hasSetting($key)
     {
         return isset($this->settings[$key]);
     }
 
     /**
-     * {@inheritdoc}
      *
      * @throws ParameterNotFoundException If setting is not set
      */
+    #[\Override]
     public function getSetting($key)
     {
         if (!$this->hasSetting($key)) {

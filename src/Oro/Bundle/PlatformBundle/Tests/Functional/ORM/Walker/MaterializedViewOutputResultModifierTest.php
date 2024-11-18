@@ -4,7 +4,7 @@ namespace Oro\Bundle\PlatformBundle\Tests\Functional\ORM\Walker;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\DBAL\Types\Types;
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Query\Parameter;
 use Oro\Bundle\PlatformBundle\MaterializedView\MaterializedViewManager;
 use Oro\Bundle\PlatformBundle\Tests\Functional\MaterializedView\MaterializedViewsAwareTestTrait;
@@ -19,6 +19,7 @@ class MaterializedViewOutputResultModifierTest extends WebTestCase
 
     private MaterializedViewManager $materializedViewManager;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->initClient([], self::generateBasicAuthHeader());
@@ -26,6 +27,7 @@ class MaterializedViewOutputResultModifierTest extends WebTestCase
         $this->materializedViewManager = self::getContainer()->get('oro_platform.materialized_view.manager');
     }
 
+    #[\Override]
     public static function tearDownAfterClass(): void
     {
         self::deleteAllMaterializedViews(self::getContainer());
@@ -38,8 +40,8 @@ class MaterializedViewOutputResultModifierTest extends WebTestCase
      */
     public function testQuery(string $DQL, ArrayCollection $parameters, string $expectedSQL): void
     {
-        /** @var EntityManager $entityManager */
         $entityClass = User::class;
+        /** @var EntityManagerInterface $entityManager */
         $entityManager = self::getContainer()
             ->get('doctrine')
             ->getManagerForClass($entityClass);

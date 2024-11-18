@@ -3,8 +3,9 @@
 namespace Oro\Bundle\EntityConfigBundle\Tests\Unit\Migration;
 
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Driver\Statement;
-use Oro\Bundle\EntityConfigBundle\Migration\RemoveEnumFieldQuery;
+
+use Doctrine\DBAL\Statement;
+use Oro\Bundle\EntityConfigBundle\Migration\RemoveOutdatedEnumFieldQuery;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
@@ -15,6 +16,7 @@ class RemoveEnumFieldQueryTest extends TestCase
 
     private Connection|MockObject $connector;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->connector = $this->createMock(Connection::class);
@@ -23,11 +25,11 @@ class RemoveEnumFieldQueryTest extends TestCase
 
     public function testExecuteConfigFieldIsAbsent(): void
     {
-        $migration = new RemoveEnumFieldQuery('TestClassName', 'TestFieldName');
+        $migration = new RemoveOutdatedEnumFieldQuery('TestClassName', 'TestFieldName');
         $migration->setConnection($this->connector);
 
         $this->connector->expects(self::once())
-            ->method('fetchAssoc')
+            ->method('fetchAssociative')
             ->willReturn(null);
         $this->connector->expects(self::never())
             ->method('prepare');
@@ -40,11 +42,11 @@ class RemoveEnumFieldQueryTest extends TestCase
      */
     public function testExecute($entityClass, $fieldName, $enumClass, $extendKey, $fieldPhpData, $entityPhpData): void
     {
-        $migration = new RemoveEnumFieldQuery($entityClass, $fieldName);
+        $migration = new RemoveOutdatedEnumFieldQuery($entityClass, $fieldName);
         $migration->setConnection($this->connector);
 
         $this->connector->expects(self::exactly(3))
-            ->method('fetchAssoc')
+            ->method('fetchAssociative')
             ->willReturnOnConsecutiveCalls(
                 ['id' => 1, 'data' => self::encode($fieldPhpData)],
                 ['id' => 2],
@@ -71,19 +73,19 @@ class RemoveEnumFieldQueryTest extends TestCase
 
         $statement1 = $this->createMock(Statement::class);
         $statement1->expects($this->once())
-            ->method('execute')
+            ->method('executeQuery')
             ->with([1]);
         $statement2 = $this->createMock(Statement::class);
         $statement2->expects($this->once())
-            ->method('execute')
+            ->method('executeQuery')
             ->with([2]);
         $statement3 = $this->createMock(Statement::class);
         $statement3->expects($this->once())
-            ->method('execute')
+            ->method('executeQuery')
             ->with([$enumClass]);
         $statement4 = $this->createMock(Statement::class);
         $statement4->expects($this->once())
-            ->method('execute')
+            ->method('executeQuery')
             ->with([self::encode($entityPhpData), $entityClass]);
         $this->connector->expects(self::exactly(4))
             ->method('prepare')

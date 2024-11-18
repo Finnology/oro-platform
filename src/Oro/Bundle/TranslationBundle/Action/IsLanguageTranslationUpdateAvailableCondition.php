@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\TranslationBundle\Action;
@@ -34,6 +35,7 @@ class IsLanguageTranslationUpdateAvailableCondition extends AbstractLanguageCond
         parent::__construct($doctrine);
     }
 
+    #[\Override]
     protected function isConditionAllowed($context): bool
     {
         $language = $this->getLanguage($context);
@@ -59,6 +61,7 @@ class IsLanguageTranslationUpdateAvailableCondition extends AbstractLanguageCond
         return $language->getInstalledBuildDate() < $metrics['lastBuildDate'];
     }
 
+    #[\Override]
     public function getName(): string
     {
         return 'is_language_translation_update_available';

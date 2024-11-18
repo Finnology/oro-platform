@@ -32,10 +32,8 @@ class WorkflowListConfiguration implements ConfigurationInterface
         return $processor->processConfiguration($this, $configs);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getConfigTreeBuilder()
+    #[\Override]
+    public function getConfigTreeBuilder(): TreeBuilder
     {
         $treeBuilder = new TreeBuilder(self::NODE_WORKFLOWS);
         $rootNode = $treeBuilder->getRootNode();

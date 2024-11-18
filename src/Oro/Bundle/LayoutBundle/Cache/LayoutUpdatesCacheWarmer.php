@@ -32,22 +32,19 @@ class LayoutUpdatesCacheWarmer implements CacheWarmerInterface
         $this->expressionLanguageCacheWarmer = $expressionLanguageCacheWarmer;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function isOptional()
+    #[\Override]
+    public function isOptional(): bool
     {
         return false;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function warmUp($cacheDir)
+    #[\Override]
+    public function warmUp($cacheDir): array
     {
         $this->loadLayoutUpdates();
         $this->collectExpressionsFromBlockTypes();
         $this->expressionLanguageCacheWarmer->write();
+        return [];
     }
 
     private function loadLayoutUpdates(): void

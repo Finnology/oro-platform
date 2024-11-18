@@ -1,10 +1,10 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\DashboardBundle\Tests\Unit\EventListener;
 
-use Doctrine\Common\Annotations\AnnotationReader;
-use Doctrine\ORM\Mapping\Driver\AnnotationDriver;
+use Doctrine\ORM\Mapping\Driver\AttributeDriver;
 use Oro\Bundle\DashboardBundle\EventListener\WidgetSortByListener;
 use Oro\Bundle\DashboardBundle\Model\WidgetConfigs;
 use Oro\Bundle\DashboardBundle\Model\WidgetOptionBag;
@@ -26,7 +26,7 @@ class WidgetSortByListenerTest extends OrmTestCase
             ->willReturn($widgetOptionBag);
 
         $em = $this->getTestEntityManager();
-        $em->getConfiguration()->setMetadataDriverImpl(new AnnotationDriver(new AnnotationReader()));
+        $em->getConfiguration()->setMetadataDriverImpl(new AttributeDriver([]));
 
         $datagrid = $this->createMock(DatagridInterface::class);
 
@@ -71,7 +71,7 @@ class WidgetSortByListenerTest extends OrmTestCase
             ->willReturn($widgetOptionBag);
 
         $em = $this->getTestEntityManager();
-        $em->getConfiguration()->setMetadataDriverImpl(new AnnotationDriver(new AnnotationReader()));
+        $em->getConfiguration()->setMetadataDriverImpl(new AttributeDriver([]));
         $qb = $em->createQueryBuilder()
             ->select('tc')
             ->from(TestClass::class, 'tc')

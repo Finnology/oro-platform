@@ -19,9 +19,19 @@ abstract class CustomizeDataContext extends ApiContext implements SharedDataAwar
     /** FQCN of a customizing entity */
     private const CLASS_NAME = 'class';
 
+    /** the name of the action which causes this action, e.g. "create" or "update" */
+    private const PARENT_ACTION = 'parentAction';
+
     private ?EntityDefinitionConfig $rootConfig = null;
     private ?EntityDefinitionConfig $config = null;
     private ?ParameterBagInterface $sharedData = null;
+
+    #[\Override]
+    protected function initialize(): void
+    {
+        parent::initialize();
+        $this->set(self::PARENT_ACTION, '');
+    }
 
     /**
      * Gets FQCN of a root entity.
@@ -72,6 +82,24 @@ abstract class CustomizeDataContext extends ApiContext implements SharedDataAwar
     }
 
     /**
+     * Gets the name of the action which causes this action, e.g. "create" or "update".
+     */
+    public function getParentAction(): ?string
+    {
+        $action = $this->get(self::PARENT_ACTION);
+
+        return '' !== $action ? $action : null;
+    }
+
+    /**
+     * Sets the name of the action which causes this action, e.g. "create" or "update".
+     */
+    public function setParentAction(?string $action): void
+    {
+        $this->set(self::PARENT_ACTION, $action ?? '');
+    }
+
+    /**
      * Gets a configuration of a root entity.
      */
     public function getRootConfig(): ?EntityDefinitionConfig
@@ -108,6 +136,7 @@ abstract class CustomizeDataContext extends ApiContext implements SharedDataAwar
      * and actions that are executed as part of this action.
      * Also, this object can be used to share data between different kind of child actions.
      */
+    #[\Override]
     public function getSharedData(): ParameterBagInterface
     {
         return $this->sharedData;
@@ -118,6 +147,7 @@ abstract class CustomizeDataContext extends ApiContext implements SharedDataAwar
      * and actions that are executed as part of this action.
      * Also, this object can be used to share data between different kind of child actions.
      */
+    #[\Override]
     public function setSharedData(ParameterBagInterface $sharedData): void
     {
         $this->sharedData = $sharedData;
@@ -128,11 +158,17 @@ abstract class CustomizeDataContext extends ApiContext implements SharedDataAwar
      */
     public function getNormalizationContext(): array
     {
-        return [
+        $normalizationContext = [
             self::ACTION       => $this->getAction(),
             self::VERSION      => $this->getVersion(),
             self::REQUEST_TYPE => $this->getRequestType(),
             'sharedData'       => $this->getSharedData()
         ];
+        $parentAction = $this->getParentAction();
+        if ($parentAction) {
+            $normalizationContext[self::PARENT_ACTION] = $parentAction;
+        }
+
+        return $normalizationContext;
     }
 }

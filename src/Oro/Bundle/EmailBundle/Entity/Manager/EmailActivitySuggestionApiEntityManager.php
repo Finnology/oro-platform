@@ -21,9 +21,7 @@ class EmailActivitySuggestionApiEntityManager extends EmailActivitySearchApiEnti
         $this->tokenStorage = $tokenStorage;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function find($id)
     {
         // force load from and to email addresses by one query
@@ -118,7 +116,7 @@ class EmailActivitySuggestionApiEntityManager extends EmailActivitySearchApiEnti
         $searchResult = $this->searchIndexer->query($searchQueryBuilder);
 
         if ($searchResult->count() > 0) {
-            $entities = $this->getEmailAssociatedEntitiesQueryBuilder($searchResult)->getQuery()->getResult();
+            $entities = $this->convertSearchResultToEntityList($searchResult);
         }
 
         return $entities;

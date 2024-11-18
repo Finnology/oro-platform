@@ -2,14 +2,19 @@
 
 namespace Oro\Bundle\EntityConfigBundle\Migration;
 
-use Doctrine\DBAL\Connection;
 use Oro\Bundle\MigrationBundle\Migration\ArrayLogger;
 use Oro\Bundle\MigrationBundle\Migration\ConnectionAwareInterface;
+use Oro\Bundle\MigrationBundle\Migration\ConnectionAwareTrait;
 use Oro\Bundle\MigrationBundle\Migration\MigrationQuery;
 use Psr\Log\LoggerInterface;
 
+/**
+ * Inserts entity config index field value.
+ */
 class InsertEntityConfigIndexFieldValueQuery implements MigrationQuery, ConnectionAwareInterface
 {
+    use ConnectionAwareTrait;
+
     /**
      * @var string
      */
@@ -36,11 +41,6 @@ class InsertEntityConfigIndexFieldValueQuery implements MigrationQuery, Connecti
     protected $value;
 
     /**
-     * @var Connection
-     */
-    protected $connection;
-
-    /**
      * @param string $entityName
      * @param string $fieldName
      * @param string $scope
@@ -56,17 +56,7 @@ class InsertEntityConfigIndexFieldValueQuery implements MigrationQuery, Connecti
         $this->value        = $value;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function setConnection(Connection $connection)
-    {
-        $this->connection = $connection;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getDescription()
     {
         $logger = new ArrayLogger();
@@ -86,9 +76,7 @@ class InsertEntityConfigIndexFieldValueQuery implements MigrationQuery, Connecti
         return $logger->getMessages();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function execute(LoggerInterface $logger)
     {
         $this->insertEntityConfigIndexValue($logger);
@@ -111,7 +99,7 @@ class InsertEntityConfigIndexFieldValueQuery implements MigrationQuery, Connecti
                 'fieldName' => $this->fieldName
             ])
             ->execute()
-            ->fetch(\PDO::FETCH_ASSOC);
+            ->fetchAssociative();
 
         $sql = "INSERT INTO oro_entity_config_index_value (entity_id, field_id, scope, code, value) 
                 VALUES (NULL, ?, ?, ?, ?)";
@@ -121,7 +109,7 @@ class InsertEntityConfigIndexFieldValueQuery implements MigrationQuery, Connecti
 
         if (!$dryRun) {
             $statement = $this->connection->prepare($sql);
-            $statement->execute($parameters);
+            $statement->executeQuery($parameters);
         }
     }
 

@@ -35,10 +35,8 @@ class MappingConfiguration implements ConfigurationInterface
         Indexer::RELATION_MANY_TO_MANY
     );
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getConfigTreeBuilder()
+    #[\Override]
+    public function getConfigTreeBuilder(): TreeBuilder
     {
         $treeBuilder = new TreeBuilder(self::ROOT_NODE);
         $rootNode = $treeBuilder->getRootNode();
@@ -83,6 +81,9 @@ class MappingConfiguration implements ConfigurationInterface
                         ->enumNode('target_type')
                             ->values($this->targetTypes)
                         ->end()
+                        ->booleanNode('target_fulltext')
+                            ->defaultTrue()
+                        ->end()
                         ->append($this->addTargetFieldsNode())
                         ->scalarNode('getter')->end()
                         ->enumNode('relation_type')
@@ -114,6 +115,9 @@ class MappingConfiguration implements ConfigurationInterface
                         ->scalarNode('name')->end()
                         ->enumNode('target_type')
                             ->values($this->targetTypes)
+                        ->end()
+                        ->booleanNode('target_fulltext')
+                            ->defaultTrue()
                         ->end()
                         ->append($this->addTargetFieldsNode())
                         ->enumNode('relation_type')

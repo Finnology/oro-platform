@@ -24,6 +24,7 @@ class ImportType extends AbstractType
         $this->processorRegistry = $processorRegistry;
     }
 
+    #[\Override]
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder->add('file', FileType::class);
@@ -70,6 +71,7 @@ class ImportType extends AbstractType
         return sprintf('oro.importexport.import.%s', $alias);
     }
 
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults(
@@ -84,18 +86,13 @@ class ImportType extends AbstractType
         $resolver->setAllowedTypes('processorAliasOptions', 'array');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getName()
     {
         return $this->getBlockPrefix();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return self::NAME;
     }

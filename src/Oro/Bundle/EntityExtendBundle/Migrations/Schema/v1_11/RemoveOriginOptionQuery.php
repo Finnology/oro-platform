@@ -11,9 +11,7 @@ use Psr\Log\LoggerInterface;
  */
 class RemoveOriginOptionQuery extends ParametrizedMigrationQuery
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getDescription()
     {
         $logger = new ArrayLogger();
@@ -22,9 +20,7 @@ class RemoveOriginOptionQuery extends ParametrizedMigrationQuery
         return $logger->getMessages();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function execute(LoggerInterface $logger)
     {
         $this->doExecute($logger);
@@ -63,7 +59,7 @@ class RemoveOriginOptionQuery extends ParametrizedMigrationQuery
         $this->logQuery($logger, $query);
 
         $result = [];
-        $rows = $this->connection->fetchAll($query);
+        $rows = $this->connection->fetchAllAssociative($query);
         foreach ($rows as $row) {
             $result[] = [
                 $row['id'],

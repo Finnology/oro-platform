@@ -21,9 +21,7 @@ class SimpleProcessorRegistry implements ProcessorRegistryInterface
         $this->parentRegistry = $parentRegistry;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getProcessor(string $processorId): ProcessorInterface
     {
         if (!isset($this->processors[$processorId])) {
@@ -34,7 +32,7 @@ class SimpleProcessorRegistry implements ProcessorRegistryInterface
         if (!\is_object($processor)) {
             $processor = \is_string($processor)
                 ? new $processor()
-                : (new \ReflectionClass($processor[0]))->newInstanceArgs($processor[1]);
+                : new $processor[0](...$processor[1]);
             $this->processors[$processorId] = $processor;
         }
 

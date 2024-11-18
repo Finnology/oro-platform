@@ -4,8 +4,9 @@ namespace Oro\Bundle\UserBundle\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Oro\Bundle\EntityConfigBundle\Metadata\Annotation\ConfigField;
+use Oro\Bundle\EntityConfigBundle\Metadata\Attribute\ConfigField;
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
 use Oro\Bundle\OrganizationBundle\Entity\OrganizationAwareInterface;
 use Oro\Bundle\OrganizationBundle\Entity\OrganizationInterface;
@@ -18,9 +19,8 @@ use Symfony\Component\Security\Core\User\UserInterface as SymfonyUserInterface;
  *
  * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  * @SuppressWarnings(PHPMD.ExcessivePublicCount)
- *
- * @ORM\MappedSuperclass
  */
+#[ORM\MappedSuperclass]
 abstract class AbstractUser implements
     UserInterface,
     LoginInfoInterface,
@@ -30,50 +30,24 @@ abstract class AbstractUser implements
 {
     const ROLE_DEFAULT = 'ROLE_USER';
     const ROLE_ADMINISTRATOR = 'ROLE_ADMINISTRATOR';
-    const ROLE_ANONYMOUS = 'IS_AUTHENTICATED_ANONYMOUSLY';
 
-    /**
-     * @ORM\Id
-     * @ORM\Column(type="integer")
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
-    protected $id;
+    #[ORM\Id]
+    #[ORM\Column(type: Types::INTEGER)]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
+    protected ?int $id = null;
 
-    /**
-     * @var string
-     *
-     * @ORM\Column(type="string", length=255, unique=true)
-     * @ConfigField(
-     *      defaultValues={
-     *          "dataaudit"={
-     *              "auditable"=true
-     *          },
-     *          "importexport"={
-     *              "identity"=true
-     *          }
-     *      }
-     * )
-     */
-    protected $username;
+    #[ORM\Column(type: Types::STRING, length: 255, unique: true)]
+    #[ConfigField(defaultValues: ['dataaudit' => ['auditable' => true], 'importexport' => ['identity' => true]])]
+    protected ?string $username = null;
 
     /**
      * Encrypted password. Must be persisted.
-     *
-     * @var string
-     *
-     * @ORM\Column(type="string")
-     * @ConfigField(
-     *      defaultValues={
-     *          "importexport"={
-     *              "excluded"=true
-     *          },
-     *          "email"={
-     *              "available_in_template"=false
-     *          }
-     *      }
-     * )
      */
-    protected $password;
+    #[ORM\Column(type: Types::STRING)]
+    #[ConfigField(
+        defaultValues: ['importexport' => ['excluded' => true], 'email' => ['available_in_template' => false]]
+    )]
+    protected ?string $password = null;
 
     /**
      * Plain password. Used for model validation. Must not be persisted.
@@ -84,136 +58,59 @@ abstract class AbstractUser implements
 
     /**
      * The salt to use for hashing
-     *
-     * @var string
-     *
-     * @ORM\Column(type="string")
-     * @ConfigField(
-     *      defaultValues={
-     *          "importexport"={
-     *              "excluded"=true
-     *          },
-     *          "email"={
-     *              "available_in_template"=false
-     *          }
-     *      }
-     * )
      */
-    protected $salt;
+    #[ORM\Column(type: Types::STRING)]
+    #[ConfigField(
+        defaultValues: ['importexport' => ['excluded' => true], 'email' => ['available_in_template' => false]]
+    )]
+    protected ?string $salt = null;
+
+    #[ORM\Column(name: 'last_login', type: Types::DATETIME_MUTABLE, nullable: true)]
+    #[ConfigField(defaultValues: ['importexport' => ['excluded' => true]])]
+    protected ?\DateTimeInterface $lastLogin = null;
+
+    #[ORM\Column(name: 'login_count', type: Types::INTEGER, options: ['default' => 0, 'unsigned' => true])]
+    protected ?int $loginCount = null;
+
+    #[ORM\Column(type: Types::BOOLEAN)]
+    #[ConfigField(defaultValues: ['dataaudit' => ['auditable' => true]])]
+    protected ?bool $enabled = true;
 
     /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="last_login", type="datetime", nullable=true)
-     * @ConfigField(
-     *      defaultValues={
-     *          "importexport"={
-     *              "excluded"=true
-     *          }
-     *      }
-     * )
+     * @var Collection<int, \Oro\Bundle\UserBundle\Entity\Role>
      */
-    protected $lastLogin;
-
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="login_count", type="integer", options={"default"=0, "unsigned"=true})
-     */
-    protected $loginCount;
-
-    /**
-     * @var bool
-     *
-     * @ORM\Column(type="boolean")
-     * @ConfigField(
-     *      defaultValues={
-     *          "dataaudit"={
-     *              "auditable"=true
-     *          }
-     *      }
-     * )
-     */
-    protected $enabled = true;
-
-    /**
-     * @var Role[]|Collection
-     *
-     * @ORM\ManyToMany(targetEntity="Oro\Bundle\UserBundle\Entity\Role", inversedBy="users")
-     * @ORM\JoinTable(name="oro_user_access_role",
-     *      joinColumns={@ORM\JoinColumn(name="user_id", referencedColumnName="id", onDelete="CASCADE")},
-     *      inverseJoinColumns={@ORM\JoinColumn(name="role_id", referencedColumnName="id", onDelete="CASCADE")}
-     * )
-     * @ConfigField(
-     *      defaultValues={
-     *          "entity"={
-     *              "label"="oro.user.roles.label",
-     *              "description"="oro.user.roles.description"
-     *          },
-     *          "dataaudit"={"auditable"=true},
-     *          "importexport"={
-     *              "excluded"=true
-     *          }
-     *      }
-     * )
-     */
-    protected $userRoles;
+    #[ORM\ManyToMany(targetEntity: \Oro\Bundle\UserBundle\Entity\Role::class, inversedBy: 'users')]
+    #[ORM\JoinTable(name: 'oro_user_access_role')]
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
+    #[ORM\InverseJoinColumn(name: 'role_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
+    #[ConfigField(
+        defaultValues: [
+            'entity' => ['label' => 'oro.user.roles.label', 'description' => 'oro.user.roles.description'],
+            'dataaudit' => ['auditable' => true],
+            'importexport' => ['excluded' => true]
+        ]
+    )]
+    protected ?Collection $userRoles = null;
 
     /**
      * Random string sent to the user email address in order to verify it
-     *
-     * @var string
-     *
-     * @ORM\Column(name="confirmation_token", type="string", nullable=true)
-     * @ConfigField(
-     *      defaultValues={
-     *          "importexport"={
-     *              "excluded"=true
-     *          }
-     *      }
-     * )
      */
-    protected $confirmationToken;
+    #[ORM\Column(name: 'confirmation_token', type: Types::STRING, nullable: true)]
+    #[ConfigField(defaultValues: ['importexport' => ['excluded' => true]])]
+    protected ?string $confirmationToken = null;
 
-    /**
-     * @var Organization
-     *
-     * @ORM\ManyToOne(targetEntity="Oro\Bundle\OrganizationBundle\Entity\Organization")
-     * @ORM\JoinColumn(name="organization_id", referencedColumnName="id", onDelete="SET NULL")
-     */
-    protected $organization;
+    #[ORM\ManyToOne(targetEntity: Organization::class)]
+    #[ORM\JoinColumn(name: 'organization_id', referencedColumnName: 'id', onDelete: 'SET NULL')]
+    protected ?OrganizationInterface $organization = null;
 
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="password_requested", type="datetime", nullable=true)
-     * @ConfigField(
-     *      defaultValues={
-     *          "importexport"={
-     *              "excluded"=true
-     *          }
-     *      }
-     * )
-     */
-    protected $passwordRequestedAt;
+    #[ORM\Column(name: 'password_requested', type: Types::DATETIME_MUTABLE, nullable: true)]
+    #[ConfigField(defaultValues: ['importexport' => ['excluded' => true]])]
+    protected ?\DateTimeInterface $passwordRequestedAt = null;
 
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="password_changed", type="datetime", nullable=true)
-     * @ConfigField(
-     *      defaultValues={
-     *          "importexport"={
-     *              "excluded"=true
-     *          }
-     *      }
-     * )
-     */
-    protected $passwordChangedAt;
+    #[ORM\Column(name: 'password_changed', type: Types::DATETIME_MUTABLE, nullable: true)]
+    #[ConfigField(defaultValues: ['importexport' => ['excluded' => true]])]
+    protected ?\DateTimeInterface $passwordChangedAt = null;
 
-    /**
-     * {@inheritdoc}
-     */
     public function __construct()
     {
         $this->salt = base_convert(sha1(uniqid(mt_rand(), true)), 16, 36);
@@ -223,9 +120,10 @@ abstract class AbstractUser implements
     /**
      * @return string
      */
+    #[\Override]
     public function __toString()
     {
-        return (string)$this->getUsername();
+        return (string)$this->getUserIdentifier();
     }
 
     /**
@@ -236,17 +134,25 @@ abstract class AbstractUser implements
         return $this->id;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function getUsername()
     {
         return $this->username;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
+    public function getUserIdentifier(): string
+    {
+        return $this->username;
+    }
+
+    public function setUserIdentifier($username): self
+    {
+        $this->username = $username;
+
+        return $this;
+    }
+
+    #[\Override]
     public function setUsername($username): self
     {
         $this->username = $username;
@@ -278,19 +184,17 @@ abstract class AbstractUser implements
         ] = $serialized;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getLastLogin()
     {
         return $this->lastLogin;
     }
 
     /**
-     * {@inheritdoc}
      *
      * @return AbstractUser
      */
+    #[\Override]
     public function setLastLogin(\DateTime $time = null)
     {
         $this->lastLogin = $time;
@@ -298,19 +202,17 @@ abstract class AbstractUser implements
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getLoginCount()
     {
         return $this->loginCount;
     }
 
     /**
-     * {@inheritdoc}
      *
      * @return AbstractUser
      */
+    #[\Override]
     public function setLoginCount($count)
     {
         $this->loginCount = $count;
@@ -318,10 +220,8 @@ abstract class AbstractUser implements
         return $this;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function getSalt()
+    #[\Override]
+    public function getSalt(): ?string
     {
         return $this->salt;
     }
@@ -338,17 +238,13 @@ abstract class AbstractUser implements
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getPassword()
+    #[\Override]
+    public function getPassword(): ?string
     {
         return $this->password;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function setPassword(?string $password): self
     {
         $this->password = $password;
@@ -356,17 +252,13 @@ abstract class AbstractUser implements
         return $this;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getPlainPassword(): ?string
     {
         return $this->plainPassword;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function setPlainPassword(?string $password): self
     {
         $this->plainPassword = $password;
@@ -438,6 +330,7 @@ abstract class AbstractUser implements
     /**
      * @return Role[]
      */
+    #[\Override]
     public function getUserRoles(): array
     {
         return $this->userRoles->toArray();
@@ -469,9 +362,7 @@ abstract class AbstractUser implements
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function addUserRole(Role $role): self
     {
         if (!$this->hasRole($role)) {
@@ -482,11 +373,11 @@ abstract class AbstractUser implements
     }
 
     /**
-     * {@inheritdoc}
      *
      * @return string[]
      */
-    public function getRoles()
+    #[\Override]
+    public function getRoles(): array
     {
         return array_map(static fn (Role $role) => (string) $role, $this->getUserRoles());
     }
@@ -520,9 +411,7 @@ abstract class AbstractUser implements
         return (bool)$this->getUserRole($roleName);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function eraseCredentials()
     {
         $this->plainPassword = null;
@@ -533,14 +422,13 @@ abstract class AbstractUser implements
      *
      * @return OrganizationInterface|Organization
      */
+    #[\Override]
     public function getOrganization()
     {
         return $this->organization;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function setOrganization(OrganizationInterface $organization = null)
     {
         $this->organization = $organization;
@@ -548,19 +436,17 @@ abstract class AbstractUser implements
         return $this;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getConfirmationToken()
     {
         return $this->confirmationToken;
     }
 
     /**
-     * {@inheritdoc}
      *
      * @return AbstractUser
      */
+    #[\Override]
     public function setConfirmationToken($token)
     {
         $this->confirmationToken = $token;
@@ -568,17 +454,13 @@ abstract class AbstractUser implements
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function generateToken()
     {
         return base_convert(bin2hex(hash('sha256', uniqid(mt_rand(), true), true)), 16, 36);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function isPasswordRequestNonExpired($ttl)
     {
         $passwordRequestAt = $this->getPasswordRequestedAt();
@@ -590,16 +472,17 @@ abstract class AbstractUser implements
     /**
      * @return \DateTime
      */
+    #[\Override]
     public function getPasswordRequestedAt()
     {
         return $this->passwordRequestedAt;
     }
 
     /**
-     * {@inheritdoc}
      *
      * @return AbstractUser
      */
+    #[\Override]
     public function setPasswordRequestedAt(\DateTime $time = null)
     {
         $this->passwordRequestedAt = $time;
@@ -607,19 +490,17 @@ abstract class AbstractUser implements
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getPasswordChangedAt()
     {
         return $this->passwordChangedAt;
     }
 
     /**
-     * {@inheritdoc}
      *
      * @return AbstractUser
      */
+    #[\Override]
     public function setPasswordChangedAt(\DateTime $time = null)
     {
         $this->passwordChangedAt = $time;
@@ -661,9 +542,7 @@ abstract class AbstractUser implements
      */
     abstract public function getOrganizations(bool $onlyEnabled = false);
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function isEqualTo(SymfonyUserInterface $user): bool
     {
         if ($this->getPassword() !== $user->getPassword()) {
@@ -674,7 +553,7 @@ abstract class AbstractUser implements
             return false;
         }
 
-        if ($this->getUsername() !== $user->getUsername()) {
+        if ($this->getUserIdentifier() !== $user->getUserIdentifier()) {
             return false;
         }
 

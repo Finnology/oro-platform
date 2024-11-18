@@ -9,28 +9,14 @@ use Oro\Bundle\MigrationBundle\Migration\QueryBag;
 
 class OroEmailBundle implements Migration
 {
-    /**
-     * {@inheritdoc}
-     */
-    public function up(Schema $schema, QueryBag $queries)
-    {
-        self::oroEmailTable($schema);
-        $this->deleteBodySyncProcess($schema, $queries);
-    }
-
-    public static function oroEmailTable(Schema $schema)
+    #[\Override]
+    public function up(Schema $schema, QueryBag $queries): void
     {
         $table = $schema->getTable('oro_email');
         if (!$table->hasColumn('body_synced')) {
             $table->addColumn('body_synced', 'boolean', ['notnull' => false, 'default' => false]);
         }
-    }
 
-    /**
-     * Delete sync_email_body_after_email_synchronize process definition
-     */
-    protected function deleteBodySyncProcess(Schema $schema, QueryBag $queries)
-    {
         if ($schema->hasTable('oro_process_definition')) {
             $queries->addQuery(
                 new ParametrizedSqlMigrationQuery(

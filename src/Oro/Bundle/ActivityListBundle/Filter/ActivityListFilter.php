@@ -2,7 +2,7 @@
 
 namespace Oro\Bundle\ActivityListBundle\Filter;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
@@ -87,17 +87,13 @@ class ActivityListFilter extends EntityFilter
         $this->relatedActivityDatagridFactory = $relatedActivityDatagridFactory;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getMetadata()
     {
         return [];
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function apply(FilterDatasourceAdapterInterface $ds, $data)
     {
         if (!$ds instanceof OrmFilterDatasourceAdapter) {
@@ -125,18 +121,11 @@ class ActivityListFilter extends EntityFilter
         $this->copyParameters($activityQb, $qb);
     }
 
-    /**
-     * @param EntityManager $em
-     * @param array $data
-     * @param string $entityIdField
-     *
-     * @return QueryBuilder
-     */
     protected function createActivityQueryBuilder(
-        EntityManager $em,
+        EntityManagerInterface $em,
         array $data,
-        $entityIdField
-    ) {
+        string $entityIdField
+    ): QueryBuilder {
         QueryBuilderUtil::checkIdentifier($entityIdField);
         $entityClass = $data['entityClassName'];
 
@@ -344,17 +333,13 @@ class ActivityListFilter extends EntityFilter
         return $matches[0];
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     protected function getFormType()
     {
         return ActivityListFilterType::class;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function createForm(): FormInterface
     {
         return $this->formFactory->create($this->getFormType());

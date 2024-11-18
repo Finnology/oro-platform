@@ -1,4 +1,5 @@
 <?php
+
 namespace Oro\Bundle\AddressBundle\Tests\Unit\Form\Type;
 
 use Oro\Bundle\AddressBundle\Form\Type\CountryType;
@@ -10,6 +11,7 @@ class CountryTypeTest extends \PHPUnit\Framework\TestCase
     /** @var CountryType */
     private $type;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->type = new CountryType();

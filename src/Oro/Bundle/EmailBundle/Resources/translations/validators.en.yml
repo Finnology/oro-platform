@@ -2,7 +2,15 @@
 "This value contains not valid email address.": "This value contains not valid email address."
 "Recipient can not be empty": "Recipient can not be empty"
 oro.email:
+    message_id_conflict.message: The email with this Message-ID already exists.
+    attachments_without_body.message: The attachments cannot be added to an email without a body.
+    body_remove_not_allowed.message: It is not allowed to remove the body.
+    body_change_not_allowed.message: It is not allowed to change the body.
     validator:
         configuration:
             connection:
                 smtp: Could not establish the SMTP connection
+
+        email_template:
+            unique_entity:
+                message: 'This name is already used. The combination of the following fields must be unique: {{ unique_fields }}'

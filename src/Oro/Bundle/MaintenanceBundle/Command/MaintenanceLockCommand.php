@@ -32,9 +32,7 @@ class MaintenanceLockCommand extends Command
         parent::__construct();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function configure()
     {
         $this
@@ -53,9 +51,7 @@ HELP
             ->setAliases(['lexik:maintenance:lock']);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $driver = $this->getDriver();
@@ -69,7 +65,7 @@ HELP
             if (!$io->askQuestion($question)) {
                 $io->caution('Maintenance cancelled!');
 
-                return 0;
+                return Command::SUCCESS;
             }
         }
 
@@ -77,12 +73,12 @@ HELP
             $this->dispatcher->dispatch(new MaintenanceEvent(), MaintenanceEvent::MAINTENANCE_ON);
             $io->success('Maintenance mode is turned on.');
 
-            return 0;
+            return Command::SUCCESS;
         }
 
         $io->error('Failed to turn on maintenance mode.');
 
-        return 1;
+        return Command::FAILURE;
     }
 
     private function getDriver(): AbstractDriver

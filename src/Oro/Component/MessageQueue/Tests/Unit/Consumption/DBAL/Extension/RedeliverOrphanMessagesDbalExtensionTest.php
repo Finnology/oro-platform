@@ -23,6 +23,7 @@ class RedeliverOrphanMessagesDbalExtensionTest extends \PHPUnit\Framework\TestCa
 
     private DbalSessionInterface|\PHPUnit\Framework\MockObject\MockObject $session;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->pidFileManager = $this->createMock(DbalPidFileManager::class);
@@ -40,7 +41,6 @@ class RedeliverOrphanMessagesDbalExtensionTest extends \PHPUnit\Framework\TestCa
             ->method('getConnection')
             ->willReturn($connection);
     }
-
 
     public function testCouldBeConstructedWithoutAnyArgument(): void
     {

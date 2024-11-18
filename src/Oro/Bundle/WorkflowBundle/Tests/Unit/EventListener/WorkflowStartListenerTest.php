@@ -31,6 +31,7 @@ class WorkflowStartListenerTest extends \PHPUnit\Framework\TestCase
     /** @var WorkflowStartListener */
     private $listener;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->systemWorkflowManager = $this->createMock(WorkflowManager::class);
@@ -235,7 +236,7 @@ class WorkflowStartListenerTest extends \PHPUnit\Framework\TestCase
     {
         $event = $this->createMock(LifecycleEventArgs::class);
         $event->expects($this->atLeastOnce())
-            ->method('getEntity')
+            ->method('getObject')
             ->willReturn($entity);
 
         return $event;

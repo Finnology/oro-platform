@@ -20,9 +20,7 @@ class NormalizeEntityStructure implements ProcessorInterface
         $this->normalizer = $normalizer;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function process(ContextInterface $context): void
     {
         /** @var Context $context */
@@ -39,7 +37,7 @@ class NormalizeEntityStructure implements ProcessorInterface
         }
 
         $context->setResult(
-            $this->normalizer->normalize($data, $context->getConfig())
+            $this->normalizer->normalize($data, $context->getRequestType())
         );
 
         // skip default normalization

@@ -45,10 +45,8 @@ class JsLogSubscriber implements EventSubscriberInterface
         $this->logFile = $this->logDir.DIRECTORY_SEPARATOR.'behat_'.LogType::BROWSER.'.log';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedEvents()
+    #[\Override]
+    public static function getSubscribedEvents(): array
     {
         return [
             AfterStepTested::AFTER  => ['log', 1000],
@@ -113,7 +111,7 @@ class JsLogSubscriber implements EventSubscriberInterface
 
         foreach ($content as $item) {
             $time = isset($item['timestamp'])
-                ? '@'.round($item['timestamp']/1000)
+                ? '@'.round($item['timestamp'] / 1000)
                 : 'now';
             $dateTime = new \DateTime($time);
             $level = isset($item['level'])

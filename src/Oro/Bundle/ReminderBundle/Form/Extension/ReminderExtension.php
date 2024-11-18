@@ -27,19 +27,15 @@ class ReminderExtension extends AbstractTypeExtension implements ServiceSubscrib
         $this->container = $container;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public static function getSubscribedServices()
+    #[\Override]
+    public static function getSubscribedServices(): array
     {
         return [
             'oro_reminder.entity.manager' => ReminderManager::class
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder->addEventListener(FormEvents::POST_SUBMIT, [$this, 'postSubmit'], -128);

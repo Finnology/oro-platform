@@ -16,6 +16,7 @@ class EmptyDataExtensionTest extends \PHPUnit\Framework\TestCase
     /** @var EmptyDataExtension */
     private $emptyDataExtension;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->entityInstantiator = $this->createMock(EntityInstantiator::class);
@@ -29,8 +30,10 @@ class EmptyDataExtensionTest extends \PHPUnit\Framework\TestCase
         $builder = $this->createMock(FormBuilderInterface::class);
         $builder->expects(self::once())
             ->method('setEmptyData')
-            ->willReturnCallback(function ($value) use (&$emptyDataNormalizer) {
+            ->willReturnCallback(function ($value) use (&$emptyDataNormalizer, $builder) {
                 $emptyDataNormalizer = $value;
+
+                return $builder;
             });
         $this->emptyDataExtension->buildForm($builder, $options);
 

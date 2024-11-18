@@ -42,10 +42,8 @@ class ImportExportTagsSubscriber implements EventSubscriberInterface, ServiceSub
         $this->container = $container;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedEvents()
+    #[\Override]
+    public static function getSubscribedEvents(): array
     {
         return [
             Events::AFTER_ENTITY_PAGE_LOADED => 'updateEntityResults',
@@ -118,7 +116,7 @@ class ImportExportTagsSubscriber implements EventSubscriberInterface, ServiceSub
             return;
         }
 
-        $uow = $args->getEntityManager()->getUnitOfWork();
+        $uow = $args->getObjectManager()->getUnitOfWork();
         // adds managed objects with updated tags into "preparedTaggedObjects" for further processing
         $this->preparedTaggedObjects = array_merge(
             $this->preparedTaggedObjects,
@@ -153,7 +151,7 @@ class ImportExportTagsSubscriber implements EventSubscriberInterface, ServiceSub
         $this->preparedTaggedObjects = [];
         // persist tags of all $taggables objects
         array_walk($taggables, [$this->getTagImportManager(), 'persistTags']);
-        $args->getEntityManager()->flush();
+        $args->getObjectManager()->flush();
     }
 
     public function normalizeEntity(NormalizeEntityEvent $event)
@@ -214,10 +212,8 @@ class ImportExportTagsSubscriber implements EventSubscriberInterface, ServiceSub
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public static function getSubscribedServices()
+    #[\Override]
+    public static function getSubscribedServices(): array
     {
         return [
             'oro_tag.tag_import.manager' => TagImportManager::class

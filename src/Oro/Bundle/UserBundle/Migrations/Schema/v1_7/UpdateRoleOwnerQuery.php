@@ -8,9 +8,7 @@ use Psr\Log\LoggerInterface;
 
 class UpdateRoleOwnerQuery extends ParametrizedMigrationQuery
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getDescription()
     {
         $logger = new ArrayLogger();
@@ -19,9 +17,7 @@ class UpdateRoleOwnerQuery extends ParametrizedMigrationQuery
         return $logger->getMessages();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function execute(LoggerInterface $logger)
     {
         $this->doExecute($logger);
@@ -63,7 +59,7 @@ class UpdateRoleOwnerQuery extends ParametrizedMigrationQuery
         $types  = ['class' => 'string'];
         $this->logQuery($logger, $sql, $params, $types);
 
-        $rows = $this->connection->fetchAll($sql, $params, $types);
+        $rows = $this->connection->fetchAllAssociative($sql, $params, $types);
 
         return $rows[0];
     }

@@ -30,9 +30,7 @@ class HandleMetaPropertyFilter implements ProcessorInterface
         $this->valueNormalizer = $valueNormalizer;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function process(ContextInterface $context): void
     {
         /** @var Context $context */
@@ -49,7 +47,7 @@ class HandleMetaPropertyFilter implements ProcessorInterface
             return;
         }
 
-        $filterValue = $context->getFilterValues()->get($filterName);
+        $filterValue = $context->getFilterValues()->getOne($filterName);
         if (null === $filterValue) {
             // meta properties were not requested
             return;
@@ -77,13 +75,11 @@ class HandleMetaPropertyFilter implements ProcessorInterface
         }
 
         $names = (array)$names;
-        $configExtra = $context->getConfigExtra(MetaPropertiesConfigExtra::NAME);
-        if (null === $configExtra) {
-            $configExtra = new MetaPropertiesConfigExtra();
+        $configExtra = $context->getConfigExtra(MetaPropertiesConfigExtra::NAME) ?? new MetaPropertiesConfigExtra();
+        $allowedMetaProperties = $filter->getAllowedMetaProperties();
+        if ($allowedMetaProperties) {
             $context->addConfigExtra($configExtra);
         }
-
-        $allowedMetaProperties = $filter->getAllowedMetaProperties();
         foreach ($names as $name) {
             if (\array_key_exists($name, $allowedMetaProperties)) {
                 $configExtra->addMetaProperty($name, $allowedMetaProperties[$name]);
@@ -91,7 +87,7 @@ class HandleMetaPropertyFilter implements ProcessorInterface
                 $context->addError($this->createInvalidFilterValueKeyError(
                     $filterValue->getSourceKey(),
                     sprintf(
-                        'The "%s" value is not allowed. Allowed values: %s',
+                        'The "%s" is not known meta property. Known properties: %s.',
                         $name,
                         implode(', ', array_keys($allowedMetaProperties))
                     )

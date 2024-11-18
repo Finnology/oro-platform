@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\LocaleBundle\Tests\Functional\Command;
@@ -18,6 +19,7 @@ class UpdateLocalizationCommandTest extends WebTestCase
     private LocalizationRepository $localizationRepository;
     private LanguageRepository $languageRepository;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->initClient();

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\ActionBundle\Command;
@@ -16,6 +17,7 @@ class DebugActionCommand extends AbstractDebugCommand
     protected static $defaultName = 'oro:debug:action';
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     protected function configure()
     {
         $this
@@ -37,6 +39,7 @@ HELP
         ;
     }
 
+    #[\Override]
     protected function getArgumentName(): string
     {
         return self::ARGUMENT_NAME;

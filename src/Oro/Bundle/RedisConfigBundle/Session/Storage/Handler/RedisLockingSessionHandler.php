@@ -89,23 +89,18 @@ class RedisLockingSessionHandler extends AbstractSessionHandler
      * Redis session storage constructor.
      *
      * @param \Predis\Client|\Redis $redis Redis database connection
-     * @param array $options Session options
      * @param string $prefix Prefix to use when writing session data
      * @param bool $locking Indicates an sessions should be locked
      * @param int $spinLockWait Microseconds to wait between acquire lock tries
      */
     public function __construct(
         \Predis\Client|\Redis $redis,
-        array $options = [],
         string $prefix = 'session',
         bool $locking = true,
         int $spinLockWait = 150000
     ) {
         $this->redis = $redis;
-        $this->ttl = isset($options['gc_maxlifetime']) ? (int)$options['gc_maxlifetime'] : 0;
-        if (isset($options['cookie_lifetime']) && $options['cookie_lifetime'] > $this->ttl) {
-            $this->ttl = (int)$options['cookie_lifetime'];
-        }
+        $this->ttl = (int) \ini_get('session.gc_maxlifetime');
         $this->prefix = $prefix;
 
         $this->locking = $locking;
@@ -134,9 +129,7 @@ class RedisLockingSessionHandler extends AbstractSessionHandler
         $this->ttl = $ttl;
     }
 
-    /**
-     * @return bool
-     */
+    #[\Override]
     public function close(): bool
     {
         if ($this->locking && $this->locked) {
@@ -146,9 +139,7 @@ class RedisLockingSessionHandler extends AbstractSessionHandler
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function updateTimestamp(string $id, string $data): bool
     {
         if (0 < $this->ttl) {
@@ -158,18 +149,14 @@ class RedisLockingSessionHandler extends AbstractSessionHandler
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function gc($maxlifetime): int|false
     {
         // not required here because redis will auto expire the keys as long as ttl is set
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function doRead($sessionId): string
     {
         if ($this->locking && !$this->locked && !$this->lockSession($sessionId)) {
@@ -179,9 +166,7 @@ class RedisLockingSessionHandler extends AbstractSessionHandler
         return $this->redis->get($this->getRedisKey($sessionId)) ?: '';
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function doWrite($sessionId, $data): bool
     {
         if (0 < $this->ttl) {
@@ -193,9 +178,7 @@ class RedisLockingSessionHandler extends AbstractSessionHandler
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function doDestroy($sessionId): bool
     {
         $this->redis->del($this->getRedisKey($sessionId));

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\TranslationBundle\Tests\Unit\Action;
@@ -23,6 +24,7 @@ class DownloadUpdateLanguageTranslationActionTest extends \PHPUnit\Framework\Tes
     /** @var DownloadUpdateLanguageTranslationAction */
     private $action;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->translationDownloader = $this->createMock(TranslationDownloader::class);

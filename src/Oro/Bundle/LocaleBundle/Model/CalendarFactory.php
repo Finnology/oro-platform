@@ -20,9 +20,7 @@ class CalendarFactory implements CalendarFactoryInterface, ServiceSubscriberInte
         $this->container = $container;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getCalendar($locale = null, $language = null)
     {
         /** @var Calendar $result */
@@ -32,10 +30,8 @@ class CalendarFactory implements CalendarFactoryInterface, ServiceSubscriberInte
         return $result;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedServices()
+    #[\Override]
+    public static function getSubscribedServices(): array
     {
         return [
             'oro_locale.calendar' => Calendar::class

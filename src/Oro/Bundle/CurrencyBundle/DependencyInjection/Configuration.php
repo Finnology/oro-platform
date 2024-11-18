@@ -28,10 +28,8 @@ class Configuration implements ConfigurationInterface
         return self::ROOT_NAME . ConfigManager::SECTION_MODEL_SEPARATOR . $name;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function getConfigTreeBuilder()
+    #[\Override]
+    public function getConfigTreeBuilder(): TreeBuilder
     {
         $treeBuilder = new TreeBuilder(self::ROOT_NAME);
 

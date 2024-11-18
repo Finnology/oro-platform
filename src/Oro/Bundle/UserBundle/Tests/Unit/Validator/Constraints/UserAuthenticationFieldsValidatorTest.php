@@ -15,12 +15,14 @@ class UserAuthenticationFieldsValidatorTest extends ConstraintValidatorTestCase
     /** @var UserManager|\PHPUnit\Framework\MockObject\MockObject */
     private $userManager;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->userManager = $this->createMock(UserManager::class);
         parent::setUp();
     }
 
+    #[\Override]
     protected function createValidator(): UserAuthenticationFieldsValidator
     {
         return new UserAuthenticationFieldsValidator($this->userManager);
@@ -137,6 +139,7 @@ class UserAuthenticationFieldsValidatorTest extends ConstraintValidatorTestCase
     public function testUsernameIsNull()
     {
         $user = $this->getUser(1);
+        $user->setUserIdentifier('test@example.com');
         $user->setEmail('test@example.com');
 
         $this->userManager->expects($this->never())

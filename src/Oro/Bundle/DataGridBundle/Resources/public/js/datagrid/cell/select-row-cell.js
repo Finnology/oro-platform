@@ -59,7 +59,7 @@ define(function(require) {
             this.template = this.getTemplateFunction();
 
             this.listenTo(this.model, 'backgrid:select', function(model, checked) {
-                this.$(':checkbox').prop('checked', checked).change();
+                this.$(':checkbox').prop('checked', checked).trigger('change');
             });
         },
 
@@ -82,7 +82,7 @@ define(function(require) {
          */
         updateCheckbox: function(e) {
             if (this.$checkbox.get(0) !== e.target && !$(e.target).closest('label').length) {
-                this.$checkbox.prop('checked', !this.$checkbox.prop('checked')).change();
+                this.$checkbox.prop('checked', !this.$checkbox.prop('checked')).trigger('change');
             }
             e.stopPropagation();
         },
@@ -103,7 +103,9 @@ define(function(require) {
             // work around with trigger event to get current state of model (selected or not)
             const state = {selected: false};
             this.model.trigger('backgrid:isSelected', this.model, state);
+            const data = this.model.toJSON();
             this.$el.html(this.template({
+                ...data,
                 checked: state.selected
             }));
             this.$checkbox = this.$el.find(this.checkboxSelector);

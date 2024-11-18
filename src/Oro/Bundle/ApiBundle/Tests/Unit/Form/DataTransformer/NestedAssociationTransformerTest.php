@@ -10,7 +10,9 @@ use Oro\Bundle\ApiBundle\Tests\Unit\Fixtures\Entity\Group;
 use Oro\Bundle\ApiBundle\Tests\Unit\Fixtures\Entity\User;
 use Oro\Bundle\ApiBundle\Tests\Unit\Fixtures\Entity\UserProfile;
 use Oro\Bundle\ApiBundle\Tests\Unit\OrmRelatedTestCase;
+use Oro\Bundle\ApiBundle\Util\DoctrineHelper;
 use Oro\Bundle\ApiBundle\Util\EntityLoader;
+use Oro\Component\DoctrineUtils\ORM\QueryHintResolverInterface;
 use Symfony\Component\Form\Exception\TransformationFailedException;
 
 /**
@@ -22,7 +24,10 @@ class NestedAssociationTransformerTest extends OrmRelatedTestCase
     {
         return new NestedAssociationTransformer(
             $this->doctrineHelper,
-            new EntityLoader($this->doctrine),
+            new EntityLoader(
+                new DoctrineHelper($this->doctrine),
+                $this->createMock(QueryHintResolverInterface::class)
+            ),
             $metadata
         );
     }

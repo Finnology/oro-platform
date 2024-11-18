@@ -13,11 +13,11 @@ class Configuration implements ConfigurationInterface
     public const ROOT_NODE_NAME = 'charts';
 
     /**
-     * {@inheritdoc}
      *
      * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      */
-    public function getConfigTreeBuilder()
+    #[\Override]
+    public function getConfigTreeBuilder(): TreeBuilder
     {
         $treeBuilder = new TreeBuilder(self::ROOT_NODE_NAME);
         $treeBuilder->getRootNode()

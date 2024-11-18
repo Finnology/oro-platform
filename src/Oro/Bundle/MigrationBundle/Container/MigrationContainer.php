@@ -36,76 +36,58 @@ class MigrationContainer extends DependencyInjectionContainer
         $this->privateContainer = $privateContainer;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function compile()
     {
         $this->publicContainer->compile();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function isCompiled()
+    #[\Override]
+    public function isCompiled(): bool
     {
         return $this->publicContainer->isCompiled();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function set(string $id, ?object $service)
     {
         $this->publicContainer->set($id, $service);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function has(string $id)
+    #[\Override]
+    public function has(string $id): bool
     {
         return $this->publicContainer->has($id) || $this->privateContainer->has($id);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function get($id, $invalidBehavior = /* self::EXCEPTION_ON_INVALID_REFERENCE */ 1)
+    #[\Override]
+    public function get($id, $invalidBehavior = /* self::EXCEPTION_ON_INVALID_REFERENCE */ 1): ?object
     {
         return $this->privateContainer->has($id)
             ? $this->privateContainer->get($id)
             : $this->publicContainer->get($id, $invalidBehavior);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function initialized(string $id)
+    #[\Override]
+    public function initialized(string $id): bool
     {
         return $this->publicContainer->initialized($id);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function reset()
     {
         $this->publicContainer->reset();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getServiceIds()
+    #[\Override]
+    public function getServiceIds(): array
     {
         return $this->publicContainer->getServiceIds();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getRemovedIds()
+    #[\Override]
+    public function getRemovedIds(): array
     {
         return $this->publicContainer->getRemovedIds();
     }

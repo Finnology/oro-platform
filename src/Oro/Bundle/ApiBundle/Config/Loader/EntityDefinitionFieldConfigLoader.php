@@ -29,6 +29,7 @@ class EntityDefinitionFieldConfigLoader extends AbstractConfigLoader implements 
     private const TARGET_ENTITY_METHOD_MAP = [
         ConfigUtil::EXCLUSION_POLICY       => 'setExclusionPolicy',
         ConfigUtil::IDENTIFIER_FIELD_NAMES => 'setIdentifierFieldNames',
+        ConfigUtil::IDENTIFIER_DESCRIPTION => 'setIdentifierDescription',
         ConfigUtil::ORDER_BY               => 'setOrderBy',
         ConfigUtil::MAX_RESULTS            => 'setMaxResults',
         ConfigUtil::HINTS                  => 'setHints',
@@ -37,17 +38,13 @@ class EntityDefinitionFieldConfigLoader extends AbstractConfigLoader implements 
 
     private ConfigLoaderFactory $factory;
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function setConfigLoaderFactory(ConfigLoaderFactory $factory): void
     {
         $this->factory = $factory;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function load(array $config): mixed
     {
         $field = new EntityDefinitionFieldConfig();
@@ -70,6 +67,9 @@ class EntityDefinitionFieldConfigLoader extends AbstractConfigLoader implements 
             } elseif ($this->factory->hasLoader($key)) {
                 $this->loadTargetSection($field, $this->factory->getLoader($key), $key, $value);
             } else {
+                if (ConfigUtil::DATA_TYPE === $key) {
+                    $value = $this->resolveDataType($value);
+                }
                 $this->loadConfigValue($field, $key, $value, self::METHOD_MAP);
             }
         }

@@ -2,6 +2,7 @@
 
 namespace Oro\Bundle\EmailBundle\Form\Type;
 
+use Oro\Bundle\EmailBundle\Entity\EmailThread;
 use Oro\Bundle\EmailBundle\Form\Model\EmailApi;
 use Oro\Bundle\FormBundle\Form\Type\EntityIdentifierType;
 use Oro\Bundle\FormBundle\Form\Type\OroDateTimeType;
@@ -19,13 +20,16 @@ use Symfony\Component\Form\FormEvents;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints as Assert;
 
+/**
+ * Represents email API form type.
+ */
 class EmailApiType extends AbstractType
 {
     /**
-     * {@inheritdoc}
      *
      * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      */
+    #[\Override]
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
@@ -125,7 +129,7 @@ class EmailApiType extends AbstractType
                 EntityIdentifierType::class,
                 [
                     'required'       => false,
-                    'class'          => 'OroEmailBundle:EmailThread',
+                    'class'          => EmailThread::class,
                     'multiple'       => false,
                     'error_bubbling' => false
                 ]
@@ -137,9 +141,7 @@ class EmailApiType extends AbstractType
         $builder->addEventListener(FormEvents::POST_SUBMIT, [$this, 'postSubmit']);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults(
@@ -151,18 +153,13 @@ class EmailApiType extends AbstractType
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getName()
     {
         return $this->getBlockPrefix();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return 'oro_email_email_api';
     }

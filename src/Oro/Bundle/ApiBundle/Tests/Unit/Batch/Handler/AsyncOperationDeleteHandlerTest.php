@@ -17,18 +17,19 @@ use Psr\Log\LoggerInterface;
 
 class AsyncOperationDeleteHandlerTest extends \PHPUnit\Framework\TestCase
 {
-    /** @var \PHPUnit\Framework\MockObject\MockObject|FileManager */
+    /** @var FileManager|\PHPUnit\Framework\MockObject\MockObject */
     private $fileManager;
 
-    /** @var \PHPUnit\Framework\MockObject\MockObject|LoggerInterface */
+    /** @var LoggerInterface|\PHPUnit\Framework\MockObject\MockObject */
     private $logger;
 
-    /** @var \PHPUnit\Framework\MockObject\MockObject|EntityManagerInterface */
+    /** @var EntityManagerInterface|\PHPUnit\Framework\MockObject\MockObject */
     private $em;
 
     /** @var AsyncOperationDeleteHandler */
     private $deleteHandler;
 
+    #[\Override]
     protected function setUp(): void
     {
         $extension = new EntityDeleteHandlerExtension();
@@ -64,6 +65,7 @@ class AsyncOperationDeleteHandlerTest extends \PHPUnit\Framework\TestCase
 
         return $operation;
     }
+
     public function testIsDeleteGranted()
     {
         $operation = $this->getAsyncOperation(234);

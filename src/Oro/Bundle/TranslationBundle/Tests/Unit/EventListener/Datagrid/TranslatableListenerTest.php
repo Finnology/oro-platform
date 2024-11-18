@@ -17,6 +17,7 @@ class TranslatableListenerTest extends \PHPUnit\Framework\TestCase
     /** @var TranslatableListener */
     private $listener;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->listener = new TranslatableListener();
@@ -29,7 +30,7 @@ class TranslatableListenerTest extends \PHPUnit\Framework\TestCase
 
         $eventManager = $this->createMock(EventManager::class);
         $eventManager->expects(self::once())
-            ->method('getListeners')
+            ->method('getAllListeners')
             ->willReturn([[$gedmoTranslatableListener]]);
 
         $entityManager = $this->createMock(EntityManager::class);

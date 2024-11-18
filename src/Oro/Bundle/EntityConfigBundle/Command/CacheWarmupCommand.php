@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\EntityConfigBundle\Command;
@@ -25,6 +26,7 @@ class CacheWarmupCommand extends Command
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     public function configure()
     {
         $this
@@ -45,12 +47,13 @@ HELP
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      * @noinspection PhpMissingParentCallCommonInspection
      */
-    public function execute(InputInterface $input, OutputInterface $output)
+    #[\Override]
+    public function execute(InputInterface $input, OutputInterface $output): int
     {
         $output->writeln('Warm up the entity config cache');
 
         $this->configCacheWarmer->warmUpCache();
 
-        return 0;
+        return Command::SUCCESS;
     }
 }

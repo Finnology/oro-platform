@@ -2,11 +2,11 @@
 
 namespace Oro\Bundle\ImapBundle\Provider;
 
-use Http\Client\Common\HttpMethodsClientInterface;
-use HWI\Bundle\OAuthBundle\Security\Http\ResourceOwnerMap;
+use HWI\Bundle\OAuthBundle\Security\Http\ResourceOwnerMapInterface;
 use Oro\Bundle\ConfigBundle\Config\ConfigManager;
 use Oro\Bundle\SecurityBundle\Encoder\SymmetricCrypterInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
  * Provides functionality to work with Microsoft OAuth implementation.
@@ -18,8 +18,8 @@ class MicrosoftOAuthProvider extends AbstractOAuthProvider
     private UrlGeneratorInterface $urlGenerator;
 
     public function __construct(
-        HttpMethodsClientInterface $httpClient,
-        ResourceOwnerMap $resourceOwnerMap,
+        HttpClientInterface $httpClient,
+        ResourceOwnerMapInterface $resourceOwnerMap,
         ConfigManager $configManager,
         SymmetricCrypterInterface $crypter,
         UrlGeneratorInterface $urlGenerator
@@ -30,9 +30,7 @@ class MicrosoftOAuthProvider extends AbstractOAuthProvider
         $this->urlGenerator = $urlGenerator;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getAuthorizationUrl(): string
     {
         return str_replace(
@@ -42,9 +40,7 @@ class MicrosoftOAuthProvider extends AbstractOAuthProvider
         );
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getRedirectUrl(): string
     {
         return $this->urlGenerator->generate(
@@ -54,9 +50,7 @@ class MicrosoftOAuthProvider extends AbstractOAuthProvider
         );
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     protected function getAccessTokenUrl(): string
     {
         return str_replace(
@@ -66,17 +60,13 @@ class MicrosoftOAuthProvider extends AbstractOAuthProvider
         );
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     protected function getResourceOwnerName(): string
     {
         return 'office365';
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     protected function getCommonParameters(): array
     {
         return [
@@ -87,9 +77,7 @@ class MicrosoftOAuthProvider extends AbstractOAuthProvider
         ];
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     protected function getAccessTokenParameters(string $code, array $scopes = null): array
     {
         $parameters = parent::getAccessTokenParameters($code, $scopes);

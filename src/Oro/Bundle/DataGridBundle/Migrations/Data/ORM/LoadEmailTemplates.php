@@ -3,37 +3,35 @@
 namespace Oro\Bundle\DataGridBundle\Migrations\Data\ORM;
 
 use Doctrine\Persistence\ObjectManager;
+use Oro\Bundle\EmailBundle\Entity\EmailTemplate;
 use Oro\Bundle\EmailBundle\Migrations\Data\ORM\AbstractEmailFixture;
 use Oro\Bundle\MigrationBundle\Fixture\VersionedFixtureInterface;
 
+/**
+ * Loads email templates for grids.
+ */
 class LoadEmailTemplates extends AbstractEmailFixture implements VersionedFixtureInterface
 {
-    /**
-     * {@inheritdoc}
-     */
-    public function getVersion()
+    #[\Override]
+    public function getVersion(): string
     {
         return '1.1';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function findExistingTemplate(ObjectManager $manager, array $template)
+    #[\Override]
+    protected function findExistingTemplate(ObjectManager $manager, array $template): ?EmailTemplate
     {
         if (empty($template['params']['name'])) {
             return null;
         }
 
-        return $manager->getRepository('OroEmailBundle:EmailTemplate')->findOneBy([
-            'name' => $template['params']['name'],
+        return $manager->getRepository(EmailTemplate::class)->findOneBy([
+            'name' => $template['params']['name']
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getEmailsDir()
+    #[\Override]
+    public function getEmailsDir(): string
     {
         return $this->container
             ->get('kernel')

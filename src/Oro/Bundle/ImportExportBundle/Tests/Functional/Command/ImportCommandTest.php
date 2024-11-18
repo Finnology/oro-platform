@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\ImportExportBundle\Tests\Functional\Command;
@@ -13,6 +14,7 @@ class ImportCommandTest extends WebTestCase
 {
     use MessageQueueExtension;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->initClient();

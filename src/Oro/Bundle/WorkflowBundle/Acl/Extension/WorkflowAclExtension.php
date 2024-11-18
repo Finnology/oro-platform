@@ -7,7 +7,7 @@ use Oro\Bundle\SecurityBundle\Acl\Domain\ObjectIdAccessor;
 use Oro\Bundle\SecurityBundle\Acl\Domain\ObjectIdentityFactory;
 use Oro\Bundle\SecurityBundle\Acl\Extension\AccessLevelOwnershipDecisionMakerInterface;
 use Oro\Bundle\SecurityBundle\Acl\Extension\ObjectIdentityHelper;
-use Oro\Bundle\SecurityBundle\Annotation\Acl as AclAnnotation;
+use Oro\Bundle\SecurityBundle\Attribute\Acl as AclAttribute;
 use Oro\Bundle\SecurityBundle\Owner\EntityOwnerAccessor;
 use Oro\Bundle\SecurityBundle\Owner\Metadata\OwnershipMetadataProviderInterface;
 use Oro\Bundle\WorkflowBundle\Acl\Extension\WorkflowMaskBuilder as MaskBuilder;
@@ -75,49 +75,37 @@ class WorkflowAclExtension extends AbstractWorkflowAclExtension
         $this->maskBuilder = new MaskBuilder();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getExtensionKey()
     {
         return self::NAME;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function supports($type, $id)
     {
         return $this->getExtensionKey() === $id;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getFieldExtension()
     {
         return $this->transitionAclExtension;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getClasses()
     {
         return $this->workflowMetadataProvider->getMetadata();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getAllowedPermissions(ObjectIdentity $oid, $fieldName = null, $aclGroup = null)
     {
         return $this->permissions;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function decideIsGranting($triggeredMask, $object, TokenInterface $securityToken)
     {
         if (!$this->isSupportedObject($object)) {
@@ -127,9 +115,7 @@ class WorkflowAclExtension extends AbstractWorkflowAclExtension
         return $this->isAccessGranted($triggeredMask, $object, $securityToken);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getObjectIdentity($val)
     {
         if (\is_string($val)) {
@@ -141,40 +127,32 @@ class WorkflowAclExtension extends AbstractWorkflowAclExtension
 
             return new ObjectIdentity($id, ObjectIdentityHelper::buildType($type, $group));
         }
-        if ($val instanceof AclAnnotation) {
-            throw new \InvalidArgumentException('Workflow ACL Extension does not support ACL annotations.');
+        if ($val instanceof AclAttribute) {
+            throw new \InvalidArgumentException('Workflow ACL Extension does not support ACL attributes.');
         }
 
         return $this->fromDomainObject($val);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getMaskPattern($mask)
     {
         return MaskBuilder::getPatternFor($mask);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getServiceBits($mask)
     {
         return $mask & MaskBuilder::SERVICE_BITS;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function removeServiceBits($mask)
     {
         return $mask & MaskBuilder::REMOVE_SERVICE_BITS;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     protected function getValidMasks($object)
     {
         if ($object instanceof ObjectIdentity && $object->getType() === ObjectIdentityFactory::ROOT_IDENTITY_TYPE) {

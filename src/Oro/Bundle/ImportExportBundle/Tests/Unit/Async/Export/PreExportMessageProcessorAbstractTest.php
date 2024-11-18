@@ -45,6 +45,7 @@ class PreExportMessageProcessorAbstractTest extends \PHPUnit\Framework\TestCase
     /** @var PreExportMessageProcessorStub */
     private $processor;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->jobRunner = $this->createMock(JobRunner::class);
@@ -147,24 +148,9 @@ class PreExportMessageProcessorAbstractTest extends \PHPUnit\Framework\TestCase
         self::assertEquals(MessageProcessorInterface::ACK, $result);
     }
 
-    public function invalidUserTypeProvider(): array
+    public function testShouldThrowExceptionOnGetUserIfUserTypeInvalid(): void
     {
-        $notObject = 'not_object';
-        $notUserObject = new \stdClass();
-        $userWithoutRequiredMethods = $this->createMock(UserInterface::class);
-
-        return [
-            [$notObject],
-            [$notUserObject],
-            [$userWithoutRequiredMethods]
-        ];
-    }
-
-    /**
-     * @dataProvider invalidUserTypeProvider
-     */
-    public function testShouldThrowExceptionOnGetUserIfUserTypeInvalid(mixed $user): void
-    {
+        $user = $this->createMock(UserInterface::class);
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Not supported user type');
 

@@ -2,8 +2,7 @@
 
 namespace Oro\Bundle\EmailBundle\Tests\Unit\Async;
 
-use Doctrine\Common\Annotations\AnnotationReader;
-use Doctrine\ORM\Mapping\Driver\AnnotationDriver;
+use Doctrine\ORM\Mapping\Driver\AttributeDriver;
 use Doctrine\ORM\UnitOfWork;
 use Doctrine\Persistence\ManagerRegistry;
 use Oro\Bundle\EmailBundle\Async\Topic\UpdateEmailVisibilitiesForOrganizationChunkTopic;
@@ -36,14 +35,14 @@ class UpdateEmailVisibilitiesForOrganizationChunkProcessorTest extends OrmTestCa
     /** @var UpdateEmailVisibilitiesForOrganizationChunkProcessor */
     private $processor;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->emailAddressVisibilityManager = $this->createMock(EmailAddressVisibilityManager::class);
         $this->jobRunner = $this->createMock(JobRunner::class);
 
         $this->em = $this->getTestEntityManager();
-        $this->em->getConfiguration()->setMetadataDriverImpl(new AnnotationDriver(
-            new AnnotationReader(),
+        $this->em->getConfiguration()->setMetadataDriverImpl(new AttributeDriver(
             [dirname((new \ReflectionClass(Email::class))->getFileName())]
         ));
 

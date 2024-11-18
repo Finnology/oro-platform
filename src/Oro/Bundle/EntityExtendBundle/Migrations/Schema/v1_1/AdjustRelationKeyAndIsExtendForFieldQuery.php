@@ -24,9 +24,7 @@ class AdjustRelationKeyAndIsExtendForFieldQuery extends ParametrizedMigrationQue
         $this->fieldTypeHelper = $fieldTypeHelper;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getDescription()
     {
         $logger = new ArrayLogger();
@@ -35,9 +33,7 @@ class AdjustRelationKeyAndIsExtendForFieldQuery extends ParametrizedMigrationQue
         return $logger->getMessages();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function execute(LoggerInterface $logger)
     {
         $this->doExecute($logger);
@@ -99,7 +95,7 @@ class AdjustRelationKeyAndIsExtendForFieldQuery extends ParametrizedMigrationQue
         $this->logQuery($logger, $sql);
 
         $result = [];
-        $rows   = $this->connection->fetchAll($sql);
+        $rows   = $this->connection->fetchAllAssociative($sql);
         foreach ($rows as $row) {
             $result[] = $row['class_name'];
         }
@@ -125,7 +121,7 @@ class AdjustRelationKeyAndIsExtendForFieldQuery extends ParametrizedMigrationQue
 
         $result = [];
 
-        $rows = $this->connection->fetchAll($sql, $params, $types);
+        $rows = $this->connection->fetchAllAssociative($sql, $params, $types);
         foreach ($rows as $row) {
             $fieldName          = $row['field_name'];
             $result[$fieldName] = [

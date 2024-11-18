@@ -1,4 +1,5 @@
 <?php
+
 namespace Oro\Bundle\AddressBundle\Tests\Unit\Form\Type;
 
 use Oro\Bundle\AddressBundle\Form\Type\AddressCollectionType;
@@ -9,6 +10,7 @@ class AddressCollectionTypeTest extends \PHPUnit\Framework\TestCase
     /** @var AddressCollectionType */
     private $type;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->type = new AddressCollectionType();

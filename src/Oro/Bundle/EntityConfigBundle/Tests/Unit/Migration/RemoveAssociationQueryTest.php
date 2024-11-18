@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\EntityConfigBundle\Tests\Unit\Migration;
@@ -26,6 +27,7 @@ class RemoveAssociationQueryTest extends \PHPUnit\Framework\TestCase
     /** @var LoggerInterface|\PHPUnit\Framework\MockObject\MockObject */
     private $logger;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->connection = $this->createMock(Connection::class);
@@ -60,7 +62,7 @@ class RemoveAssociationQueryTest extends \PHPUnit\Framework\TestCase
     public function testExecuteThrowsExceptionForNonConfigurableEntity()
     {
         $this->connection->expects($this->any())
-            ->method('fetchAssoc')
+            ->method('fetchAssociative')
             ->willReturn(false);
 
         $this->expectException(\LogicException::class);
@@ -103,7 +105,7 @@ class RemoveAssociationQueryTest extends \PHPUnit\Framework\TestCase
         ];
 
         $this->connection->expects($this->any())
-            ->method('fetchAssoc')
+            ->method('fetchAssociative')
             ->willReturn(['id' => '12345', 'data' => \serialize($dataWithRelation)]);
         $this->connection->expects(self::once())
             ->method('convertToPHPValue')
@@ -195,7 +197,7 @@ class RemoveAssociationQueryTest extends \PHPUnit\Framework\TestCase
         ];
 
         $this->connection->expects($this->any())
-            ->method('fetchAssoc')
+            ->method('fetchAssociative')
             ->willReturn(['id' => '12345', 'data' => \serialize($dataWithRelation)]);
         $this->connection->expects(self::once())
             ->method('convertToPHPValue')
@@ -319,7 +321,7 @@ class RemoveAssociationQueryTest extends \PHPUnit\Framework\TestCase
         ];
 
         $this->connection->expects($this->any())
-            ->method('fetchAssoc')
+            ->method('fetchAssociative')
             ->willReturn(['id' => '12345', 'data' => \serialize($dataWithRelation)]);
         $this->connection->expects(self::once())
             ->method('convertToPHPValue')

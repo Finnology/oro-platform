@@ -13,9 +13,7 @@ use Oro\Component\ChainProcessor\ProcessorInterface;
  */
 class ValidateRequestDataExist implements ProcessorInterface
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function process(ContextInterface $context): void
     {
         /** @var FormContext $context */
@@ -25,7 +23,7 @@ class ValidateRequestDataExist implements ProcessorInterface
             $context->addError(
                 Error::createValidationError(
                     Constraint::REQUEST_DATA,
-                    'The request data should not be empty'
+                    'The request data should not be empty.'
                 )
             );
         }

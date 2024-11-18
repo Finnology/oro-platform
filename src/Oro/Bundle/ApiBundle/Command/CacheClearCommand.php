@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\ApiBundle\Command;
@@ -28,6 +29,7 @@ class CacheClearCommand extends Command
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     protected function configure(): void
     {
         $this
@@ -52,6 +54,7 @@ HELP
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
@@ -60,14 +63,16 @@ HELP
 
         if ($noWarmup) {
             $io->comment('Clearing API cache...');
+            $this->cacheManager->warmUpConfigCache();
             $this->cacheManager->clearCaches();
         } else {
             $io->comment('Warming up API cache...');
+            $this->cacheManager->warmUpConfigCache();
             $this->cacheManager->warmUpCaches();
         }
 
         $io->success('API cache was successfully cleared.');
 
-        return 0;
+        return Command::SUCCESS;
     }
 }

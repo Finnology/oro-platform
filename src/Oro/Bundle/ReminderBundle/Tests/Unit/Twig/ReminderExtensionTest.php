@@ -2,7 +2,7 @@
 
 namespace Oro\Bundle\ReminderBundle\Tests\Unit\Twig;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 use Oro\Bundle\ReminderBundle\Entity\Reminder;
 use Oro\Bundle\ReminderBundle\Entity\Repository\ReminderRepository;
@@ -12,6 +12,7 @@ use Oro\Bundle\UserBundle\Entity\User;
 use Oro\Component\Testing\Unit\TwigExtensionTestCaseTrait;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 class ReminderExtensionTest extends \PHPUnit\Framework\TestCase
 {
@@ -20,7 +21,7 @@ class ReminderExtensionTest extends \PHPUnit\Framework\TestCase
     /** @var TokenStorageInterface|\PHPUnit\Framework\MockObject\MockObject */
     private $tokenStorage;
 
-    /** @var EntityManager|\PHPUnit\Framework\MockObject\MockObject */
+    /** @var EntityManagerInterface|\PHPUnit\Framework\MockObject\MockObject */
     private $entityManager;
 
     /** @var MessageParamsProvider|\PHPUnit\Framework\MockObject\MockObject */
@@ -29,10 +30,11 @@ class ReminderExtensionTest extends \PHPUnit\Framework\TestCase
     /** @var ReminderExtension */
     private $extension;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->tokenStorage = $this->createMock(TokenStorageInterface::class);
-        $this->entityManager = $this->createMock(EntityManager::class);
+        $this->entityManager = $this->createMock(EntityManagerInterface::class);
         $this->paramsProvider = $this->createMock(MessageParamsProvider::class);
 
         $doctrine = $this->createMock(ManagerRegistry::class);
@@ -71,7 +73,7 @@ class ReminderExtensionTest extends \PHPUnit\Framework\TestCase
         $token = $this->createMock(TokenInterface::class);
         $token->expects($this->once())
             ->method('getUser')
-            ->willReturn(new \stdClass());
+            ->willReturn($this->createMock(UserInterface::class));
         $this->tokenStorage->expects($this->atLeastOnce())
             ->method('getToken')
             ->willReturn($token);

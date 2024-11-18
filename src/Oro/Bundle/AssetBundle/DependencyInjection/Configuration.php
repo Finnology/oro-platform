@@ -8,12 +8,10 @@ use Symfony\Component\Config\Definition\ConfigurationInterface;
 
 class Configuration implements ConfigurationInterface
 {
-    /**
-     * {@inheritDoc}
-     */
-    public function getConfigTreeBuilder()
+    #[\Override]
+    public function getConfigTreeBuilder(): TreeBuilder
     {
-        $finder = new NodeJsExecutableFinder;
+        $finder = new NodeJsExecutableFinder();
         $treeBuilder = new TreeBuilder('oro_asset');
         $treeBuilder->getRootNode()
             ->children()

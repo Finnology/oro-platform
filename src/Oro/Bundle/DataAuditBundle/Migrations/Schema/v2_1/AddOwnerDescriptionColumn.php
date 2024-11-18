@@ -8,21 +8,10 @@ use Oro\Bundle\MigrationBundle\Migration\QueryBag;
 
 class AddOwnerDescriptionColumn implements Migration
 {
-    /**
-     * {@inheritdoc}
-     */
-    public function up(Schema $schema, QueryBag $queries)
+    #[\Override]
+    public function up(Schema $schema, QueryBag $queries): void
     {
-        self::addOwnerDecriptionColumn($schema);
-    }
-
-    /**
-     * Adds owner_description column
-     */
-    public static function addOwnerDecriptionColumn(Schema $schema)
-    {
-        $table = $schema->getTable('oro_audit');
-
-        $table->addColumn('owner_description', 'string', ['notnull' => false, 'length' => 255]);
+        $schema->getTable('oro_audit')
+            ->addColumn('owner_description', 'string', ['notnull' => false, 'length' => 255]);
     }
 }

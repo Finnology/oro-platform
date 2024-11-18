@@ -12,9 +12,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
  */
 class EntityFilterType extends AbstractChoiceType
 {
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
@@ -45,18 +43,14 @@ class EntityFilterType extends AbstractChoiceType
         );
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function getParent()
+    #[\Override]
+    public function getParent(): ?string
     {
         return ChoiceFilterType::class;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return 'oro_type_entity_filter';
     }

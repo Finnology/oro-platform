@@ -96,8 +96,6 @@ class View implements ViewInterface
 
     /**
      * Getter for label
-     *
-     * @return string
      */
     public function getLabel(): string
     {
@@ -126,9 +124,7 @@ class View implements ViewInterface
         return $this->icon;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getName()
     {
         return $this->name;
@@ -142,9 +138,7 @@ class View implements ViewInterface
         return $this->type;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function setSortersData(array $sortersData = [])
     {
         $this->sortersData = $sortersData;
@@ -152,17 +146,13 @@ class View implements ViewInterface
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getSortersData()
     {
         return $this->sortersData;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function setFiltersData(array $filtersData)
     {
         $this->filtersData = $filtersData;
@@ -170,9 +160,7 @@ class View implements ViewInterface
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getFiltersData()
     {
         return $this->filtersData;
@@ -206,9 +194,7 @@ class View implements ViewInterface
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getColumnsData()
     {
         if ($this->columnsData === null) {
@@ -218,9 +204,7 @@ class View implements ViewInterface
         return $this->columnsData;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function setColumnsData(array $columnsData = [])
     {
         $this->columnsData = $columnsData;
@@ -252,6 +236,7 @@ class View implements ViewInterface
     /**
      * @return string
      */
+    #[\Override]
     public function getAppearanceTypeName()
     {
         return $this->appearanceType;
@@ -293,9 +278,7 @@ class View implements ViewInterface
         $this->sharedBy = $sharedBy;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function setGridName($gridName)
     {
         $this->gridName = $gridName;
@@ -303,9 +286,7 @@ class View implements ViewInterface
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getGridName()
     {
         return $this->gridName;

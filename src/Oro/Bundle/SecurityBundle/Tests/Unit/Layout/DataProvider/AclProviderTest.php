@@ -20,6 +20,7 @@ class AclProviderTest extends \PHPUnit\Framework\TestCase
     /** @var AclProvider */
     private $provider;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->authorizationChecker = $this->createMock(AuthorizationCheckerInterface::class);
@@ -31,7 +32,7 @@ class AclProviderTest extends \PHPUnit\Framework\TestCase
         );
     }
 
-    public function testIsGrantedByAclAnnotationId(): void
+    public function testIsGrantedByAclAttributeId(): void
     {
         $attributes = 'acme_product_view';
         $expectedResult = true;

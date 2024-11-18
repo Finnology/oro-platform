@@ -1,4 +1,5 @@
 <?php
+
 namespace Oro\Bundle\SearchBundle\Engine\Orm\PdoPgsql;
 
 use Doctrine\ORM\Query\AST\Functions\FunctionNode;
@@ -16,6 +17,7 @@ class TsRank extends FunctionNode
     /**
      * Parse parameters
      */
+    #[\Override]
     public function parse(\Doctrine\ORM\Query\Parser $parser)
     {
         $parser->match(Lexer::T_IDENTIFIER);
@@ -38,6 +40,7 @@ class TsRank extends FunctionNode
      *
      * @return string
      */
+    #[\Override]
     public function getSql(\Doctrine\ORM\Query\SqlWalker $sqlWalker)
     {
         $haystack = null;

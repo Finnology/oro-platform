@@ -8,13 +8,15 @@ use Oro\Bundle\IntegrationBundle\Utils\MultiAttemptsConfigTrait;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 
+/**
+ * Decorates REST client to retry requests in case of connection problems
+ */
 class MultiAttemptsClientDecoratorListener extends AbstractClientDecoratorListener implements LoggerAwareInterface
 {
-    use LoggerAwareTrait, MultiAttemptsConfigTrait;
+    use LoggerAwareTrait;
+    use MultiAttemptsConfigTrait;
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function attachDecorator(ClientCreatedAfterEvent $event, array $configuration)
     {
         $client = new MultiAttemptsClientDecorator(
@@ -25,33 +27,25 @@ class MultiAttemptsClientDecoratorListener extends AbstractClientDecoratorListen
         $event->setClient($client);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function getDefaultConfigurationParameters()
     {
         return $this->multiAttemptsDefaultConfigurationParameters;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function getConfigurationKey()
     {
         return self::$multiAttemptsConfigKey;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function isEnabled(array $configuration)
     {
         return $this->getMultiAttemptsEnabledParameter($configuration);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function isApplicable(ClientCreatedAfterEvent $event)
     {
         return true;

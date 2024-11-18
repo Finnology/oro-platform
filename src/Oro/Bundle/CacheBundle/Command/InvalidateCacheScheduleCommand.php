@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\CacheBundle\Command;
@@ -37,6 +38,7 @@ class InvalidateCacheScheduleCommand extends Command
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     public function configure()
     {
         $this
@@ -67,14 +69,15 @@ HELP
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      * @noinspection PhpMissingParentCallCommonInspection
      */
-    public function execute(InputInterface $input, OutputInterface $output)
+    #[\Override]
+    public function execute(InputInterface $input, OutputInterface $output): int
     {
         $service = $input->getArgument(self::ARGUMENT_SERVICE_NAME);
         $dataStorage = $this->buildDataStorage($input);
 
         $this->getService($service)->handle($dataStorage);
 
-        return 0;
+        return Command::SUCCESS;
     }
 
     private function buildDataStorage(InputInterface $input): InvalidateCacheDataStorage

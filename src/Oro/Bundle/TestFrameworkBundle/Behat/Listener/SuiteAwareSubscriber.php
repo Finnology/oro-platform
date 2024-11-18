@@ -19,8 +19,8 @@ class SuiteAwareSubscriber implements EventSubscriberInterface
         $this->services = $services;
     }
 
-    /** {@inheritdoc} */
-    public static function getSubscribedEvents()
+    #[\Override]
+    public static function getSubscribedEvents(): array
     {
         return [
             BeforeSuiteTested::BEFORE => ['injectSuite', 5],

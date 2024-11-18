@@ -4,6 +4,7 @@ namespace Oro\Bundle\TestFrameworkBundle\Test;
 
 use Doctrine\Common\DataFixtures\ReferenceRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Oro\Bundle\DistributionBundle\Handler\ApplicationState;
 use Oro\Bundle\EntityExtendBundle\Test\EntityExtendTestInitializer;
 use Oro\Bundle\MessageQueueBundle\Tests\Functional\Environment\TestBufferedMessageProducer;
 use Oro\Bundle\NavigationBundle\Event\ResponseHashnavListener;
@@ -16,6 +17,7 @@ use Oro\Bundle\TestFrameworkBundle\Test\DataFixtures\AliceFixtureIdentifierResol
 use Oro\Bundle\TestFrameworkBundle\Test\DataFixtures\Collection;
 use Oro\Bundle\TestFrameworkBundle\Test\DataFixtures\DataFixturesExecutor;
 use Oro\Bundle\TestFrameworkBundle\Test\DataFixtures\DataFixturesLoader;
+use Oro\Bundle\TestFrameworkBundle\Test\DataFixtures\Resolver\ResolverInterface;
 use Oro\Bundle\TestFrameworkBundle\Test\Event\DisableListenersForDataFixturesEvent;
 use Oro\Bundle\TestFrameworkBundle\Test\Logger\TestEventsLoggerTrait;
 use Oro\Bundle\UserBundle\Entity\AbstractUser;
@@ -34,9 +36,12 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Exception\SessionNotFoundException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Csrf\CsrfToken;
+use Symfony\Component\Security\Csrf\TokenStorage\SessionTokenStorage;
 use Symfony\Component\Yaml\Yaml;
 
 /**
@@ -106,6 +111,7 @@ abstract class WebTestCase extends BaseWebTestCase
     /** @var bool */
     private static $initClientAllowed = false;
 
+    #[\Override]
     protected function setUp(): void
     {
     }
@@ -122,6 +128,7 @@ abstract class WebTestCase extends BaseWebTestCase
      * In order to disable kernel shutdown
      * @see \Symfony\Bundle\FrameworkBundle\Test\KernelTestCase::tearDown
      */
+    #[\Override]
     protected function tearDown(): void
     {
     }
@@ -135,6 +142,12 @@ abstract class WebTestCase extends BaseWebTestCase
         $this->client = null;
 
         if (self::isDbIsolationPerTest()) {
+            if (self::$kernel) {
+                self::$kernel->getContainer()->get('test.service_container')
+                    ->get('oro_security.acl_query.cache_provider')
+                    ->clear();
+            }
+
             self::$loadedFixtures = [];
             self::$referenceRepository = null;
 
@@ -156,9 +169,7 @@ abstract class WebTestCase extends BaseWebTestCase
         self::resetClient();
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function run(TestResult $result = null): TestResult
     {
         self::$initClientAllowed = true;
@@ -226,6 +237,10 @@ abstract class WebTestCase extends BaseWebTestCase
 
             self::$clientInstance = self::createClient($options, $server);
 
+            $this->checkRunEnvironment();
+            $this->checkUserCredentials();
+            $this->checkConfigurations();
+
             if (self::isClassHasAnnotation(get_called_class(), 'dbReindex')) {
                 throw new \RuntimeException(
                     sprintf(
@@ -239,6 +254,7 @@ abstract class WebTestCase extends BaseWebTestCase
             $this->startTransaction(self::hasNestTransactionsWithSavepoints());
         } else {
             self::$clientInstance->setServerParameters($server);
+            $this->checkRunEnvironment();
         }
 
         $hookMethods = self::getAfterInitClientMethods(\get_class($this));
@@ -272,10 +288,8 @@ abstract class WebTestCase extends BaseWebTestCase
         return self::$afterInitClientMethods[$className];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected static function createKernel(array $options = [])
+    #[\Override]
+    protected static function createKernel(array $options = []): KernelInterface
     {
         if (!array_key_exists('environment', $options)) {
             if (isset($_ENV['ORO_ENV'])) {
@@ -355,11 +369,20 @@ abstract class WebTestCase extends BaseWebTestCase
      * @param string $tokenId
      * @return CsrfToken
      */
-    protected function getCsrfToken($tokenId): CsrfToken
+    protected function getCsrfToken(string $tokenId): CsrfToken
     {
         $this->ensureSessionIsAvailable();
 
-        return self::getContainer()->get('security.csrf.token_manager')->getToken($tokenId);
+        $container = self::getContainer();
+        $session = $container->get('request_stack')->getSession();
+
+        $tokenGenerator = $container->get('security.csrf.token_generator');
+        $csrfToken = $tokenGenerator->generateToken();
+
+        $session->set(SessionTokenStorage::SESSION_NAMESPACE . "/{$tokenId}", $csrfToken);
+        $session->save();
+
+        return new CsrfToken($tokenId, $csrfToken);
     }
 
     /**
@@ -380,7 +403,6 @@ abstract class WebTestCase extends BaseWebTestCase
         $user = $this->getUser($email);
         $token = new UsernamePasswordOrganizationToken(
             $user,
-            false,
             'main',
             $user->getOrganization(),
             $user->getRoles()
@@ -433,8 +455,7 @@ abstract class WebTestCase extends BaseWebTestCase
             }
         }
 
-        $resolver = self::getContainer()->get('oro_test.value_resolver');
-        $resolver->setReferences(new Collection(self::$referenceRepository->getReferences()));
+        $resolver = self::getReferenceResolver();
 
         if (is_array($data)) {
             array_walk_recursive($data, function (&$item) use ($resolver) {
@@ -449,6 +470,14 @@ abstract class WebTestCase extends BaseWebTestCase
         }
 
         return $data;
+    }
+
+    protected static function getReferenceResolver(): ResolverInterface
+    {
+        $resolver = self::getContainer()->get('oro_test.value_resolver');
+        $resolver->setReferences(new Collection(self::$referenceRepository->getReferences()));
+
+        return $resolver;
     }
 
     /**
@@ -688,47 +717,33 @@ abstract class WebTestCase extends BaseWebTestCase
         return in_array($fixtureClass, self::$loadedFixtures, true);
     }
 
-    /**
-     * @param string $name
-     *
-     * @return object|mixed
-     */
-    protected function getReference($name)
+    protected function getReference(string $name): object
     {
         return $this->getReferenceRepository()->getReference($name);
     }
 
-    /**
-     * @param string $name
-     * @return bool
-     */
-    protected function hasReference($name)
+    protected function hasReference(string $name): bool
     {
         return $this->getReferenceRepository()->hasReference($name);
     }
 
-    /**
-     * @return bool
-     */
-    protected function hasReferenceRepository()
+    protected function hasReferenceRepository(): bool
     {
         return null !== self::$referenceRepository;
     }
 
-    /**
-     * @throws \Exception
-     */
     protected function getReferenceRepository(string $class = null): ReferenceRepository
     {
         if (null === self::$referenceRepository) {
             throw new \LogicException('The reference repository is not set. Have you loaded fixtures?');
         }
 
-        if (is_null($class)) {
+        if (null === $class) {
             return self::$referenceRepository;
         }
 
-        if (!$objectManager = $this->getContainer()->get('doctrine')->getManagerForClass($class)) {
+        $objectManager = $this->getContainer()->get('doctrine')->getManagerForClass($class);
+        if (!$objectManager) {
             throw new \Exception(sprintf(
                 'Reference repository is not created for class "%s". Did you forget'
                 . ' to associate your object manager with class "%s"?',
@@ -930,7 +945,7 @@ abstract class WebTestCase extends BaseWebTestCase
     public static function generateRandomString($length = 10)
     {
         $random = "";
-        mt_srand((double)microtime() * 1000000);
+        mt_srand((float)microtime() * 1000000);
         $char_list = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         $char_list .= "abcdefghijklmnopqrstuvwxyz";
         $char_list .= "1234567890_";
@@ -978,19 +993,13 @@ abstract class WebTestCase extends BaseWebTestCase
     }
 
     /**
-     * Generate Basic  authorization header
-     *
-     * @param string $userName
-     * @param string $userPassword
-     * @param int $userOrganization
-     *
-     * @return array
+     * Generates Basic authorization header.
      */
     public static function generateBasicAuthHeader(
-        $userName = self::AUTH_USER,
-        $userPassword = self::AUTH_PW,
-        $userOrganization = self::AUTH_ORGANIZATION
-    ) {
+        string $userName = self::AUTH_USER,
+        string $userPassword = self::AUTH_PW,
+        int $userOrganization = self::AUTH_ORGANIZATION
+    ): array {
         return [
             'PHP_AUTH_USER' => $userName,
             'PHP_AUTH_PW' => $userPassword,
@@ -998,50 +1007,28 @@ abstract class WebTestCase extends BaseWebTestCase
         ];
     }
 
-    /**
-     * @return array
-     */
-    public static function generateNoHashNavigationHeader()
+    public static function generateNoHashNavigationHeader(): array
     {
         return ['HTTP_' . strtoupper(ResponseHashnavListener::HASH_NAVIGATION_HEADER) => 0];
     }
 
     /**
-     * Convert value to array
-     *
-     * @param mixed $value
-     *
-     * @return array
+     * Converts a JSON string to an array.
      */
-    public static function valueToArray($value)
+    public static function jsonToArray(string $json): array
     {
-        return self::jsonToArray(json_encode($value));
+        return $json
+            ? (array)json_decode($json, true, 512, JSON_THROW_ON_ERROR)
+            : [];
     }
 
     /**
-     * Convert json to array
-     *
-     * @param string $json
-     *
-     * @return array
+     * Checks JSON response status code and returns the response content as an array.
      */
-    public static function jsonToArray($json)
-    {
-        return (array)json_decode($json, true);
-    }
-
-    /**
-     * Checks json response status code and return content as array
-     *
-     * @param Response $response
-     * @param int $statusCode
-     * @param string $message
-     *
-     * @return array
-     */
-    public static function getJsonResponseContent(Response $response, $statusCode, string $message = '')
+    public static function getJsonResponseContent(Response $response, int $statusCode, string $message = ''): array
     {
         self::assertJsonResponseStatusCodeEquals($response, $statusCode, $message);
+
         return self::jsonToArray($response->getContent());
     }
 
@@ -1138,7 +1125,10 @@ abstract class WebTestCase extends BaseWebTestCase
         $message = $message ? $message . PHP_EOL : '';
         $message .= sprintf('Failed asserting response has header "Content-Type: %s":', $contentType);
         $message .= PHP_EOL . $response->headers;
-        self::assertTrue($response->headers->contains('Content-Type', $contentType), $message);
+        $actualContentType = strtolower($response->headers->get('Content-Type'));
+        $expectedContentType = strtolower($contentType);
+
+        self::assertTrue(($actualContentType === $expectedContentType), $message);
     }
 
     /**
@@ -1300,6 +1290,44 @@ abstract class WebTestCase extends BaseWebTestCase
             && false === strpos($path, ':');
     }
 
+    /**
+     * @return Session
+     */
+    protected function createSession(): Session
+    {
+        if (!$this->client) {
+            throw new \LogicException('Initialize the client before creating the session!');
+        }
+
+        $cookie = $this->client->getCookieJar()->get('MOCKSESSID');
+
+        // create a new session object
+        $container = self::getContainer();
+        $session = $container->get('session.factory')->createSession();
+
+        $domain = str_replace('http://', '', Client::LOCAL_URL);
+        if ($cookie) {
+            // get the session id from the session cookie if it exists
+            $session->setId($cookie->getValue());
+            $session->start();
+        } else {
+            // or create a new session id and a session cookie
+            $session->start();
+            $session->save();
+
+            $sessionCookie = new Cookie(
+                $session->getName(),
+                $session->getId(),
+                null,
+                null,
+                $domain,
+            );
+            $this->client->getCookieJar()->set($sessionCookie);
+        }
+
+        return $session;
+    }
+
     protected function getSession(): ?SessionInterface
     {
         $this->ensureSessionIsAvailable();
@@ -1315,11 +1343,9 @@ abstract class WebTestCase extends BaseWebTestCase
         try {
             $requestStack->getSession();
         } catch (SessionNotFoundException $e) {
-            $session = $container->has('session')
-                ? $container->get('session')
-                : $container->get('session.factory')->createSession();
+            $session = $this->createSession();
 
-            $masterRequest = new Request();
+            $masterRequest = Request::create('/');
             $masterRequest->setSession($session);
 
             $requestStack->push($masterRequest);
@@ -1329,6 +1355,156 @@ abstract class WebTestCase extends BaseWebTestCase
 
             $cookie = new Cookie($session->getName(), $session->getId());
             self::getClientInstance()->getCookieJar()->set($cookie);
+        }
+    }
+
+    /**
+     * Creates request needed for emulate request processing.
+     *
+     * @return void
+     */
+    protected function emulateRequest(): void
+    {
+        $request = new Request();
+        $request->setSession($this->createSession());
+        self::getContainer()->get('request_stack')->push($request);
+    }
+
+    private function checkRunEnvironment(): void
+    {
+        if (!self::$clientInstance->getContainer()->get(ApplicationState::class)->isInstalled()) {
+            throw new \Exception(
+                "You must install an application in the test environment ".
+                "and try running the command in the test environment."
+            );
+        }
+    }
+
+    /**
+     * @SuppressWarnings(PHPMD.NPathComplexity)
+     */
+    private function checkUserCredentials(): void
+    {
+        $container = self::$clientInstance->getContainer();
+        if ($this->getContainer()->hasParameter('optional_search_listeners')) {
+            $optionalSearchListeners = $this->getContainer()->getParameter('optional_search_listeners');
+            $this->getOptionalListenerManager()->enableListeners($optionalSearchListeners);
+        }
+
+        $defaultOptionsProvider = $container->get('oro_test.provider.install_default_options');
+
+        $user = $container->get('oro_user.manager')->findUserByEmail(self::AUTH_USER);
+        if (!$user) {
+            $user = $container->get('oro_user.manager')->findUserByUsername(self::AUTH_PW);
+        }
+
+        //Check changes username
+        $userName = $user->getUserIdentifier();
+        if ($userName !== $defaultOptionsProvider->getUserName()) {
+            throw new \Exception(
+                sprintf(
+                    'Username was changed after the application was installed from "%s" to "%s"',
+                    $defaultOptionsProvider->getUserName(),
+                    $userName
+                )
+            );
+        }
+
+        //Check changes password
+        $passwordHasher = $container->get('security.user_password_hasher');
+        if (!$passwordHasher->isPasswordValid($user, self::AUTH_PW)) {
+            throw new \Exception("User Password was changed after the application was installed");
+        }
+
+        //Check changes organization
+        $organizationName = $user->getOrganization()?->getName();
+        if ($organizationName !== $defaultOptionsProvider->getOrganizationName()) {
+            throw new \Exception(
+                sprintf(
+                    'User Organization Name was changed after the application was installed from "%s" to "%s"',
+                    $defaultOptionsProvider->getOrganizationName(),
+                    $organizationName
+                )
+            );
+        }
+
+        //Check changes user firsname
+        $userFirsname = $user->getFirstName();
+        if ($userFirsname !== $defaultOptionsProvider->getUserFirstName()) {
+            throw new \Exception(
+                sprintf(
+                    'User Firstname was changed after the application was installed from "%s" to "%s"',
+                    $defaultOptionsProvider->getUserFirstName(),
+                    $userFirsname
+                )
+            );
+        }
+
+        //Check changes user lastname
+        $userLastname = $user->getLastName();
+        if ($userLastname !== $defaultOptionsProvider->getUserLastName()) {
+            throw new \Exception(
+                sprintf(
+                    'User Lastname was changed after the application was installed from "%s" to "%s"',
+                    $defaultOptionsProvider->getUserLastName(),
+                    $userLastname
+                )
+            );
+        }
+
+        //Check changes user email
+        $userEmail = $user->getEmail();
+        if ($userEmail !== $defaultOptionsProvider->getUserEmail()) {
+            throw new \Exception(
+                sprintf(
+                    'User EMAIL was changed after the application was installed from "%s" to "%s"',
+                    $defaultOptionsProvider->getUserEmail(),
+                    $userEmail
+                )
+            );
+        }
+    }
+
+    private function checkConfigurations(): void
+    {
+        $container = self::$clientInstance->getContainer();
+        $defaultOptionsProvider = $container->get('oro_test.provider.install_default_options');
+
+        //Check changes application url
+        $url = $container->get('oro_config.manager')->get('oro_ui.application_url');
+        if (rtrim($url, '/') !== rtrim($defaultOptionsProvider->getApplicationUrl(), '/')) {
+            throw new \Exception(
+                sprintf(
+                    'Configuration "Application URL" was changed after the application was installed from "%s" to "%s"',
+                    $defaultOptionsProvider->getApplicationUrl(),
+                    $url
+                )
+            );
+        }
+
+        $defaultLocalization = $container->get('oro_locale.manager.localization')->getDefaultLocalization();
+        //Check changes language
+        $language = $defaultLocalization?->getLanguageCode();
+        if ($language !== $defaultOptionsProvider->getApplicationLanguage()) {
+            throw new \Exception(
+                sprintf(
+                    'Configuration "Language" was changed after the application was installed from "%s" to "%s"',
+                    $defaultOptionsProvider->getApplicationLanguage(),
+                    $language
+                )
+            );
+        }
+
+        //Check changes formatting code
+        $formattingCode = $defaultLocalization?->getFormattingCode();
+        if ($formattingCode !== $defaultOptionsProvider->getFormattingCode()) {
+            throw new \Exception(
+                sprintf(
+                    'Configuration "Formatting code" was changed after the application was installed from "%s" to "%s"',
+                    $defaultOptionsProvider->getFormattingCode(),
+                    $formattingCode
+                )
+            );
         }
     }
 }

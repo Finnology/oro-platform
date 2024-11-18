@@ -21,9 +21,7 @@ class HelpExtension extends AbstractExtension implements ServiceSubscriberInterf
         $this->container = $container;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getFunctions()
     {
         return [
@@ -39,10 +37,8 @@ class HelpExtension extends AbstractExtension implements ServiceSubscriberInterf
         return $this->getHelpLinkProvider()->getHelpLinkUrl();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedServices()
+    #[\Override]
+    public static function getSubscribedServices(): array
     {
         return [
             'oro_help.help_link_provider' => HelpLinkProvider::class,

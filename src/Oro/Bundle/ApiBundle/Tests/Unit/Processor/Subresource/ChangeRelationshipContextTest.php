@@ -10,12 +10,18 @@ class ChangeRelationshipContextTest extends \PHPUnit\Framework\TestCase
 {
     private ChangeRelationshipContext $context;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->context = new ChangeRelationshipContext(
             $this->createMock(ConfigProvider::class),
             $this->createMock(MetadataProvider::class)
         );
+    }
+
+    public function testInitialExisting(): void
+    {
+        self::assertTrue($this->context->isExisting());
     }
 
     public function testParentEntity()

@@ -12,6 +12,7 @@ class PermissionTest extends \PHPUnit\Framework\TestCase
     /** @var Permission */
     private $object;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->object = new Permission();
@@ -78,7 +79,7 @@ class PermissionTest extends \PHPUnit\Framework\TestCase
             ],
             'applyToAll' => [
                 'propertyName' => 'applyToAll',
-                'value' => 'false',
+                'value' => true,
                 'defaultValue' => true,
             ],
             'applyToEntities' => [

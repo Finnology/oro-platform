@@ -9,10 +9,8 @@ use Symfony\Component\Security\Core\Exception\AccountStatusException;
  */
 class EmptyOwnerException extends AccountStatusException
 {
-    /**
-     * {@inheritdoc}
-     */
-    public function getMessageKey()
+    #[\Override]
+    public function getMessageKey(): string
     {
         return 'oro_user.login.errors.empty_owner';
     }

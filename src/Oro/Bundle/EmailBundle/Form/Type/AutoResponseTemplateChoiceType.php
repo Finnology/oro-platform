@@ -27,9 +27,7 @@ class AutoResponseTemplateChoiceType extends AbstractType
         $this->translator = $translator;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults([
@@ -52,6 +50,7 @@ class AutoResponseTemplateChoiceType extends AbstractType
     /**
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
+    #[\Override]
     public function buildView(FormView $view, FormInterface $form, array $options)
     {
         /* @var ChoiceView $choice */
@@ -64,26 +63,19 @@ class AutoResponseTemplateChoiceType extends AbstractType
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getParent()
+    #[\Override]
+    public function getParent(): ?string
     {
         return EmailTemplateSelectType::class;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getName()
     {
         return $this->getBlockPrefix();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return 'oro_email_autoresponse_template_choice';
     }

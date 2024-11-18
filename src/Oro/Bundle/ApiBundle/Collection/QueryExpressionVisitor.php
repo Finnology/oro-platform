@@ -13,6 +13,8 @@ use Doctrine\ORM\Query\QueryException;
 use Doctrine\ORM\QueryBuilder;
 use Oro\Bundle\ApiBundle\Collection\QueryVisitorExpression\ComparisonExpressionInterface;
 use Oro\Bundle\ApiBundle\Collection\QueryVisitorExpression\CompositeExpressionInterface;
+use Oro\Bundle\ApiBundle\Collection\QueryVisitorExpression\ExpressionValue;
+use Oro\Bundle\ApiBundle\Util\FieldDqlExpressionProviderInterface;
 use Oro\Bundle\EntityBundle\ORM\EntityClassResolver;
 use Oro\Component\DoctrineUtils\ORM\QueryBuilderUtil;
 
@@ -28,6 +30,7 @@ class QueryExpressionVisitor extends ExpressionVisitor
     private array $compositeExpressions;
     /** @var ComparisonExpressionInterface[] */
     private array $comparisonExpressions;
+    private FieldDqlExpressionProviderInterface $fieldDqlExpressionProvider;
     private EntityClassResolver $entityClassResolver;
     /** @var string[] */
     private array $queryAliases;
@@ -43,17 +46,20 @@ class QueryExpressionVisitor extends ExpressionVisitor
     private ?string $fieldDataType = null;
 
     /**
-     * @param CompositeExpressionInterface[]  $compositeExpressions  [type => expression, ...]
-     * @param ComparisonExpressionInterface[] $comparisonExpressions [operator => expression, ...]
-     * @param EntityClassResolver             $entityClassResolver
+     * @param CompositeExpressionInterface[]      $compositeExpressions  [type => expression, ...]
+     * @param ComparisonExpressionInterface[]     $comparisonExpressions [operator => expression, ...]
+     * @param FieldDqlExpressionProviderInterface $fieldDqlExpressionProvider
+     * @param EntityClassResolver                 $entityClassResolver
      */
     public function __construct(
         array $compositeExpressions,
         array $comparisonExpressions,
+        FieldDqlExpressionProviderInterface $fieldDqlExpressionProvider,
         EntityClassResolver $entityClassResolver
     ) {
         $this->compositeExpressions = $compositeExpressions;
         $this->comparisonExpressions = $comparisonExpressions;
+        $this->fieldDqlExpressionProvider = $fieldDqlExpressionProvider;
         $this->entityClassResolver = $entityClassResolver;
     }
 
@@ -98,6 +104,30 @@ class QueryExpressionVisitor extends ExpressionVisitor
      */
     public function addParameter(Parameter|string $parameter, mixed $value = null, mixed $type = null): void
     {
+        if (null !== $value && $parameter instanceof Parameter) {
+            throw new \InvalidArgumentException(sprintf(
+                'The parameter "%s" must be a string.',
+                $parameter->getName()
+            ));
+        }
+
+        if ($value instanceof ExpressionValue) {
+            $value = $value->getValue();
+            if (\is_array($value)) {
+                $i = 0;
+                foreach ($value as $val) {
+                    $i++;
+                    $this->parameters[] = $this->createParameter(
+                        $this->buildNestedParameterName($parameter, $i),
+                        $val,
+                        $type
+                    );
+                }
+
+                return;
+            }
+        }
+
         if (!$parameter instanceof Parameter) {
             $parameter = $this->createParameter($parameter, $value, $type);
         }
@@ -113,7 +143,33 @@ class QueryExpressionVisitor extends ExpressionVisitor
     }
 
     /**
-     * Builds placeholder string for given parameter name.
+     * Builds an expression for for the given parameter name and parameter value.
+     */
+    public function buildParameterExpression(string $parameterName, mixed $parameterValue): mixed
+    {
+        if (!$parameterValue instanceof ExpressionValue) {
+            return $this->buildPlaceholder($parameterName);
+        }
+
+        $value = $parameterValue->getValue();
+        if (!\is_array($value)) {
+            return $parameterValue->buildExpression($this->buildPlaceholder($parameterName));
+        }
+
+        $parameterExpressions = [];
+        $parameterPlaceholder = $this->buildPlaceholder($parameterName);
+        $numberOfParameter = \count($value);
+        for ($i = 1; $i <= $numberOfParameter; $i++) {
+            $parameterExpressions[] = $parameterValue->buildExpression(
+                $this->buildNestedParameterName($parameterPlaceholder, $i)
+            );
+        }
+
+        return implode(', ', $parameterExpressions);
+    }
+
+    /**
+     * Builds placeholder string for the given parameter name.
      */
     public function buildPlaceholder(string $parameterName): string
     {
@@ -189,11 +245,15 @@ class QueryExpressionVisitor extends ExpressionVisitor
      *                                       for which the subquery should be created
      * @param bool        $disallowJoinUsage Whether the usage of existing join to the association itself
      *                                       is disallowed; this parameter is not used if $field equals to NULL
+     * @param string|null $expression        An expression to link the subquery with a main query
      *
      * @return QueryBuilder
      */
-    public function createSubquery(string $field = null, bool $disallowJoinUsage = false): QueryBuilder
-    {
+    public function createSubquery(
+        string $field = null,
+        bool $disallowJoinUsage = false,
+        string $expression = null
+    ): QueryBuilder {
         if (null === $this->query) {
             throw new QueryException('No query is set before invoking createSubquery().');
         }
@@ -205,6 +265,9 @@ class QueryExpressionVisitor extends ExpressionVisitor
         }
 
         if (!$field) {
+            if ($expression) {
+                throw new QueryException('An expression is not supported for a subquery to root entity.');
+            }
             try {
                 return $this->createSubqueryToRoot();
             } catch (\Throwable $e) {
@@ -216,8 +279,9 @@ class QueryExpressionVisitor extends ExpressionVisitor
             }
         }
 
+        $subqueryPath = $this->getSubqueryPath($field);
         try {
-            return $this->createSubqueryByPath($this->getSubqueryPath($field), $disallowJoinUsage);
+            return $this->createSubqueryByPath($subqueryPath, $disallowJoinUsage, true, $expression);
         } catch (\Throwable $e) {
             throw new QueryException(
                 sprintf('Cannot build subquery for the field "%s". Reason: %s', $field, $e->getMessage()),
@@ -227,9 +291,7 @@ class QueryExpressionVisitor extends ExpressionVisitor
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function walkCompositeExpression(CompositeExpression $expr): mixed
     {
         $expressionType = $expr->getType();
@@ -247,9 +309,7 @@ class QueryExpressionVisitor extends ExpressionVisitor
             ->walkCompositeExpression($processedExpressions);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function walkComparison(Comparison $comparison): mixed
     {
         if (!isset($this->queryAliases[0])) {
@@ -264,9 +324,13 @@ class QueryExpressionVisitor extends ExpressionVisitor
         $field = $this->getField($comparison->getField());
         QueryBuilderUtil::checkPath($field);
 
-        $expression = $field;
+        $expression = $field
+            ? $this->fieldDqlExpressionProvider->getFieldDqlExpression($this->query, $field) ?? $field
+            : $field;
+        $value = $this->walkValue($comparison->getValue());
         if ('i' === $modifier) {
             $expression = sprintf('LOWER(%s)', $expression);
+            $value = new ExpressionValue($value, 'LOWER(%s)');
         } elseif (str_starts_with($modifier, ':')) {
             $this->fieldDataType = substr($modifier, 1);
         } elseif ($modifier) {
@@ -282,17 +346,15 @@ class QueryExpressionVisitor extends ExpressionVisitor
                 $this,
                 $field,
                 $expression,
-                $this->getParameterName($comparison->getField()),
-                $this->walkValue($comparison->getValue())
+                $this->getParameterName($field),
+                $value
             );
         $this->fieldDataType = null;
 
         return $expr;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function walkValue(Value $value): mixed
     {
         return $value->getValue();
@@ -300,14 +362,22 @@ class QueryExpressionVisitor extends ExpressionVisitor
 
     private function getField(string $field): string
     {
-        foreach ($this->queryAliases as $alias) {
-            if ($field !== $alias && str_starts_with($field . '.', $alias . '.')) {
-                return $field;
-            }
-        }
-
         if ($field) {
-            $field = $this->getRootAlias() . '.' . $field;
+            if (str_contains($field, '.')) {
+                foreach ($this->queryAliases as $alias) {
+                    if ($field !== $alias && str_starts_with($field . '.', $alias . '.')) {
+                        return $field;
+                    }
+                }
+            }
+            if (str_starts_with($field, Criteria::PLACEHOLDER_START)
+                && str_ends_with($field, Criteria::PLACEHOLDER_END)
+            ) {
+                // it is a computed field that does not related to any join or a root entity
+                $field = substr($field, 1, -1);
+            } else {
+                $field = $this->getRootAlias() . '.' . $field;
+            }
         }
 
         return $field;
@@ -326,6 +396,11 @@ class QueryExpressionVisitor extends ExpressionVisitor
         }
 
         return $result;
+    }
+
+    private function buildNestedParameterName(string $parameterName, int $parameterNumber): string
+    {
+        return sprintf('%s__%d', $parameterName, $parameterNumber);
     }
 
     private function getSubqueryPath(string $field): ?string
@@ -386,7 +461,8 @@ class QueryExpressionVisitor extends ExpressionVisitor
     private function createSubqueryByPath(
         string $path,
         bool $disallowJoinUsage,
-        bool $allowEndsWithField = true
+        bool $allowEndsWithField = true,
+        string $expression = null
     ): QueryBuilder {
         if (!$disallowJoinUsage && isset($this->queryJoinMap[$path])) {
             return $this->createSubqueryByJoin($this->queryJoinMap[$path]);
@@ -394,7 +470,7 @@ class QueryExpressionVisitor extends ExpressionVisitor
 
         $lastDelimiter = strrpos($path, '.');
         if (false === $lastDelimiter) {
-            return $this->createSubqueryByRootAssociation($path);
+            return $this->createSubqueryByRootAssociation($path, $expression);
         }
 
         $sourceJoinedPath = substr($path, 0, $lastDelimiter);
@@ -485,8 +561,17 @@ class QueryExpressionVisitor extends ExpressionVisitor
         return $query;
     }
 
-    private function createSubqueryByRootAssociation(string $associationName): QueryBuilder
+    private function createSubqueryByRootAssociation(string $associationName, string $expression = null): QueryBuilder
     {
+        if ($expression) {
+            $subqueryAlias = $this->generateSubqueryAlias($associationName);
+            [$subqueryExpression, $subqueryEntityClass] = $this->prepareSubqueryExpression($expression, $subqueryAlias);
+            $subquery = $this->createQueryBuilder($subqueryEntityClass, $subqueryAlias);
+            $subquery->where($subqueryExpression);
+
+            return $subquery;
+        }
+
         $subqueryEntityClass = $this->getClassMetadata($this->getRootEntityClass())
             ->getAssociationTargetClass($associationName);
         $subqueryAlias = $this->generateSubqueryAlias($associationName);
@@ -566,6 +651,35 @@ class QueryExpressionVisitor extends ExpressionVisitor
             sprintf('%s_%d', $fieldName, $joinIndex),
             $this->subqueryCount
         );
+    }
+
+    /**
+     * @param string $expression
+     * @param string $subqueryAlias
+     *
+     * @return array [subquery expression, subquery entity class]
+     */
+    private function prepareSubqueryExpression(string $expression, string $subqueryAlias): array
+    {
+        $entityPlaceholderPos = strpos($expression, '{entity:');
+        if (false === $entityPlaceholderPos) {
+            throw new QueryException('The subquery expression must contain an entity placeholder.');
+        }
+        $entityClassPos = $entityPlaceholderPos + 8;
+        $endEntityPlaceholderPos = strpos($expression, '}', $entityClassPos);
+        if (false === $endEntityPlaceholderPos) {
+            throw new QueryException('The subquery expression must contain an entity placeholder.');
+        }
+
+        return [
+            substr_replace(
+                $expression,
+                $subqueryAlias,
+                $entityPlaceholderPos,
+                ($endEntityPlaceholderPos - $entityPlaceholderPos) + 1
+            ),
+            substr($expression, $entityClassPos, $endEntityPlaceholderPos - $entityClassPos)
+        ];
     }
 
     private function createQueryBuilder(string $entityClass, string $alias): QueryBuilder

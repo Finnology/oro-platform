@@ -15,9 +15,7 @@ use Oro\Bundle\ScopeBundle\Migration\Query\AddTriggerToRowHashQuery;
  */
 class AddRowHashColumn implements Migration, OrderedMigrationInterface
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function up(Schema $schema, QueryBag $queries): void
     {
         $table = $schema->getTable('oro_scope');
@@ -31,9 +29,6 @@ class AddRowHashColumn implements Migration, OrderedMigrationInterface
         $this->addRowHashComment($table);
     }
 
-    /**
-     * @throws \Doctrine\DBAL\Schema\SchemaException
-     */
     protected function addRowHashComment(Table $table): void
     {
         $columns = [];
@@ -46,9 +41,7 @@ class AddRowHashColumn implements Migration, OrderedMigrationInterface
         $table->getColumn('row_hash')->setComment($comment);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getOrder(): int
     {
         return 0;

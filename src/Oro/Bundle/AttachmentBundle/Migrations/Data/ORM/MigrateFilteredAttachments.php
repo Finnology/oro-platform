@@ -14,21 +14,16 @@ use Symfony\Component\DependencyInjection\ContainerAwareTrait;
  */
 class MigrateFilteredAttachments implements FixtureInterface, ContainerAwareInterface, VersionedFixtureInterface
 {
+    use ContainerAwareTrait;
     protected const PREFIX = 'attachment/resize';
 
-    use ContainerAwareTrait;
-
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getVersion(): string
     {
         return '1.0';
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function load(ObjectManager $manager)
     {
         $migrationService = $this->getMigrationService();

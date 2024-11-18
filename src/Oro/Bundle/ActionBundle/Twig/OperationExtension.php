@@ -70,9 +70,7 @@ class OperationExtension extends AbstractExtension implements ServiceSubscriberI
         return $this->container->get('oro_action.provider.button_search_context');
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getFunctions()
     {
         return [
@@ -129,10 +127,8 @@ class OperationExtension extends AbstractExtension implements ServiceSubscriberI
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedServices()
+    #[\Override]
+    public static function getSubscribedServices(): array
     {
         return [
             'oro_action.provider.route' => RouteProviderInterface::class,

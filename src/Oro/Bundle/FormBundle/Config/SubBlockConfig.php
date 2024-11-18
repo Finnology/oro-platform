@@ -91,16 +91,13 @@ class SubBlockConfig implements FormConfigInterface
         return $this->description;
     }
 
-    /**
-     * @return string
-     */
     public function getDescriptionStyle(): ?string
     {
         return $this->descriptionStyle;
     }
 
     /**
-     * @param string $descriptionStyle
+     * @param string|null $descriptionStyle
      *
      * @return $this
      */
@@ -217,6 +214,7 @@ class SubBlockConfig implements FormConfigInterface
     /**
      * @return array
      */
+    #[\Override]
     public function toArray()
     {
         return [

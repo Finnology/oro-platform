@@ -11,6 +11,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 class TicketControllerTest extends WebTestCase
 {
+    #[\Override]
     protected function setUp(): void
     {
         $this->initClient([], self::generateBasicAuthHeader());
@@ -36,7 +37,7 @@ class TicketControllerTest extends WebTestCase
             ->getUser($connection);
 
         self::assertInstanceOf(UserInterface::class, $user);
-        self::assertSame('admin', $user->getUsername());
+        self::assertSame('admin', $user->getUserIdentifier());
     }
 
     /**

@@ -21,6 +21,7 @@ use Oro\Bundle\UserBundle\Entity\UserApi;
  */
 class UserTest extends AbstractUserTest
 {
+    #[\Override]
     public function getUser(): User
     {
         return new User();
@@ -98,6 +99,7 @@ class UserTest extends AbstractUserTest
         self::assertEquals($now, $user->getLastLogin());
     }
 
+    #[\Override]
     public function provider(): array
     {
         return [
@@ -426,10 +428,11 @@ class UserTest extends AbstractUserTest
         $user = $this->getUser();
         $user->setUsername('John');
 
-        self::assertEquals('John', $user->getUsername());
+        self::assertEquals('John', $user->getUserIdentifier());
         self::assertEquals('john', $user->getUsernameLowercase());
     }
 
+    #[\Override]
     public function testUnserialize(): void
     {
         $serialized = [
@@ -446,7 +449,7 @@ class UserTest extends AbstractUserTest
 
         self::assertEquals($serialized[0], $user->getPassword());
         self::assertEquals($serialized[1], $user->getSalt());
-        self::assertEquals($serialized[2], $user->getUsername());
+        self::assertEquals($serialized[2], $user->getUserIdentifier());
         self::assertEquals(mb_strtolower($serialized[2]), $user->getUsernameLowercase());
         self::assertEquals($serialized[3], $user->isEnabled());
         self::assertEquals($serialized[4], $user->getConfirmationToken());

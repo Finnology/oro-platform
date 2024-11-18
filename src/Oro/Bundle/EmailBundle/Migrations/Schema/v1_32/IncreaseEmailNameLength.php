@@ -8,16 +8,14 @@ use Oro\Bundle\MigrationBundle\Migration\QueryBag;
 
 class IncreaseEmailNameLength implements Migration
 {
-    /**
-     * {@inheritdoc}
-     */
-    public function up(Schema $schema, QueryBag $queries)
+    #[\Override]
+    public function up(Schema $schema, QueryBag $queries): void
     {
-        static::changeEmailFromNameColumnLength($schema);
-        static::changeEmailRecipientNameColumnLength($schema);
+        $this->changeEmailFromNameColumnLength($schema);
+        $this->changeEmailRecipientNameColumnLength($schema);
     }
 
-    public static function changeEmailFromNameColumnLength(Schema $schema)
+    private function changeEmailFromNameColumnLength(Schema $schema): void
     {
         $table = $schema->getTable('oro_email');
         if ($table->getColumn('from_name')->getLength() < 320) {
@@ -25,7 +23,7 @@ class IncreaseEmailNameLength implements Migration
         }
     }
 
-    public static function changeEmailRecipientNameColumnLength(Schema $schema)
+    private function changeEmailRecipientNameColumnLength(Schema $schema): void
     {
         $table = $schema->getTable('oro_email_recipient');
         if ($table->getColumn('name')->getLength() < 320) {

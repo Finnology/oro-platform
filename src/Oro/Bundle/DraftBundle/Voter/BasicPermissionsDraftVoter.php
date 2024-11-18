@@ -32,7 +32,6 @@ class BasicPermissionsDraftVoter extends AbstractEntityVoter implements ServiceS
     private const PERMISSION_CREATE = 'CREATE_DRAFT';
     private const PERMISSION_PUBLISH = 'PUBLISH_DRAFT';
 
-    /** {@inheritDoc} */
     protected $supportedAttributes = [
         BasicPermission::VIEW,
         BasicPermission::EDIT,
@@ -55,27 +54,21 @@ class BasicPermissionsDraftVoter extends AbstractEntityVoter implements ServiceS
         $this->container = $container;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public static function getSubscribedServices()
+    #[\Override]
+    public static function getSubscribedServices(): array
     {
         return [
             'oro_draft.helper.draft_permission_helper' => DraftPermissionHelper::class
         ];
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     protected function supportsClass($class): bool
     {
         return is_a($class, DraftableInterface::class, true);
     }
 
-    /**
-     * @inheritDoc
-     */
+    #[\Override]
     protected function getPermissionForAttribute($class, $identifier, $attribute): int
     {
         /** @var DraftableInterface $entity */

@@ -22,6 +22,7 @@ class EntityNameProviderTest extends \PHPUnit\Framework\TestCase
     /** @var EntityNameProvider */
     private $provider;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->nameFormatter = $this->createMock(NameFormatter::class);
@@ -87,35 +88,35 @@ class EntityNameProviderTest extends \PHPUnit\Framework\TestCase
 
     public function testGetNameDQLForLocale()
     {
-        $entity = new User();
+        $entityClass = User::class;
         $locale = 'en';
         $alias = 'user';
 
         $this->dqlNameFormatter->expects($this->once())
             ->method('getFormattedNameDQL')
-            ->with($alias, $entity, $locale)
+            ->with($alias, $entityClass, $locale)
             ->willReturn('formatted value');
 
         $this->assertEquals(
             'formatted value',
-            $this->provider->getNameDQL(EntityNameProviderInterface::FULL, $locale, $entity, $alias)
+            $this->provider->getNameDQL(EntityNameProviderInterface::FULL, $locale, $entityClass, $alias)
         );
     }
 
     public function testGetNameDQLForLocalization()
     {
-        $entity = new User();
+        $entityClass = User::class;
         $locale = $this->getLocalization('en');
         $alias = 'user';
 
         $this->dqlNameFormatter->expects($this->once())
             ->method('getFormattedNameDQL')
-            ->with($alias, $entity, 'en')
+            ->with($alias, $entityClass, 'en')
             ->willReturn('formatted value');
 
         $this->assertEquals(
             'formatted value',
-            $this->provider->getNameDQL(EntityNameProviderInterface::FULL, $locale, $entity, $alias)
+            $this->provider->getNameDQL(EntityNameProviderInterface::FULL, $locale, $entityClass, $alias)
         );
     }
 

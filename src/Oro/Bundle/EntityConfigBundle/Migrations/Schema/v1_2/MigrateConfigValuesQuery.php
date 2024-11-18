@@ -11,6 +11,7 @@ class MigrateConfigValuesQuery extends ParametrizedMigrationQuery
     /**
      * {inheritdoc}
      */
+    #[\Override]
     public function getDescription()
     {
         $logger = new ArrayLogger();
@@ -22,6 +23,7 @@ class MigrateConfigValuesQuery extends ParametrizedMigrationQuery
     /**
      * {inheritdoc}
      */
+    #[\Override]
     public function execute(LoggerInterface $logger)
     {
         $this->migrateConfigs($logger);
@@ -62,7 +64,7 @@ class MigrateConfigValuesQuery extends ParametrizedMigrationQuery
             . ' FROM oro_entity_config_value'
             . ' ORDER BY entity_id, field_id, scope, code';
         $logger->info($sql);
-        $configValues = $this->connection->fetchAll($sql);
+        $configValues = $this->connection->fetchAllAssociative($sql);
         $configs = [];
         foreach ($configValues as $configValue) {
             $key = $configValue['entity_id'] ? '#' . $configValue['entity_id'] : $configValue['field_id'];

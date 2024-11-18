@@ -20,6 +20,7 @@ class MenuChoiceType extends AbstractType
         $this->menuNamesProvider = $menuNamesProvider;
     }
 
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefined('scope_type');
@@ -28,14 +29,23 @@ class MenuChoiceType extends AbstractType
 
         $resolver->setDefault('choices', function (Options $options) {
             $menuNames = $this->menuNamesProvider->getMenuNames($options['scope_type']);
+            $choices = array_combine($menuNames, $menuNames);
 
-            return array_combine($menuNames, $menuNames);
+            if ($options['configs']['allowClear'] ?? false) {
+                array_unshift($choices, '');
+            }
+
+            return $choices;
         });
 
         $resolver->setDefault('translatable_options', false);
         $resolver->setDefault('multiple', false);
+        $resolver->setDefault('configs', [
+            'allowClear' => false
+        ]);
     }
 
+    #[\Override]
     public function getParent(): string
     {
         return Select2ChoiceType::class;

@@ -3,6 +3,7 @@
 namespace Oro\Bundle\LayoutBundle\Twig;
 
 use Doctrine\Inflector\Inflector;
+use Oro\Bundle\LayoutBundle\Layout\Context\LayoutContextStack;
 use Oro\Bundle\LayoutBundle\Twig\Node\SearchAndRenderBlockNode;
 use Oro\Bundle\LayoutBundle\Twig\TokenParser\BlockThemeTokenParser;
 use Oro\Component\Layout\BlockView;
@@ -53,9 +54,7 @@ class LayoutExtension extends AbstractExtension implements ServiceSubscriberInte
         $this->inflector = $inflector;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getTokenParsers()
     {
         return [
@@ -63,9 +62,7 @@ class LayoutExtension extends AbstractExtension implements ServiceSubscriberInte
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getFunctions()
     {
         return [
@@ -110,12 +107,21 @@ class LayoutExtension extends AbstractExtension implements ServiceSubscriberInte
                 'clone_form_view_with_unique_id',
                 [$this, 'cloneFormViewWithUniqueId']
             ),
+            new TwigFunction(
+                'get_layout_context',
+                [$this, 'getLayoutContext']
+            ),
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    public function getLayoutContext()
+    {
+        /** @var LayoutContextStack $contextStack */
+        $contextStack = $this->container->get('oro_layout.layout_context_stack');
+        return $contextStack->getCurrentContext();
+    }
+
+    #[\Override]
     public function getFilters()
     {
         return [
@@ -127,9 +133,7 @@ class LayoutExtension extends AbstractExtension implements ServiceSubscriberInte
         ];
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getTests()
     {
         return [
@@ -271,13 +275,12 @@ class LayoutExtension extends AbstractExtension implements ServiceSubscriberInte
         return \is_string($value);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedServices()
+    #[\Override]
+    public static function getSubscribedServices(): array
     {
         return [
             'oro_layout.text.helper' => TextHelper::class,
+            'oro_layout.layout_context_stack' => LayoutContextStack::class,
         ];
     }
 }

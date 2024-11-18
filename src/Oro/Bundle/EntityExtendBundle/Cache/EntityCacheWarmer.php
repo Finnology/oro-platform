@@ -19,20 +19,17 @@ class EntityCacheWarmer extends CacheWarmer
     ) {
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function warmUp($cacheDir)
+    #[\Override]
+    public function warmUp($cacheDir): array
     {
         $this->configManager->flushAllCaches();
         $this->configCacheWarmer->warmUpCache(ConfigCacheWarmer::MODE_CONFIGURABLE_ENTITY_ONLY);
         $this->dumper->dump();
+        return [];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function isOptional()
+    #[\Override]
+    public function isOptional(): bool
     {
         return false;
     }

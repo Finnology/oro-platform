@@ -2,12 +2,13 @@
 
 namespace Oro\Bundle\EmbeddedFormBundle\Tests\Unit\Manager;
 
-use Oro\Bundle\EmbeddedFormBundle\Form\Type\EmbeddedFormInterface;
 use Oro\Bundle\EmbeddedFormBundle\Manager\EmbeddedFormManager;
+use Oro\Bundle\EmbeddedFormBundle\Tests\Unit\Manager\Stub\EmbeddedFormTypeStub;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\FormFactoryInterface;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Form\FormRegistryInterface;
+use Symfony\Component\Form\FormTypeInterface;
 use Symfony\Component\Form\ResolvedFormTypeInterface;
 
 /**
@@ -24,6 +25,7 @@ class EmbeddedFormManagerTest extends \PHPUnit\Framework\TestCase
     /** @var EmbeddedFormManager */
     private $manager;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->formRegistry = $this->createMock(FormRegistryInterface::class);
@@ -36,7 +38,7 @@ class EmbeddedFormManagerTest extends \PHPUnit\Framework\TestCase
     {
         $type = 'type';
 
-        $formInstance = new \stdClass();
+        $formInstance = $this->createMock(FormInterface::class);
 
         $this->formFactory->expects($this->once())
             ->method('create')
@@ -87,7 +89,7 @@ class EmbeddedFormManagerTest extends \PHPUnit\Framework\TestCase
     public function testShouldReturnDefaultCss()
     {
         $type = 'type';
-        $typeInstance = $this->createMock(EmbeddedFormInterface::class);
+        $typeInstance = $this->createMock(EmbeddedFormTypeStub::class);
         $defaultCss = 'my default css';
 
         $resolvedFormType = $this->createMock(ResolvedFormTypeInterface::class);
@@ -108,7 +110,7 @@ class EmbeddedFormManagerTest extends \PHPUnit\Framework\TestCase
     public function testShouldReturnDefaultSuccessMessage()
     {
         $type = 'type';
-        $typeInstance = $this->createMock(EmbeddedFormInterface::class);
+        $typeInstance = $this->createMock(EmbeddedFormTypeStub::class);
         $defaultMessage = 'my default message';
 
         $resolvedFormType = $this->createMock(ResolvedFormTypeInterface::class);
@@ -145,15 +147,16 @@ class EmbeddedFormManagerTest extends \PHPUnit\Framework\TestCase
 
     public function testGetTypeInstance()
     {
+        $innerType = $this->createMock(FormTypeInterface::class);
         $resolvedFormType = $this->createMock(ResolvedFormTypeInterface::class);
         $resolvedFormType->expects($this->once())
             ->method('getInnerType')
-            ->willReturn(IntegerType::class);
+            ->willReturn($innerType);
         $this->formRegistry->expects($this->once())
             ->method('getType')
             ->willReturn($resolvedFormType);
 
         $this->assertEquals(null, $this->manager->getTypeInstance(null));
-        $this->assertEquals(IntegerType::class, $this->manager->getTypeInstance(AbstractType::class));
+        $this->assertEquals($innerType, $this->manager->getTypeInstance(AbstractType::class));
     }
 }

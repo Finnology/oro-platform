@@ -3,11 +3,14 @@
 namespace Oro\Bundle\DataGridBundle\Async\Topic;
 
 use Oro\Bundle\DataGridBundle\Datagrid\ParameterBag;
+use Oro\Bundle\DataGridBundle\Provider\ChainConfigurationProvider;
+use Oro\Bundle\DataGridBundle\Provider\ConfigurationProviderInterface;
 use Oro\Bundle\DataGridBundle\Provider\DatagridModeProvider;
 use Oro\Bundle\ImportExportBundle\Formatter\FormatterProvider;
 use Oro\Bundle\SecurityBundle\Authentication\TokenAccessorInterface;
 use Oro\Component\MessageQueue\Topic\AbstractTopic;
 use Oro\Component\MessageQueue\Topic\JobAwareTopicInterface;
+use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -23,26 +26,34 @@ class DatagridPreExportTopic extends AbstractTopic implements JobAwareTopicInter
 
     private TokenAccessorInterface $tokenAccessor;
 
+    /** @var ChainConfigurationProvider $provider  */
+    private ConfigurationProviderInterface $provider;
+
     public function __construct(
-        int                    $batchSize,
-        TokenAccessorInterface $tokenAccessor,
-        array                  $outputFormats = ['csv', 'xlsx'],
+        int                            $batchSize,
+        TokenAccessorInterface         $tokenAccessor,
+        ConfigurationProviderInterface $provider,
+        array                          $outputFormats = ['csv', 'xlsx'],
     ) {
         $this->batchSize = $batchSize;
         $this->tokenAccessor = $tokenAccessor;
+        $this->provider = $provider;
         $this->outputFormats = $outputFormats;
     }
 
+    #[\Override]
     public static function getName(): string
     {
         return 'oro.datagrid.pre_export';
     }
 
+    #[\Override]
     public static function getDescription(): string
     {
         return 'Initializes the datagrid data export.';
     }
 
+    #[\Override]
     public function configureMessageBody(OptionsResolver $resolver): void
     {
         $resolver
@@ -85,6 +96,15 @@ class DatagridPreExportTopic extends AbstractTopic implements JobAwareTopicInter
                 FormatterProvider::FORMAT_TYPE => 'excel',
             ])
             ->addAllowedTypes('gridName', 'string')
+            ->addAllowedValues('gridName', function (string $gridName) {
+                if (!$this->provider->isValidConfiguration($gridName)) {
+                    throw new InvalidOptionsException(
+                        sprintf('Grid %s configuration is not valid.', $gridName)
+                    );
+                }
+
+                return true;
+            })
             ->addAllowedTypes('gridParameters', 'array')
             ->addAllowedTypes(FormatterProvider::FORMAT_TYPE, 'string')
             ->addNormalizer('gridParameters', static function (Options $options, array $value) {
@@ -101,6 +121,7 @@ class DatagridPreExportTopic extends AbstractTopic implements JobAwareTopicInter
             });
     }
 
+    #[\Override]
     public function createJobName($messageBody): string
     {
         $gridName = $messageBody['contextParameters']['gridName'];

@@ -19,6 +19,7 @@ class OroIconTypeStub extends AbstractType
         $this->kernel = $kernel;
     }
 
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults(
@@ -38,12 +39,14 @@ class OroIconTypeStub extends AbstractType
     /**
      * @return string
      */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return 'oro_icon_select';
     }
 
-    public function getParent()
+    #[\Override]
+    public function getParent(): ?string
     {
         return Select2ChoiceType::class;
     }

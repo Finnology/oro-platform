@@ -28,9 +28,7 @@ class TranslationExtension extends AbstractExtension implements ServiceSubscribe
         $this->isDebugJsTranslations = $isDebugJsTranslations;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getFunctions()
     {
         return [
@@ -63,10 +61,8 @@ class TranslationExtension extends AbstractExtension implements ServiceSubscribe
         return $this->getTranslationsDatagridRouteHelper()->generate($filters, $referenceType);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedServices()
+    #[\Override]
+    public static function getSubscribedServices(): array
     {
         return [
             'oro_translation.helper.translation_route' => TranslationsDatagridRouteHelper::class,

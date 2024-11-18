@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Component\MessageQueue\Client;
@@ -40,6 +41,7 @@ class ConsumeMessagesCommand extends Command
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     protected function configure()
     {
         $this
@@ -64,7 +66,8 @@ HELP
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    #[\Override]
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $clientDestinationName = $input->getArgument('clientDestinationName');
         if ($clientDestinationName) {
@@ -82,7 +85,7 @@ HELP
 
         $this->consume($this->queueConsumer, $this->getConsumerExtension($extensions));
 
-        return 0;
+        return Command::SUCCESS;
     }
 
     protected function consume(QueueConsumer $consumer, ExtensionInterface $extension): void

@@ -15,9 +15,7 @@ use Psr\Log\LoggerInterface;
  */
 class FixBrokenDeletedFieldsQuery extends ParametrizedMigrationQuery
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getDescription()
     {
         $logger = new ArrayLogger();
@@ -26,9 +24,7 @@ class FixBrokenDeletedFieldsQuery extends ParametrizedMigrationQuery
         return $logger->getMessages();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function execute(LoggerInterface $logger)
     {
         $this->doExecute($logger);
@@ -112,7 +108,7 @@ class FixBrokenDeletedFieldsQuery extends ParametrizedMigrationQuery
         $this->logQuery($logger, $sql);
 
         $result = [];
-        foreach ($this->connection->fetchAll($sql) as $field) {
+        foreach ($this->connection->fetchAllAssociative($sql) as $field) {
             $data = $this->connection->convertToPHPValue($field['data'], Types::ARRAY);
             $field['data'] = $data;
             $result[] = $field;

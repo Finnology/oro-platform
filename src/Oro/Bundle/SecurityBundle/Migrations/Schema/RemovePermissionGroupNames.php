@@ -21,9 +21,7 @@ class RemovePermissionGroupNames extends ParametrizedMigrationQuery
         $this->removeGroupNames = $removeGroupNames;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getDescription()
     {
         $logger = new ArrayLogger();
@@ -32,9 +30,7 @@ class RemovePermissionGroupNames extends ParametrizedMigrationQuery
         return $logger->getMessages();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function execute(LoggerInterface $logger)
     {
         $this->doExecute($logger);
@@ -86,7 +82,7 @@ class RemovePermissionGroupNames extends ParametrizedMigrationQuery
         $this->logQuery($logger, $sql, $params, $types);
 
         $result = [];
-        $rows = $this->connection->fetchAll($sql, $params, $types);
+        $rows = $this->connection->fetchAllAssociative($sql, $params, $types);
         foreach ($rows as $row) {
             $result[] = [
                 'id' => $row['id'],

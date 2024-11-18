@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Component\MessageQueue\Consumption;
@@ -31,7 +32,7 @@ trait LimitsExtensionsCommandTrait
             ->addOption('gc-limit', null, InputOption::VALUE_REQUIRED, 'Exit when GC calls amount reached')
             ->addOption(
                 'stop-when-unique-jobs-processed',
-                false,
+                null,
                 InputOption::VALUE_NONE,
                 'Stop consumer when all unique jobs are processed. Useful during development and in testing ' .
                 'scenarios. Not intended to be used in production'

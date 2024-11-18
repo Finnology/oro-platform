@@ -8,9 +8,6 @@ class ConfigurationHandlerMock extends ConfigurationHandler
 {
     private static ConfigurationHandler $instance;
 
-    /**
-     * @return ConfigurationHandler
-     */
     public static function getInstance(): ConfigurationHandler
     {
         if (!isset(self::$instance)) {
@@ -20,10 +17,12 @@ class ConfigurationHandlerMock extends ConfigurationHandler
         return self::$instance;
     }
 
+    #[\Override]
     public function validate(int $type, string $scope, array $values, string $entityOrTableName): void
     {
     }
 
+    #[\Override]
     public function process(
         int $type,
         string $sectionName,

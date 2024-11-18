@@ -8,6 +8,7 @@ class BadCredentialsExceptionTest extends \PHPUnit\Framework\TestCase
 {
     private $exception;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->exception = new BadCredentialsException();
@@ -15,7 +16,7 @@ class BadCredentialsExceptionTest extends \PHPUnit\Framework\TestCase
 
     public function testMessageKey(): void
     {
-        self::assertNull($this->exception->getMessageKey());
+        self::assertEquals('', $this->exception->getMessageKey());
 
         $this->exception->setMessageKey('test.message.key');
 

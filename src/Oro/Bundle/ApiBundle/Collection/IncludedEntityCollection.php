@@ -23,6 +23,7 @@ class IncludedEntityCollection implements \Countable, \IteratorAggregate
 
     /**
      * Sets the primary entity identifier.
+     * The $entityId is an identifier of an entity that was sent in the request.
      */
     public function setPrimaryEntityId(string $entityClass, mixed $entityId): void
     {
@@ -31,6 +32,7 @@ class IncludedEntityCollection implements \Countable, \IteratorAggregate
 
     /**
      * Checks whether the given class and id represents the primary entity.
+     * The $entityId is an identifier of an entity that was sent in the request.
      */
     public function isPrimaryEntity(string $entityClass, mixed $entityId): bool
     {
@@ -76,20 +78,22 @@ class IncludedEntityCollection implements \Countable, \IteratorAggregate
 
     /**
      * Adds an entity to the collection.
+     * The $entityId is an identifier of an entity that was sent in the request.
      */
     public function add(object $entity, string $entityClass, mixed $entityId, IncludedEntityData $data): void
     {
-        $key = $this->buildKey($entityClass, $entityId);
+        $key = self::buildKey($entityClass, $entityId);
         $this->collection->add($entity, $key, $data);
         $this->keys[$key] = [$entityClass, $entityId];
     }
 
     /**
      * Removes an entity from the collection.
+     * The $entityId is an identifier of an entity that was sent in the request.
      */
     public function remove(string $entityClass, mixed $entityId): void
     {
-        $key = $this->buildKey($entityClass, $entityId);
+        $key = self::buildKey($entityClass, $entityId);
         $this->collection->removeKey($key);
         unset($this->keys[$key]);
     }
@@ -114,6 +118,7 @@ class IncludedEntityCollection implements \Countable, \IteratorAggregate
     /**
      * Gets the number of entities in the collection
      */
+    #[\Override]
     public function count(): int
     {
         return $this->collection->count();
@@ -121,18 +126,20 @@ class IncludedEntityCollection implements \Countable, \IteratorAggregate
 
     /**
      * Checks whether an entity exists in the collection.
+     * The $entityId is an identifier of an entity that was sent in the request.
      */
     public function contains(string $entityClass, mixed $entityId): bool
     {
-        return $this->collection->containsKey($this->buildKey($entityClass, $entityId));
+        return $this->collection->containsKey(self::buildKey($entityClass, $entityId));
     }
 
     /**
      * Gets an entity.
+     * The $entityId is an identifier of an entity that was sent in the request.
      */
     public function get(string $entityClass, mixed $entityId): ?object
     {
-        return $this->collection->get($this->buildKey($entityClass, $entityId));
+        return $this->collection->get(self::buildKey($entityClass, $entityId));
     }
 
     /**
@@ -157,6 +164,7 @@ class IncludedEntityCollection implements \Countable, \IteratorAggregate
 
     /**
      * Gets an identifier is associated with an object.
+     * It is an identifier that was sent in the request.
      */
     public function getId(object $object): mixed
     {
@@ -180,13 +188,23 @@ class IncludedEntityCollection implements \Countable, \IteratorAggregate
     /**
      * Gets an iterator to get all objects from the collection.
      */
+    #[\Override]
     public function getIterator(): \Traversable
     {
         return new \ArrayIterator(array_values($this->collection->getAll()));
     }
 
-    private function buildKey(string $entityClass, mixed $entityId): string
+    private static function buildKey(string $entityClass, mixed $entityId): string
     {
-        return $entityClass . ':' . (string)$entityId;
+        return $entityClass . ':' . self::convertEntityIdToString($entityId);
+    }
+
+    private static function convertEntityIdToString(mixed $entityId): string
+    {
+        if (\is_array($entityId)) {
+            return json_encode($entityId, JSON_THROW_ON_ERROR);
+        }
+
+        return (string)$entityId;
     }
 }

@@ -1,4 +1,5 @@
 <?php
+
 namespace Oro\Bundle\EmailBundle\Form\EventListener;
 
 use Oro\Bundle\EmailBundle\Entity\Repository\EmailTemplateRepository;
@@ -28,10 +29,8 @@ class BuildTemplateFormSubscriber implements EventSubscriberInterface
         $this->tokenStorage = $tokenStorage;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedEvents()
+    #[\Override]
+    public static function getSubscribedEvents(): array
     {
         return [
             FormEvents::PRE_SET_DATA => 'preSetData',

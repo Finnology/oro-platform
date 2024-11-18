@@ -33,9 +33,7 @@ class OroEncodedPlaceholderPasswordType extends AbstractType
         $this->crypter = $crypter;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder->addEventListener(
@@ -56,9 +54,7 @@ class OroEncodedPlaceholderPasswordType extends AbstractType
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function buildView(FormView $view, FormInterface $form, array $options)
     {
         $password = $form->getData();
@@ -74,9 +70,7 @@ class OroEncodedPlaceholderPasswordType extends AbstractType
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         parent::configureOptions($resolver);
@@ -86,18 +80,14 @@ class OroEncodedPlaceholderPasswordType extends AbstractType
         $resolver->setAllowedTypes('browser_autocomplete', 'bool');
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getParent()
+    #[\Override]
+    public function getParent(): ?string
     {
         return PasswordType::class;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return 'oro_encoded_placeholder_password';
     }

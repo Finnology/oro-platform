@@ -8,7 +8,8 @@ use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 
 class TestFormExtension extends AbstractExtension
 {
-    protected function loadTypes()
+    #[\Override]
+    protected function loadTypes(): array
     {
         return [
             new Select2Type(HiddenType::class, 'oro_select2_hidden')

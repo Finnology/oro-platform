@@ -57,10 +57,8 @@ class ContextsExtension extends AbstractTypeExtension implements ServiceSubscrib
         $this->container = $container;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public static function getSubscribedServices()
+    #[\Override]
+    public static function getSubscribedServices(): array
     {
         return [
             'oro_activity.manager' => ActivityManager::class,
@@ -69,9 +67,7 @@ class ContextsExtension extends AbstractTypeExtension implements ServiceSubscrib
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         if (!$this->isApplicable($options)) {
@@ -155,9 +151,7 @@ class ContextsExtension extends AbstractTypeExtension implements ServiceSubscrib
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function finishView(FormView $view, FormInterface $form, array $options)
     {
         if (!$this->isApplicable($options)) {
@@ -167,9 +161,7 @@ class ContextsExtension extends AbstractTypeExtension implements ServiceSubscrib
         $view->children['contexts']->vars['extra_field'] = true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults(

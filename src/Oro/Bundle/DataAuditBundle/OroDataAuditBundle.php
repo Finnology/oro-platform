@@ -9,9 +9,7 @@ use Symfony\Component\HttpKernel\Bundle\Bundle;
 
 class OroDataAuditBundle extends Bundle
 {
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function build(ContainerBuilder $container): void
     {
         parent::build($container);
@@ -20,7 +18,7 @@ class OroDataAuditBundle extends Bundle
 
         if ('test' === $container->getParameter('kernel.environment')) {
             $container->addCompilerPass(
-                DoctrineOrmMappingsPass::createAnnotationMappingDriver(
+                DoctrineOrmMappingsPass::createAttributeMappingDriver(
                     ['Oro\Bundle\DataAuditBundle\Tests\Functional\Environment\Entity'],
                     [$this->getPath() . '/Tests/Functional/Environment/Entity']
                 )

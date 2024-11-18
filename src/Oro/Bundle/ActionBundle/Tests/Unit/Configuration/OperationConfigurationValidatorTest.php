@@ -28,6 +28,7 @@ class OperationConfigurationValidatorTest extends \PHPUnit\Framework\TestCase
     /** @var OperationConfigurationValidator */
     private $validator;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->controllerClassProvider = $this->createMock(ControllerClassProvider::class);
@@ -232,28 +233,6 @@ class OperationConfigurationValidatorTest extends \PHPUnit\Framework\TestCase
                         'unknown_route_action2.routes.0: Route "unknown_route" not found.',
                     'errors' => [
                         'unknown_route_action2.routes.0: Route "unknown_route" not found.',
-                    ],
-                ],
-            ],
-            'unknown entity short syntax' => [
-                'input' => [
-                    'debug' => true,
-                    'routes' => $routes,
-                    'templates' => $templates,
-                    'config' => [
-                        'unknown_entity_short_syntax_action' => array_merge($config, [
-                            'entities' => ['UnknownBundle:UnknownEntity'],
-                        ]),
-                    ],
-                ],
-                'expected' => [
-                    'expectsLog' => $this->once(),
-                    'logMessage' => 'InvalidConfiguration: ' .
-                        'unknown_entity_short_syntax_action.entities.0: ' .
-                            'Entity "UnknownBundle:UnknownEntity" not found.',
-                    'errors' => [
-                        'unknown_entity_short_syntax_action.entities.0: ' .
-                            'Entity "UnknownBundle:UnknownEntity" not found.',
                     ],
                 ],
             ],

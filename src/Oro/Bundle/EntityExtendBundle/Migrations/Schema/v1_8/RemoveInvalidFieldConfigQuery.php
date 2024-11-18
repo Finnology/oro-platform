@@ -2,40 +2,27 @@
 
 namespace Oro\Bundle\EntityExtendBundle\Migrations\Schema\v1_8;
 
-use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Query\QueryBuilder;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\DBAL\Types\Types;
 use Oro\Bundle\MigrationBundle\Migration\ConnectionAwareInterface;
+use Oro\Bundle\MigrationBundle\Migration\ConnectionAwareTrait;
 use Oro\Bundle\MigrationBundle\Migration\MigrationQuery;
 use Psr\Log\LoggerInterface;
 
 class RemoveInvalidFieldConfigQuery implements MigrationQuery, ConnectionAwareInterface
 {
+    use ConnectionAwareTrait;
+
     const LIMIT = 100;
 
-    /** @var Connection */
-    protected $connection;
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setConnection(Connection $connection)
-    {
-        $this->connection = $connection;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getDescription()
     {
         return 'Removes invalid configs from field configs';
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function execute(LoggerInterface $logger)
     {
         $steps = ceil($this->getEntityConfigFieldsCount() / static::LIMIT);
@@ -47,7 +34,7 @@ class RemoveInvalidFieldConfigQuery implements MigrationQuery, ConnectionAwareIn
             $rows = $entityConfigFieldQb
                 ->setFirstResult($i * static::LIMIT)
                 ->execute()
-                ->fetchAll(\PDO::FETCH_ASSOC);
+                ->fetchAllAssociative;
 
             foreach ($rows as $row) {
                 $this->processRow($row);
@@ -80,7 +67,7 @@ class RemoveInvalidFieldConfigQuery implements MigrationQuery, ConnectionAwareIn
         return $this->createEntityConfigFieldQb()
             ->select('COUNT(1)')
             ->execute()
-            ->fetchColumn();
+            ->fetchOne();
     }
 
     /**

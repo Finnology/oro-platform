@@ -1,4 +1,3 @@
-@regression
 @ticket-BAP-18754
 @fixture-OroUserBundle:manager.yml
 
@@ -18,7 +17,7 @@ Feature: Update user profile and user entity ACL
     And I go to System/User Management/Roles
     And I click edit Administrator in grid
     And select following permissions:
-      | User | View:None | Create:None | Edit:None | Delete:None | Assign:None | Configure:None | Manage API Key:None | Share:None |
+      | User | View:None | Create:None | Edit:None | Delete:None | Assign:None | Configure:None | Manage API Key:None |
     When I save and close form
     Then I should see "Role saved" flash message
     When I reload the page
@@ -41,7 +40,7 @@ Feature: Update user profile and user entity ACL
     And I go to System/User Management/Roles
     And I click edit Administrator in grid
     And select following permissions:
-      | User | View:Global | Create:Global | Edit:Global | Delete:Global | Assign:Global | Configure:Global | Manage API Key:Global | Share:Global |
+      | User | View:Global | Create:Global | Edit:Global | Delete:Global | Assign:Global | Configure:Global | Manage API Key:Global |
     When I save and close form
     Then I should see "Role saved" flash message
 
@@ -105,6 +104,7 @@ Feature: Update user profile and user entity ACL
     And I go to System/User Management/Roles
     And I click edit Sales Manager in grid
     And I check "Update User Profile" entity permission
+    And I click "Entity" in scrollspy
     And select following permissions:
       | User | View:Global | Edit:Global |
     And I save and close form
@@ -132,6 +132,7 @@ Feature: Update user profile and user entity ACL
     And I should be on Role View page
     When I click "Edit"
     And I uncheck "Update User Profile" entity permission
+    And I click "Entity" in scrollspy
     And select following permissions:
       | User | View:Global | Edit:Global |
     And I save and close form
@@ -154,3 +155,47 @@ Feature: Update user profile and user entity ACL
     Given I proceed as the Manager
     When I click My User in user menu
     Then I should not see an "Edit Button" element
+
+  Scenario: Edit button leads to user edit page from user view page and to profile edit page from profile view page
+    Given I proceed as the Admin
+    And I click My User in user menu
+    When I click "Entity Edit Button"
+    Then I should be on User Profile Update page
+    And I should see "Groups and Roles"
+    And I should see "Access Settings"
+    When I go to System/User Management/Users
+    And click View admin@example.com in grid
+    And I click "Entity Edit Button"
+    Then I should be on User Profile Update page
+    And I should see "Groups and Roles"
+    And I should see "Access Settings"
+    When I go to System/User Management/Users
+    And click View ethan@example.com in grid
+    And click "Entity Edit Button"
+    Then I should be on User Edit page
+    And I should see "Groups and Roles"
+    And I should see "Access Settings"
+
+  Scenario: Set Sales Manager edit user and user profile permissions
+    When I go to System/User Management/Roles
+    And I click edit "Sales Manager" in grid
+    And select following permissions:
+      | User | Edit:Global |
+    And I check "Update User Profile" entity permission
+    When I save and close form
+    Then I should see "Role saved" flash message
+
+  Scenario: Check is Sales Manager not see groups and access settings on edit pages
+    Given I proceed as the Manager
+    And I click My User in user menu
+    And I reload the page
+    When I click "Entity Edit Button"
+    Then I should be on User Profile Update page
+    And I should not see "Groups and Roles"
+    And I should not see "Access Settings"
+    When I go to System/User Management/Users
+    And click View admin@example.com in grid
+    And I click "Entity Edit Button"
+    Then I should be on User Edit page
+    And I should not see "Groups and Roles"
+    And I should not see "Access Settings"

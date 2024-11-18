@@ -41,6 +41,7 @@ class ExecuteOperationHandlerTest extends \PHPUnit\Framework\TestCase
     /** @var ExecuteOperationHandler */
     private $handler;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->requestStack = $this->createMock(RequestStack::class);
@@ -90,7 +91,7 @@ class ExecuteOperationHandlerTest extends \PHPUnit\Framework\TestCase
             ->method('getDefinition')
             ->willReturn($definition);
         $this->operation->expects($this->once())
-            ->method('isAvailable')
+            ->method('isAllowed')
             ->willReturn(true);
 
         $result = $this->handler->process($this->operation);
@@ -115,7 +116,7 @@ class ExecuteOperationHandlerTest extends \PHPUnit\Framework\TestCase
             ->method('getDefinition')
             ->willReturn($definition);
         $this->operation->expects($this->once())
-            ->method('isAvailable')
+            ->method('isAllowed')
             ->willReturn(true);
 
         $result = $this->handler->process($this->operation);
@@ -193,7 +194,7 @@ class ExecuteOperationHandlerTest extends \PHPUnit\Framework\TestCase
             ->method('getDefinition')
             ->willReturn($definition);
         $this->operation->expects($this->once())
-            ->method('isAvailable')
+            ->method('isAllowed')
             ->willReturnCallback(function (ActionData $data, Collection $errors) {
                 $errors->add(['message' => 'some error']);
 
@@ -315,7 +316,7 @@ class ExecuteOperationHandlerTest extends \PHPUnit\Framework\TestCase
             ->method('getDefinition')
             ->willReturn($definition);
         $this->operation->expects($this->once())
-            ->method('isAvailable')
+            ->method('isAllowed')
             ->willReturn(true);
         $this->operation->expects($this->once())
             ->method('execute')

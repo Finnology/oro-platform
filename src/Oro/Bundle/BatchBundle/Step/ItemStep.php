@@ -13,7 +13,9 @@ use Oro\Bundle\BatchBundle\Item\ItemWriterInterface;
  */
 class ItemStep extends AbstractStep implements StepExecutionWarningHandlerInterface
 {
-    protected ?int $batchSize = null;
+    public const BATCH_SIZE = 'batch_size';
+
+    protected ?int $batchSize = 100;
 
     protected ?StepExecution $stepExecution = null;
 
@@ -65,9 +67,7 @@ class ItemStep extends AbstractStep implements StepExecutionWarningHandlerInterf
         return $this->processor;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getConfiguration(): array
     {
         $stepElements = [
@@ -90,9 +90,7 @@ class ItemStep extends AbstractStep implements StepExecutionWarningHandlerInterf
         return $configuration;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function setConfiguration(array $config): void
     {
         $stepElements = [
@@ -108,6 +106,7 @@ class ItemStep extends AbstractStep implements StepExecutionWarningHandlerInterf
         }
     }
 
+    #[\Override]
     public function getConfigurableStepElements(): array
     {
         return [
@@ -117,11 +116,12 @@ class ItemStep extends AbstractStep implements StepExecutionWarningHandlerInterf
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function doExecute(StepExecution $stepExecution)
     {
+        if (null !== $this->batchSize) {
+            $stepExecution->getExecutionContext()->put(self::BATCH_SIZE, $this->batchSize);
+        }
         $this->initializeStepElements($stepExecution);
 
         $stepExecutor = $this->createStepExecutor();
@@ -129,9 +129,6 @@ class ItemStep extends AbstractStep implements StepExecutionWarningHandlerInterf
             ->setReader($this->reader)
             ->setProcessor($this->processor)
             ->setWriter($this->writer);
-        if (null !== $this->batchSize) {
-            $stepExecutor->setBatchSize($this->batchSize);
-        }
 
         $stepExecutor->execute($this);
         $this->flushStepElements();
@@ -141,7 +138,12 @@ class ItemStep extends AbstractStep implements StepExecutionWarningHandlerInterf
 
     protected function createStepExecutor(): StepExecutor
     {
-        return new StepExecutor();
+        $stepExecutor = new StepExecutor();
+        if (null !== $this->batchSize) {
+            $stepExecutor->setBatchSize($this->batchSize);
+        }
+
+        return $stepExecutor;
     }
 
     protected function initializeStepElements(StepExecution $stepExecution): void
@@ -178,9 +180,7 @@ class ItemStep extends AbstractStep implements StepExecutionWarningHandlerInterf
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function handleWarning($element, $name, $reason, array $reasonParameters, $item): void
     {
         $this->stepExecution->addWarning($name, $reason, $reasonParameters, $item);

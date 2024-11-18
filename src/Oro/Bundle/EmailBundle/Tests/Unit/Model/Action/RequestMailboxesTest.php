@@ -10,19 +10,22 @@ use Oro\Bundle\EmailBundle\Mailbox\MailboxProcessProviderInterface;
 use Oro\Bundle\EmailBundle\Mailbox\MailboxProcessStorage;
 use Oro\Bundle\EmailBundle\Model\Action\RequestMailboxes;
 use Oro\Component\ConfigExpression\ContextAccessor;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
-class RequestMailboxesTest extends \PHPUnit\Framework\TestCase
+class RequestMailboxesTest extends TestCase
 {
-    /** @var ContextAccessor|\PHPUnit\Framework\MockObject\MockObject */
+    /** @var ContextAccessor|MockObject */
     private $contextAccessor;
 
-    /** @var MailboxRepository|\PHPUnit\Framework\MockObject\MockObject */
+    /** @var MailboxRepository|MockObject */
     private $repository;
 
     /** @var RequestMailboxes */
     private $action;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->contextAccessor = $this->createMock(ContextAccessor::class);
@@ -42,7 +45,7 @@ class RequestMailboxesTest extends \PHPUnit\Framework\TestCase
         $doctrine = $this->createMock(ManagerRegistry::class);
         $doctrine->expects($this->any())
             ->method('getRepository')
-            ->with('OroEmailBundle:Mailbox')
+            ->with(Mailbox::class)
             ->willReturn($this->repository);
 
         $this->action = new RequestMailboxes(

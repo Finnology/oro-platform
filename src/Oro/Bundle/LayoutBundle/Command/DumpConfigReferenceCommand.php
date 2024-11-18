@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\LayoutBundle\Command;
@@ -27,6 +28,7 @@ class DumpConfigReferenceCommand extends Command
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     protected function configure()
     {
         $this
@@ -44,7 +46,8 @@ HELP
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    #[\Override]
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $output = new SymfonyStyle($input, $output);
 
@@ -57,6 +60,6 @@ HELP
             $output->writeln(sprintf(' - Resources/views/layouts/*/config/%s', $fileName));
         }
 
-        return 0;
+        return Command::SUCCESS;
     }
 }

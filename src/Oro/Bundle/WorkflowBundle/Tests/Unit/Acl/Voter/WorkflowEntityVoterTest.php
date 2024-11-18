@@ -16,23 +16,26 @@ use Oro\Bundle\WorkflowBundle\Model\WorkflowPermissionRegistry;
 use Oro\Bundle\WorkflowBundle\Model\WorkflowRegistry;
 use Oro\Bundle\WorkflowBundle\Tests\Unit\Acl\Voter\Stub\WorkflowEntity;
 use Oro\Component\Testing\Unit\TestContainerBuilder;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\Security\Acl\Domain\ObjectIdentity;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\VoterInterface;
 
-class WorkflowEntityVoterTest extends \PHPUnit\Framework\TestCase
+class WorkflowEntityVoterTest extends TestCase
 {
     private const SUPPORTED_CLASS = User::class;
 
-    /** @var DoctrineHelper|\PHPUnit\Framework\MockObject\MockObject */
+    /** @var DoctrineHelper|MockObject */
     private $doctrineHelper;
 
-    /** @var WorkflowRegistry|\PHPUnit\Framework\MockObject\MockObject */
+    /** @var WorkflowRegistry|MockObject */
     private $workflowRegistry;
 
     /** @var WorkflowEntityVoter */
     private $voter;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->doctrineHelper = $this->createMock(DoctrineHelper::class);
@@ -204,7 +207,7 @@ class WorkflowEntityVoterTest extends \PHPUnit\Framework\TestCase
         ?int $entityIdentifier = null,
         array $aclIdentities = []
     ) {
-        $entityAclRepository =$this->createMock(WorkflowEntityAclRepository::class);
+        $entityAclRepository = $this->createMock(WorkflowEntityAclRepository::class);
         $entityAclRepository->expects($this->any())
             ->method('getWorkflowEntityAcls')
             ->willReturn($entityAcls);
@@ -222,8 +225,8 @@ class WorkflowEntityVoterTest extends \PHPUnit\Framework\TestCase
             ->with($this->isType('string'))
             ->willReturnCallback(function ($entity) use ($entityAclRepository, $aclIdentityRepository) {
                 return match ($entity) {
-                    'OroWorkflowBundle:WorkflowEntityAcl' => $entityAclRepository,
-                    'OroWorkflowBundle:WorkflowEntityAclIdentity' => $aclIdentityRepository,
+                    WorkflowEntityAcl::class => $entityAclRepository,
+                    WorkflowEntityAclIdentity::class => $aclIdentityRepository,
                     default => null
                 };
             });

@@ -49,9 +49,7 @@ class OroSyncExtension extends AbstractExtension implements ServiceSubscriberInt
         return $this->container->get('oro_sync.client.frontend_websocket_parameters.provider');
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getFunctions()
     {
         return [
@@ -98,10 +96,8 @@ class OroSyncExtension extends AbstractExtension implements ServiceSubscriberInt
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedServices()
+    #[\Override]
+    public static function getSubscribedServices(): array
     {
         return [
             'oro_sync.content.tag_generator' => TagGeneratorInterface::class,

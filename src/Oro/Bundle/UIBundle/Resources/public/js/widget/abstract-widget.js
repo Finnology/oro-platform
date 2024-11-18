@@ -294,7 +294,7 @@ define(function(require) {
             if (adoptedActionsContainer.length > 0) {
                 const self = this;
                 const form = adoptedActionsContainer.closest('form');
-                const actions = adoptedActionsContainer.find('button, input, a, [data-action-name]');
+                const actions = adoptedActionsContainer.find(':input, a, [data-action-name]');
 
                 if (form.length > 0) {
                     this.form = form;
@@ -418,7 +418,13 @@ define(function(require) {
          * @private
          */
         _appendActionElement: function(sectionContainer, actionElement) {
-            sectionContainer.append($(this.options.actionWrapperTemplate()).append(actionElement));
+            let content = actionElement;
+
+            if (typeof this.options.actionWrapperTemplate === 'function') {
+                content = $(this.options.actionWrapperTemplate()).append(content);
+            }
+
+            sectionContainer.append(content);
         },
 
         /**
@@ -659,7 +665,7 @@ define(function(require) {
          * @param {String} content
          */
         setContent: function(content) {
-            const widgetContent = $(content).filter('.widget-content:first');
+            const widgetContent = $(content).filter('.widget-content').first();
 
             this.actionsEl = null;
             this.actions = {};
@@ -824,7 +830,7 @@ define(function(require) {
             }
 
             try {
-                return $.parseJSON(content);
+                return JSON.parse(content);
             } catch (e) {}
 
             return null;

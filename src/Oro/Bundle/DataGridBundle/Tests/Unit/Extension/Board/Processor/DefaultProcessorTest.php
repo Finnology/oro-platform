@@ -3,6 +3,7 @@
 namespace Oro\Bundle\DataGridBundle\Tests\Unit\Extension\Board\Processor;
 
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\Persistence\ManagerRegistry;
 use Oro\Bundle\DataGridBundle\Datagrid\Common\DatagridConfiguration;
@@ -11,10 +12,11 @@ use Oro\Bundle\DataGridBundle\Extension\Board\Configuration;
 use Oro\Bundle\DataGridBundle\Extension\Board\Processor\DefaultProcessor;
 use Oro\Bundle\DataGridBundle\Tools\ChoiceFieldHelper;
 use Oro\Bundle\EntityBundle\ORM\EntityClassResolver;
+use Oro\Bundle\EntityConfigBundle\Config\ConfigManager;
 
 class DefaultProcessorTest extends \PHPUnit\Framework\TestCase
 {
-    /** @var EntityManager|\PHPUnit\Framework\MockObject\MockObject */
+    /** @var EntityManagerInterface|\PHPUnit\Framework\MockObject\MockObject */
     private $em;
 
     /** @var EntityClassResolver|\PHPUnit\Framework\MockObject\MockObject */
@@ -26,6 +28,7 @@ class DefaultProcessorTest extends \PHPUnit\Framework\TestCase
     /** @var DefaultProcessor */
     private $processor;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->em = $this->createMock(EntityManager::class);
@@ -40,7 +43,8 @@ class DefaultProcessorTest extends \PHPUnit\Framework\TestCase
         $this->processor = new DefaultProcessor(
             $doctrine,
             $this->entityClassResolver,
-            $this->choiceHelper
+            $this->choiceHelper,
+            $this->createMock(ConfigManager::class)
         );
     }
 

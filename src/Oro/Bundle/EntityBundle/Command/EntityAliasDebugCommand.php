@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\EntityBundle\Command;
@@ -25,6 +26,7 @@ class EntityAliasDebugCommand extends Command
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     public function configure()
     {
         $this
@@ -44,6 +46,7 @@ HELP
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      * @noinspection PhpMissingParentCallCommonInspection
      */
+    #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         return $this->outputEntityAliases($output);

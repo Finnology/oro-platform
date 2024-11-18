@@ -36,9 +36,7 @@ class EntityExtension extends AbstractExtension implements ServiceSubscriberInte
         $this->container = $container;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getFunctions()
     {
         return [
@@ -53,9 +51,7 @@ class EntityExtension extends AbstractExtension implements ServiceSubscriberInte
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getFilters()
     {
         return [
@@ -147,15 +143,10 @@ class EntityExtension extends AbstractExtension implements ServiceSubscriberInte
 
     /**
      * Returns a text representation of the given entity.
-     *
-     * @param object $object
-     * @param string $locale
-     *
-     * @return string
      */
-    public function getEntityName($object, $locale = null)
+    public function getEntityName(?object $object, ?string $locale = null, ?string $format = null): ?string
     {
-        return $this->getEntityNameResolver()->getName($object, null, $locale);
+        return $this->getEntityNameResolver()->getName($object, $format, $locale);
     }
 
     /**
@@ -192,10 +183,8 @@ class EntityExtension extends AbstractExtension implements ServiceSubscriberInte
         return $this->getDoctrineHelper()->getEntityReference($entityClass, $entityId);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedServices()
+    #[\Override]
+    public static function getSubscribedServices(): array
     {
         return [
             EntityIdAccessor::class,

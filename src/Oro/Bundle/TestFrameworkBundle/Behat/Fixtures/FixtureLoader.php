@@ -175,11 +175,6 @@ class FixtureLoader
         return $file;
     }
 
-    /**
-     * @param string $filename
-     * @param array $paths
-     * @return string|null
-     */
     private function findFileInPath(string $filename, array $paths): ?string
     {
         foreach ($paths as $path) {
@@ -310,7 +305,6 @@ class FixtureLoader
     {
         $token = new UsernamePasswordOrganizationToken(
             $user,
-            $user->getUsernameLowercase(),
             'main',
             $user->getOrganization(),
             $user->getUserRoles()

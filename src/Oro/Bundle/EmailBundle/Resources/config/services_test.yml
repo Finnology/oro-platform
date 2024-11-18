@@ -17,3 +17,29 @@ services:
         decoration_priority: -256 # should be at the top of the decoration chain
         arguments:
             - '@.inner'
+
+    oro_email.tests.entity_name_resolver.classes_provider:
+        class: Oro\Bundle\EntityBundle\Tests\Functional\Environment\TestEntityNameResolverConfigurableClassesProvider
+        decorates: oro_entity.tests.entity_name_resolver.classes_provider
+        arguments:
+            - '@.inner'
+            -
+                - 'Oro\Bundle\EmailBundle\Entity\Mailbox'
+                - 'Oro\Bundle\EmailBundle\Entity\EmailUser'
+
+    oro_email.tests.entity_name_resolver.data_loader:
+        class: Oro\Bundle\EmailBundle\Tests\Functional\Environment\TestEntityNameResolverDataLoader
+        decorates: oro_entity.tests.entity_name_resolver.data_loader
+        arguments:
+            - '@.inner'
+            - '@oro_email.email.entity.builder'
+            - '@translator'
+
+    oro_email.tests.api.skipped_entity_provider:
+        class: Oro\Bundle\ApiBundle\Tests\Functional\Environment\SkippedEntityProvider
+        decorates: oro_api.tests.skipped_entity_provider
+        arguments:
+            - '@.inner'
+        calls:
+            - [addSkippedEntity, ['Oro\Bundle\EmailBundle\Api\Model\EmailContextItem', ['get_list']]]
+            - [addSkippedEntity, ['Oro\Bundle\EmailBundle\Api\Model\EmailThreadContextItem', ['get_list']]]

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\SearchBundle\Command;
@@ -37,6 +38,7 @@ class ReindexCommand extends Command
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     protected function configure()
     {
         $this
@@ -50,8 +52,7 @@ The <info>%command.name%</info> command rebuilds the search index.
   <info>php %command.full_name%</info>
 
 You can limit the reindexation to a specific entity with the <info>--class</info> option.
-Both the FQCN (Oro\Bundle\UserBundle\Entity\User) and short (OroUserBundle:User)
-class names are accepted:
+The FQCN (Oro\Bundle\UserBundle\Entity\User) class names are accepted:
 
   <info>php %command.full_name% <entityClass></info>
 
@@ -70,7 +71,8 @@ HELP
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    #[\Override]
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $class = $input->getArgument('class');
         $isScheduled = $input->getOption('scheduled');
@@ -93,7 +95,7 @@ HELP
             $output->writeln('Reindex finished successfully.');
         }
 
-        return 0;
+        return Command::SUCCESS;
     }
 
     protected function getSearchIndexer($useAsynchronousIndexer = false): IndexerInterface

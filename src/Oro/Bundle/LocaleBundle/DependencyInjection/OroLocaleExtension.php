@@ -16,9 +16,7 @@ class OroLocaleExtension extends Extension
     public const PARAMETER_FORMATTING_CODE = 'oro_locale.formatting_code';
     public const PARAMETER_LANGUAGE = 'oro_locale.language';
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function load(array $configs, ContainerBuilder $container): void
     {
         $config = $this->processConfiguration($this->getConfiguration($configs, $container), $configs);
@@ -36,6 +34,10 @@ class OroLocaleExtension extends Extension
         $loader->load('services_api.yml');
         $loader->load('commands.yml');
         $loader->load('controllers.yml');
+
+        if ('test' === $container->getParameter('kernel.environment')) {
+            $loader->load('services_test.yml');
+        }
     }
 
     private function prepareSettings(array $config, ContainerBuilder $container): void

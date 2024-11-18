@@ -3,8 +3,8 @@
 namespace Oro\Bundle\LocaleBundle\Migrations\Schema\v1_2;
 
 use Oro\Bundle\EntityConfigBundle\Config\Id\FieldConfigId;
-use Oro\Bundle\EntityConfigBundle\EntityConfig\ConfigurationHandler;
 use Oro\Bundle\EntityConfigBundle\Migration\ConfigurationHandlerAwareInterface;
+use Oro\Bundle\EntityConfigBundle\Migration\ConfigurationHandlerAwareTrait;
 use Oro\Bundle\EntityConfigBundle\Migration\UpdateEntityConfigFieldValueQuery;
 use Oro\Bundle\EntityExtendBundle\EntityConfig\ExtendScope;
 use Oro\Bundle\EntityExtendBundle\Migration\Query\AbstractEntityConfigQuery;
@@ -18,37 +18,23 @@ use Psr\Log\LoggerInterface;
 class UpdateLocalizedFallbackValueRelationsQuery extends AbstractEntityConfigQuery implements
     ConfigurationHandlerAwareInterface
 {
+    use ConfigurationHandlerAwareTrait;
+
     const LIMIT = 100;
 
-    protected ConfigurationHandler $configurationHandler;
-
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getDescription()
     {
         return 'Update all LocalizedFallbackValue relations to be unidirectional';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function setConfigurationHandler(ConfigurationHandler $configurationHandler): void
-    {
-        $this->configurationHandler = $configurationHandler;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getRowBatchLimit()
     {
         return static::LIMIT;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function processRow(array $row, LoggerInterface $logger)
     {
         $data = $this->connection->convertToPHPValue($row['data'], 'array');

@@ -16,9 +16,9 @@ use Oro\Bundle\ApiBundle\Util\EntityIdHelper;
  */
 class AddParentEntityIdToQueryTest extends GetSubresourceProcessorOrmRelatedTestCase
 {
-    /** @var AddParentEntityIdToQuery */
-    private $processor;
+    private AddParentEntityIdToQuery $processor;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -267,6 +267,46 @@ class AddParentEntityIdToQueryTest extends GetSubresourceProcessorOrmRelatedTest
         self::assertSame(
             $parentId['title'],
             $this->context->getQuery()->getParameter('parent_entity_id2')->getValue()
+        );
+    }
+
+    public function testProcessForSubresourceWhenQueryForItIsPreparedByAnotherProcessor()
+    {
+        $associationName = 'owner';
+        $parentId = 123;
+
+        $parentConfig = new EntityDefinitionConfig();
+        $parentConfig->setIdentifierFieldNames(['id']);
+        $parentConfig->addField('id');
+        $parentConfig->addField($associationName)
+            ->setPropertyPath('products.owner');
+        $parentMetadata = new EntityMetadata('Test\Entity');
+        $parentMetadata->setIdentifierFieldNames($parentConfig->getIdentifierFieldNames());
+        $parentMetadata->addField(new FieldMetadata('id'));
+
+        $query = $this->doctrineHelper
+            ->getEntityRepositoryForClass(Entity\User::class)
+            ->createQueryBuilder('e')
+            ->where('e.owner = :parent_entity_id')
+            ->setParameter('parent_entity_id', $parentId);
+
+        $this->context->setParentClassName(Entity\Product::class);
+        $this->context->setParentId($parentId);
+        $this->context->setAssociationName($associationName);
+        $this->context->setParentConfig($parentConfig);
+        $this->context->setParentMetadata($parentMetadata);
+        $this->context->setQuery($query);
+        $this->processor->process($this->context);
+
+        self::assertEquals(
+            'SELECT e'
+            . ' FROM Oro\Bundle\ApiBundle\Tests\Unit\Fixtures\Entity\User e'
+            . ' WHERE e.owner = :parent_entity_id',
+            $this->context->getQuery()->getDQL()
+        );
+        self::assertEquals(
+            $parentId,
+            $this->context->getQuery()->getParameter('parent_entity_id')->getValue()
         );
     }
 

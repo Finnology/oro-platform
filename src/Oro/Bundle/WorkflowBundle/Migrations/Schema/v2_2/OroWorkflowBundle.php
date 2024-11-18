@@ -11,13 +11,10 @@ use Oro\Bundle\MigrationBundle\Migration\QueryBag;
 
 class OroWorkflowBundle implements Migration, DatabasePlatformAwareInterface
 {
+    use DatabasePlatformAwareTrait;
     const TABLE_NAME = 'oro_workflow_definition';
 
-    use DatabasePlatformAwareTrait;
-
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function up(Schema $schema, QueryBag $queries)
     {
         $this->addIndex($schema);

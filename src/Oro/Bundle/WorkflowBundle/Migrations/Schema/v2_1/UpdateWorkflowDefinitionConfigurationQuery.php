@@ -159,9 +159,7 @@ class UpdateWorkflowDefinitionConfigurationQuery extends ParametrizedMigrationQu
         'zoom-out' => 'search-minus',
     ];
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getDescription()
     {
         $logger = new ArrayLogger();
@@ -170,9 +168,7 @@ class UpdateWorkflowDefinitionConfigurationQuery extends ParametrizedMigrationQu
         return $logger->getMessages();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function execute(LoggerInterface $logger)
     {
         $this->migrateConfigs($logger);
@@ -187,7 +183,7 @@ class UpdateWorkflowDefinitionConfigurationQuery extends ParametrizedMigrationQu
         $sql = 'SELECT name, configuration FROM oro_workflow_definition';
         $this->logQuery($logger, $sql);
 
-        $rows = $this->connection->fetchAll($sql);
+        $rows = $this->connection->fetchAllAssociative($sql);
 
         foreach ($rows as $key => $row) {
             $type = Type::getType(Types::ARRAY);
@@ -230,7 +226,7 @@ class UpdateWorkflowDefinitionConfigurationQuery extends ParametrizedMigrationQu
     private function createIconName($name)
     {
         foreach (self::$iconReplaceMask as $pattern => $replace) {
-            $exact = str_ends_with($pattern, '*') ? '': '$';
+            $exact = str_ends_with($pattern, '*') ? '' : '$';
             $pattern = '/' . $pattern . $exact .'/';
             $next = false;
 

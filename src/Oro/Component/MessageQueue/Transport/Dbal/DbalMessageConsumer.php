@@ -96,9 +96,7 @@ class DbalMessageConsumer implements MessageConsumerInterface
         return $this->pollingInterval / 1000;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function receive($timeout = 0): ?MessageInterface
     {
         $startAt = microtime(true);
@@ -124,9 +122,7 @@ class DbalMessageConsumer implements MessageConsumerInterface
         return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function acknowledge(MessageInterface $message): void
     {
         if (!$message instanceof DbalMessageInterface) {
@@ -138,9 +134,7 @@ class DbalMessageConsumer implements MessageConsumerInterface
         $this->deleteMessageWithRetry($message);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function reject(MessageInterface $message, $requeue = false): void
     {
         if (!$message instanceof DbalMessageInterface) {
@@ -165,7 +159,7 @@ class DbalMessageConsumer implements MessageConsumerInterface
     private function receiveMessage(): ?MessageInterface
     {
         $now = time();
-        $this->getUpdateStatement()->execute([
+        $this->getUpdateStatement()->executeQuery([
             'queue' => $this->queue->getQueueName(),
             'delayedUntil' => $now,
             'consumerId' => $this->consumerId
@@ -174,7 +168,7 @@ class DbalMessageConsumer implements MessageConsumerInterface
 
         if (1 === $affectedRows) {
             $selectStatement = $this->getSelectStatement();
-            $selectStatement->execute(
+            $selectStatement->executeQuery(
                 [
                     'consumerId' => $this->consumerId,
                     'queue' => $this->queue->getQueueName(),
@@ -292,7 +286,7 @@ class DbalMessageConsumer implements MessageConsumerInterface
     private function deleteMessage(DbalMessageInterface $message): int
     {
         $deleteStatement = $this->getDeleteStatement();
-        $deleteStatement->execute(['messageId' => $message->getId()]);
+        $deleteStatement->executeQuery(['messageId' => $message->getId()]);
 
         return $deleteStatement->rowCount();
     }
@@ -330,7 +324,7 @@ class DbalMessageConsumer implements MessageConsumerInterface
             try {
                 return $closure();
             } catch (DbalDriverException $driverException) {
-                $try ++;
+                $try++;
                 sleep(1);
             }
         } while ($try < 3);

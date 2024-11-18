@@ -23,23 +23,25 @@ use Symfony\Component\Form\FormInterface;
 
 class ConnectionControllerManagerTest extends \PHPUnit\Framework\TestCase
 {
-    /** @var FormFactoryInterface|\PHPUnit\Framework\MockObject\MockObject  */
+    /** @var FormFactoryInterface|\PHPUnit\Framework\MockObject\MockObject */
     private $formFactory;
 
     /** @var SymmetricCrypterInterface */
     private $crypter;
 
-    /** @var ManagerRegistry|\PHPUnit\Framework\MockObject\MockObject  */
-    private ManagerRegistry $doctrine;
+    /** @var ManagerRegistry|\PHPUnit\Framework\MockObject\MockObject */
+    private $doctrine;
 
-    /** @var ImapConnectorFactory|\PHPUnit\Framework\MockObject\MockObject  */
-    private ImapConnectorFactory $imapConnectorFactory;
+    /** @var ImapConnectorFactory|\PHPUnit\Framework\MockObject\MockObject */
+    private $imapConnectorFactory;
 
-    /** @var OAuthManagerRegistry|\PHPUnit\Framework\MockObject\MockObject  */
-    private OAuthManagerRegistry $oauthManagerRegistry;
+    /** @var OAuthManagerRegistry|\PHPUnit\Framework\MockObject\MockObject */
+    private $oauthManagerRegistry;
 
-    private ConnectionControllerManager $controllerManager;
+    /** @var ConnectionControllerManager */
+    private $controllerManager;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->formFactory = $this->createMock(FormFactoryInterface::class);
@@ -100,12 +102,12 @@ class ConnectionControllerManagerTest extends \PHPUnit\Framework\TestCase
 
         $form->expects(self::once())
             ->method('setData')
-            ->willReturnCallback(function (User $user) use ($expectedData) {
+            ->willReturnCallback(function (User $user) use ($expectedData, $form) {
                 $user->setSalt('');
                 $expectedData->setSalt('');
                 self::assertEquals($expectedData, $user);
 
-                return;
+                return $form;
             });
 
         $resultForm = $this->controllerManager->getImapConnectionForm(
@@ -165,12 +167,12 @@ class ConnectionControllerManagerTest extends \PHPUnit\Framework\TestCase
 
         $form->expects(self::once())
             ->method('setData')
-            ->willReturnCallback(function (User $user) use ($expectedData) {
+            ->willReturnCallback(function (User $user) use ($expectedData, $form) {
                 $user->setSalt('');
                 $expectedData->setSalt('');
                 self::assertEquals($expectedData, $user);
 
-                return;
+                return $form;
             });
 
         $resultForm = $this->controllerManager->getImapConnectionForm(

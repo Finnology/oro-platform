@@ -13,36 +13,42 @@ class ActionMetadataExtra implements MetadataExtraInterface
     public const NAME = 'action';
 
     private string $action;
+    private ?string $parentAction;
 
     /**
-     * @param string $action The name of the action for which the metadata is requested
+     * @param string      $action       The name of the action for which the metadata is requested
+     * @param string|null $parentAction The name of the action which causes the target action
+     *                                  for which the metadata is requested
      */
-    public function __construct(string $action)
+    public function __construct(string $action, ?string $parentAction = null)
     {
         $this->action = $action;
+        $this->parentAction = $parentAction;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getName(): string
     {
         return self::NAME;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function configureContext(MetadataContext $context): void
     {
         $context->setTargetAction($this->action);
+        if ($this->parentAction) {
+            $context->setParentAction($this->parentAction);
+        }
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getCacheKeyPart(): ?string
     {
-        return self::NAME . ':' . $this->action;
+        $result = self::NAME . ':' . $this->action;
+        if ($this->parentAction) {
+            $result .= ':' . $this->parentAction;
+        }
+
+        return $result;
     }
 }

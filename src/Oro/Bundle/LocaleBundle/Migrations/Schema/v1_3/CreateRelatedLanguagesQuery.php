@@ -10,9 +10,7 @@ use Psr\Log\LoggerInterface;
 
 class CreateRelatedLanguagesQuery extends ParametrizedMigrationQuery
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getDescription()
     {
         $logger = new ArrayLogger();
@@ -22,9 +20,7 @@ class CreateRelatedLanguagesQuery extends ParametrizedMigrationQuery
         return $logger->getMessages();
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function execute(LoggerInterface $logger)
     {
         $this->doExecute($logger);
@@ -74,7 +70,7 @@ class CreateRelatedLanguagesQuery extends ParametrizedMigrationQuery
 
         $this->logQuery($logger, $sql);
 
-        return $this->connection->fetchAll($sql);
+        return $this->connection->fetchAllAssociative($sql);
     }
 
     /**
@@ -97,7 +93,7 @@ class CreateRelatedLanguagesQuery extends ParametrizedMigrationQuery
 
         $this->logQuery($logger, $sql, $params, $types);
 
-        $data = $this->connection->fetchAssoc($sql, $params, $types);
+        $data = $this->connection->fetchAssociative($sql, $params, $types);
 
         return [$data['user_owner_id'], $data['organization_id']];
     }

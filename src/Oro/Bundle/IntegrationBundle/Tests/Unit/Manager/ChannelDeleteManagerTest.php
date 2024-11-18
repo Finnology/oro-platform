@@ -6,26 +6,30 @@ use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Oro\Bundle\IntegrationBundle\Entity\Channel as Integration;
+use Oro\Bundle\IntegrationBundle\Entity\Status;
 use Oro\Bundle\IntegrationBundle\Manager\DeleteManager;
 use Oro\Bundle\IntegrationBundle\Tests\Unit\Fixture\TestIntegrationDeleteProvider;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 
-class ChannelDeleteManagerTest extends \PHPUnit\Framework\TestCase
+class ChannelDeleteManagerTest extends TestCase
 {
     /** @var Integration */
     private $testIntegration;
 
-    /** @var EntityManager|\PHPUnit\Framework\MockObject\MockObject */
+    /** @var EntityManager|MockObject */
     private $em;
 
-    /** @var ClassMetadata|\PHPUnit\Framework\MockObject\MockObject */
+    /** @var ClassMetadata|MockObject */
     private $entityMetadata;
 
-    /** @var Connection|\PHPUnit\Framework\MockObject\MockObject */
+    /** @var Connection|MockObject */
     private $connection;
 
     /** @var DeleteManager */
     private $deleteManager;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->testIntegration = new Integration();
@@ -50,7 +54,7 @@ class ChannelDeleteManagerTest extends \PHPUnit\Framework\TestCase
             ->willReturn('table');
         $this->em->expects(self::once())
             ->method('getClassMetadata')
-            ->with('OroIntegrationBundle:Status')
+            ->with(Status::class)
             ->willReturn($this->entityMetadata);
         $this->connection->expects($this->once())
             ->method('commit');
@@ -70,7 +74,7 @@ class ChannelDeleteManagerTest extends \PHPUnit\Framework\TestCase
             ->willReturn('table');
         $this->em->expects(self::once())
             ->method('getClassMetadata')
-            ->with('OroIntegrationBundle:Status')
+            ->with(Status::class)
             ->willReturn($this->entityMetadata);
         $this->em->expects($this->any())
             ->method('remove')

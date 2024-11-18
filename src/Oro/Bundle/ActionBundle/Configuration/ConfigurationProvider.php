@@ -20,28 +20,19 @@ class ConfigurationProvider extends PhpArrayConfigProvider implements Configurat
 
     private Container $container;
 
-    /**
-     * @param string $cacheFile
-     * @param bool $debug
-     * @param Container $container
-     */
     public function __construct(string $cacheFile, bool $debug, Container $container)
     {
         parent::__construct($cacheFile, $debug);
         $this->container = $container;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getConfiguration(): array
     {
         return $this->doGetConfig();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function doLoadConfig(ResourcesContainerInterface $resourcesContainer)
     {
         $mergedConfig = [];

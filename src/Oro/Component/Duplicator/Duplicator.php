@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Component\Duplicator;
@@ -19,11 +20,7 @@ class Duplicator implements DuplicatorInterface
     protected ?MatcherFactory $matcherFactory;
     protected array           $defaultRules = [];
 
-    /**
-     * @param mixed $object
-     * @param array $settings
-     * @return mixed
-     */
+    #[\Override]
     public function duplicate(mixed $object, array $settings = []): mixed
     {
         $deepCopy = new DeepCopy();
@@ -46,8 +43,6 @@ class Duplicator implements DuplicatorInterface
     }
 
     /**
-     * @param array $filterOptions
-     * @return Filter
      * @internal param array|string $filterName
      */
     protected function getFilter(array $filterOptions): Filter
@@ -65,10 +60,6 @@ class Duplicator implements DuplicatorInterface
         );
     }
 
-    /**
-     * @param array $matcherArguments
-     * @return Matcher
-     */
     protected function getMatcher(array $matcherArguments): Matcher
     {
         $matcherKeyword = $matcherArguments[0];
@@ -77,25 +68,16 @@ class Duplicator implements DuplicatorInterface
         return $this->matcherFactory->create($matcherKeyword, $arguments);
     }
 
-    /**
-     * @param FilterFactory $filterFactory
-     */
     public function setFilterFactory(FilterFactory $filterFactory): void
     {
         $this->filterFactory = $filterFactory;
     }
 
-    /**
-     * @param MatcherFactory $matcherFactory
-     */
     public function setMatcherFactory(MatcherFactory $matcherFactory): void
     {
         $this->matcherFactory = $matcherFactory;
     }
 
-    /**
-     * @param array $defaultRules
-     */
     public function setDefaultRules(array $defaultRules): void
     {
         $this->defaultRules = $defaultRules;

@@ -20,10 +20,8 @@ class ConfigSubscriber implements EventSubscriberInterface
         $this->configManager = $configManager;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedEvents()
+    #[\Override]
+    public static function getSubscribedEvents(): array
     {
         return array(
             FormEvents::PRE_SUBMIT => 'preSubmit'

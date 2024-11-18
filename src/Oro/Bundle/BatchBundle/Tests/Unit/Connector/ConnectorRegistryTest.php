@@ -20,9 +20,9 @@ class ConnectorRegistryTest extends \PHPUnit\Framework\TestCase
     /** @var StepFactory|\PHPUnit\Framework\MockObject\MockObject */
     private $stepFactory;
 
-    /** @var ConnectorRegistry */
     private ConnectorRegistry $registry;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->jobFactory = $this->createMock(JobFactory::class);

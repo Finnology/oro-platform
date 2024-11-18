@@ -2,6 +2,7 @@
 
 namespace Oro\Bundle\DistributionBundle;
 
+use Doctrine\Common\Annotations\AnnotationReader;
 use Oro\Bundle\DistributionBundle\Dumper\PhpBundlesDumper;
 use Oro\Bundle\DistributionBundle\Error\ErrorHandler;
 use Oro\Bundle\EntityExtendBundle\Tools\ExtendReflectionErrorHandler;
@@ -9,7 +10,6 @@ use Oro\Bundle\PlatformBundle\Profiler\ProfilerConfig;
 use Oro\Component\Config\CumulativeResourceManager;
 use Oro\Component\DependencyInjection\ExtendedContainerBuilder;
 use Symfony\Bridge\ProxyManager\LazyProxy\Instantiator\RuntimeInstantiator;
-use Symfony\Bridge\ProxyManager\LazyProxy\PhpDumper\ProxyDumper;
 use Symfony\Component\ClassLoader\ClassCollectionLoader;
 use Symfony\Component\Config\ConfigCache;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
@@ -48,33 +48,31 @@ abstract class OroKernel extends Kernel
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function initializeBundles()
+    #[\Override]
+    protected function initializeBundles(): void
     {
         // clear state of CumulativeResourceManager
         CumulativeResourceManager::getInstance()->clear();
 
         parent::initializeBundles();
 
-        // initialize CumulativeResourceManager
-        $bundles = [];
-        foreach ($this->bundles as $name => $bundle) {
-            $bundles[$name] = get_class($bundle);
-        }
-        if (class_exists('AppKernel')) {
-            $bundles['app.kernel'] = \AppKernel::class;
-        }
+        // set CumulativeResourceManager initializer
         CumulativeResourceManager::getInstance()
-            ->setBundles($bundles)
-            ->setAppRootDir($this->getProjectDir());
+            ->setInitializer(function (CumulativeResourceManager $manager): void {
+                $bundles = [];
+                foreach ($this->bundles as $name => $bundle) {
+                    $bundles[$name] = \get_class($bundle);
+                }
+                if (class_exists('AppKernel')) {
+                    $bundles['app.kernel'] = \AppKernel::class;
+                }
+                $manager->setBundles($bundles);
+                $manager->setAppRootDir($this->getProjectDir());
+            });
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function registerBundles()
+    #[\Override]
+    public function registerBundles(): iterable
     {
         $cacheDir = $this->warmupDir ?: $this->getCacheDir();
         $cache = new ConfigCache($cacheDir . '/bundles.php', false);
@@ -227,7 +225,7 @@ abstract class OroKernel extends Kernel
     }
 
     /**
-     * @param $bundles
+     * @param array $bundles
      *
      * @return array
      */
@@ -279,10 +277,8 @@ abstract class OroKernel extends Kernel
         return ($p1 < $p2) ? -1 : 1;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function boot()
+    #[\Override]
+    public function boot(): void
     {
         $phpVersion = phpversion();
         if (!version_compare($phpVersion, self::REQUIRED_PHP_VERSION, '>=')) {
@@ -292,19 +288,16 @@ abstract class OroKernel extends Kernel
                 $phpVersion
             ));
         }
+        AnnotationReader::addGlobalIgnoredName('mixin');
 
         parent::boot();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function dumpContainer(ConfigCache $cache, ContainerBuilder $container, $class, $baseClass)
+    #[\Override]
+    protected function dumpContainer(ConfigCache $cache, ContainerBuilder $container, $class, $baseClass): void
     {
         // cache the container
         $dumper = new PhpDumper($container);
-
-        $dumper->setProxyDumper(new ProxyDumper());
 
         $content = $dumper->dump([
             'class' => $class,
@@ -344,8 +337,11 @@ abstract class OroKernel extends Kernel
      * @SuppressWarnings(PHPMD.NPathComplexity)
      * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      */
-    protected function initializeContainer()
+    #[\Override]
+    protected function initializeContainer(): void
     {
+        \Doctrine\Deprecations\Deprecation::disable();
+
         if ($this->getEnvironment() !== 'test') {
             ErrorHandler::register();
         }
@@ -505,18 +501,14 @@ abstract class OroKernel extends Kernel
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function reboot($warmupDir)
+    #[\Override]
+    public function reboot($warmupDir): void
     {
         $this->warmupDir = $warmupDir;
         parent::reboot($warmupDir);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function getContainerBuilder(): ContainerBuilder
     {
         $container = new ExtendedContainerBuilder();

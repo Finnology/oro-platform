@@ -1,4 +1,5 @@
 <?php
+
 namespace Oro\Bundle\MigrationBundle\Tests\Unit\Fixture\TestPackage\Test2Bundle\Migrations\Data\ORM;
 
 use Doctrine\Common\DataFixtures\AbstractFixture;
@@ -7,9 +8,7 @@ use Doctrine\Persistence\ObjectManager;
 
 class LoadTest2BundleData extends AbstractFixture implements DependentFixtureInterface
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getDependencies()
     {
         return [
@@ -18,6 +17,7 @@ class LoadTest2BundleData extends AbstractFixture implements DependentFixtureInt
         ];
     }
 
+    #[\Override]
     public function load(ObjectManager $manager)
     {
     }

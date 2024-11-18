@@ -35,9 +35,7 @@ class StripHtmlTags extends AbstractAction
         $this->htmlTagHelper = $htmlTagHelper;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function executeAction($context)
     {
         $result = $this->htmlTagHelper->purify($this->contextAccessor->getValue($context, $this->html));
@@ -47,10 +45,10 @@ class StripHtmlTags extends AbstractAction
     }
 
     /**
-     * {@inheritdoc}
      *
      * @SuppressWarnings(PHPMD.NPathComplexity)
      */
+    #[\Override]
     public function initialize(array $options)
     {
         if (!isset($options['attribute']) && !isset($options[0])) {
@@ -62,6 +60,6 @@ class StripHtmlTags extends AbstractAction
         }
 
         $this->attribute = isset($options['attribute']) ? $options['attribute'] : $options[0];
-        $this->html      = isset($options['html'])      ? $options['html']      : $options[1];
+        $this->html      = isset($options['html']) ? $options['html'] : $options[1];
     }
 }

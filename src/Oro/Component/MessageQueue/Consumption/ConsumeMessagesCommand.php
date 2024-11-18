@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Component\MessageQueue\Consumption;
@@ -30,6 +31,7 @@ class ConsumeMessagesCommand extends Command
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     protected function configure()
     {
         $this->configureLimitsExtensions();
@@ -51,7 +53,8 @@ HELP
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    #[\Override]
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $queueName = $input->getArgument('queue');
         $messageProcessorName = (string) $input->getArgument('processor-service');

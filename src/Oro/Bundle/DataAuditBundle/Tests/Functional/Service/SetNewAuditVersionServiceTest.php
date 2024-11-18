@@ -1,4 +1,5 @@
 <?php
+
 namespace Oro\Bundle\DataAuditBundle\Tests\Functional\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
@@ -11,6 +12,7 @@ use Oro\Bundle\TestFrameworkBundle\Test\WebTestCase;
  */
 class SetNewAuditVersionServiceTest extends WebTestCase
 {
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

@@ -44,7 +44,6 @@ services:
         public: true
         arguments:
             - '@request_stack'
-            - '@session'
             - '@oro_ui.router'
             - '@oro_entity.doctrine_helper'
             - '@oro_form.update_factory'
@@ -105,3 +104,20 @@ services:
         class: Oro\Bundle\FormBundle\Provider\FormFieldsMapProvider
         arguments:
             - '@doctrine'
+
+    oro_form.validator_constraints.unique_entity:
+        class: Oro\Bundle\FormBundle\Validator\Constraints\UniqueEntityValidator
+        arguments:
+            - '@doctrine'
+            - '@service_container'
+            - '@oro_entity_config.config_manager'
+            - '@translator'
+        tags:
+            - { name: validator.constraint_validator, alias: oro_form.validator_constraints.unique_entity }
+
+    oro_form.form.event_listener.disable_fields:
+        class: Oro\Bundle\FormBundle\Form\EventListener\DisableFieldsEventSubscriber
+        arguments:
+            - !service
+                class: Oro\Component\ExpressionLanguage\ExpressionLanguage
+            - '@property_accessor'

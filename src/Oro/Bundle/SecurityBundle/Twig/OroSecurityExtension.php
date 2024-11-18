@@ -2,6 +2,7 @@
 
 namespace Oro\Bundle\SecurityBundle\Twig;
 
+use Oro\Bundle\CustomerBundle\Entity\CustomerVisitor;
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
 use Oro\Bundle\SecurityBundle\Acl\Permission\PermissionManager;
 use Oro\Bundle\SecurityBundle\Authentication\TokenAccessorInterface;
@@ -34,21 +35,18 @@ class OroSecurityExtension extends AbstractExtension implements ServiceSubscribe
         $this->container = $container;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getFunctions()
     {
         return [
             new TwigFunction('get_enabled_organizations', [$this, 'getOrganizations']),
             new TwigFunction('get_current_organization', [$this, 'getCurrentOrganization']),
             new TwigFunction('acl_permission', [$this, 'getPermission']),
+            new TwigFunction('is_authenticated', [$this, 'isAuthenticated']),
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getFilters()
     {
         return [
@@ -115,16 +113,21 @@ class OroSecurityExtension extends AbstractExtension implements ServiceSubscribe
         return $result;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedServices()
+    #[\Override]
+    public static function getSubscribedServices(): array
     {
         return [
             'oro_security.util.uri_security_helper' => UriSecurityHelper::class,
             'oro_security.acl.permission_manager' => PermissionManager::class,
             TokenAccessorInterface::class,
         ];
+    }
+
+    public function isAuthenticated(): bool
+    {
+        $user = $this->getTokenAccessor()->getUser();
+
+        return null !== $user && !$user instanceof CustomerVisitor;
     }
 
     private function getPermissionManager(): PermissionManager

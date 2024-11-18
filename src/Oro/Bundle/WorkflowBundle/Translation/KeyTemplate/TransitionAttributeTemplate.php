@@ -9,9 +9,7 @@ class TransitionAttributeTemplate extends TransitionTemplate
 {
     const NAME = 'transition_attribute';
 
-    /**
-     * @return string
-     */
+    #[\Override]
     public function getTemplate(): string
     {
         return parent::getTemplate() . '.attribute.{{ attribute_name }}';
@@ -20,6 +18,7 @@ class TransitionAttributeTemplate extends TransitionTemplate
     /**
      * @return array
      */
+    #[\Override]
     public function getRequiredKeys()
     {
         return array_merge(parent::getRequiredKeys(), ['attribute_name']);

@@ -26,11 +26,6 @@ class OrmResultAfter extends Event implements GridEventInterface
      */
     protected $query;
 
-    /**
-     * @param DatagridInterface $datagrid
-     * @param array             $records
-     * @param AbstractQuery     $query
-     */
     public function __construct(
         DatagridInterface $datagrid,
         array $records = [],
@@ -41,9 +36,7 @@ class OrmResultAfter extends Event implements GridEventInterface
         $this->query    = $query;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getDatagrid()
     {
         return $this->datagrid;

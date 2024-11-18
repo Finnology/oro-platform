@@ -20,9 +20,7 @@ class LoadUsersWithAvatars extends AbstractFixture implements DependentFixtureIn
 {
     use ContainerAwareTrait;
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getDependencies(): array
     {
         return [
@@ -33,9 +31,7 @@ class LoadUsersWithAvatars extends AbstractFixture implements DependentFixtureIn
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function load(ObjectManager $manager): void
     {
         $user1 = $this->createUser($manager, 1, User::ROLE_ANONYMOUS);
@@ -84,8 +80,10 @@ class LoadUsersWithAvatars extends AbstractFixture implements DependentFixtureIn
             ->setEmail(sprintf('%s@example.org', $username))
             ->setOrganization($organization)
             ->addOrganization($organization)
-            ->addUserRole($role)
             ->setEnabled(true);
+        if ($role) {
+            $user->addUserRole($role);
+        }
         $userManager->updateUser($user);
 
         $this->setReference($username, $user);

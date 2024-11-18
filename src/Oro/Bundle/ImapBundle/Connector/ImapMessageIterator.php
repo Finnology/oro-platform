@@ -108,9 +108,8 @@ class ImapMessageIterator implements \Iterator, \Countable
 
     /**
      * The number of messages in this iterator
-     *
-     * @return int
      */
+    #[\Override]
     public function count(): int
     {
         $this->ensureInitialized();
@@ -125,6 +124,7 @@ class ImapMessageIterator implements \Iterator, \Countable
      *
      * @return Message
      */
+    #[\Override]
     public function current(): mixed
     {
         return $this->batch[$this->iterationPos];
@@ -133,6 +133,7 @@ class ImapMessageIterator implements \Iterator, \Countable
     /**
      * Move forward to next element
      */
+    #[\Override]
     public function next(): void
     {
         $this->increasePosition($this->iterationPos);
@@ -173,6 +174,7 @@ class ImapMessageIterator implements \Iterator, \Countable
      *
      * @return int on success, or null on failure.
      */
+    #[\Override]
     public function key(): mixed
     {
         return $this->iterationPos;
@@ -183,6 +185,7 @@ class ImapMessageIterator implements \Iterator, \Countable
      *
      * @return boolean Returns true on success or false on failure.
      */
+    #[\Override]
     public function valid(): bool
     {
         $this->ensureInitialized();
@@ -193,6 +196,7 @@ class ImapMessageIterator implements \Iterator, \Countable
     /**
      * Rewind the Iterator to the first element
      */
+    #[\Override]
     public function rewind(): void
     {
         $this->initialize();

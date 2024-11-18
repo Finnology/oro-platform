@@ -2,7 +2,9 @@
 
 namespace Oro\Bundle\ApiBundle\Processor;
 
+use Oro\Bundle\ApiBundle\Collection\AdditionalEntityCollection;
 use Oro\Bundle\ApiBundle\Collection\IncludedEntityCollection;
+use Oro\Bundle\ApiBundle\Config\Extra\ConfigExtraInterface;
 use Oro\Bundle\ApiBundle\Util\EntityMapper;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormInterface;
@@ -14,6 +16,16 @@ use Symfony\Component\Form\FormInterface;
 interface FormContext extends ContextInterface, ChangeContextInterface
 {
     /**
+     * Gets an identifier of an entity that was sent in the request.
+     */
+    public function getRequestId(): mixed;
+
+    /**
+     * Sets an identifier of an entity that was sent in the request.
+     */
+    public function setRequestId(mixed $requestId): void;
+
+    /**
      * Returns request data.
      */
     public function getRequestData(): array;
@@ -22,6 +34,16 @@ interface FormContext extends ContextInterface, ChangeContextInterface
      * Sets request data.
      */
     public function setRequestData(array $requestData): void;
+
+    /**
+     * Gets a value indicates whether an existing entity should be updated or new one should be created.
+     */
+    public function isExisting(): bool;
+
+    /**
+     * Sets a value indicates whether an existing entity should be updated or new one should be created.
+     */
+    public function setExisting(bool $existing): void;
 
     /**
      * Returns additional data included into the request.
@@ -59,9 +81,20 @@ interface FormContext extends ContextInterface, ChangeContextInterface
     public function addAdditionalEntity(object $entity): void;
 
     /**
+     * Adds an entity to the list of additional entities involved to the request processing
+     * when this entity should be removed from the database.
+     */
+    public function addAdditionalEntityToRemove(object $entity): void;
+
+    /**
      * Removes an entity from the list of additional entities involved to the request processing.
      */
     public function removeAdditionalEntity(object $entity): void;
+
+    /**
+     * Gets a collection contains the list of additional entities involved to the request processing.
+     */
+    public function getAdditionalEntityCollection(): AdditionalEntityCollection;
 
     /**
      * Gets a service that can be used to convert an entity object to a model object and vise versa.
@@ -112,4 +145,20 @@ interface FormContext extends ContextInterface, ChangeContextInterface
      * Sets a flag indicates whether the validation of the form should be skipped or not.
      */
     public function skipFormValidation(bool $skipFormValidation): void;
+
+    /**
+     * Gets config extras that should be used by {@see \Oro\Bundle\ApiBundle\Processor\Shared\LoadNormalizedEntity}
+     * and {@see \Oro\Bundle\ApiBundle\Processor\Shared\LoadNormalizedIncludedEntities} processors.
+     *
+     * @return ConfigExtraInterface[]
+     */
+    public function getNormalizedEntityConfigExtras(): array;
+
+    /**
+     * Sets config extras that should be used by {@see \Oro\Bundle\ApiBundle\Processor\Shared\LoadNormalizedEntity}
+     * and {@see \Oro\Bundle\ApiBundle\Processor\Shared\LoadNormalizedIncludedEntities} processors.
+     *
+     * @param ConfigExtraInterface[] $extras
+     */
+    public function setNormalizedEntityConfigExtras(array $extras): void;
 }

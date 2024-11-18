@@ -10,8 +10,6 @@ class SmtpSettingsCheckerStub extends SmtpSettingsChecker
     private SmtpSettingsChecker $smtpSettingsChecker;
 
     /**
-     * @param SmtpSettingsChecker $smtpSettingsChecker
-     *
      * @noinspection PhpMissingParentConstructorInspection
      */
     public function __construct(SmtpSettingsChecker $smtpSettingsChecker)
@@ -19,6 +17,7 @@ class SmtpSettingsCheckerStub extends SmtpSettingsChecker
         $this->smtpSettingsChecker = $smtpSettingsChecker;
     }
 
+    #[\Override]
     public function checkConnection(SmtpSettings $smtpSettings, string &$error = null): bool
     {
         if ($smtpSettings->getHost() === 'smtp.example.org' &&

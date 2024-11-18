@@ -1,12 +1,10 @@
 <?php
+
 namespace Oro\Component\Layout\Form;
 
 use Symfony\Component\Form\FormRendererInterface as BaseFormRendererInterface;
 use Symfony\Component\Form\FormView;
 
-/**
- * {@inheritdoc}
- */
 interface FormRendererInterface extends BaseFormRendererInterface
 {
     /**
@@ -31,5 +29,5 @@ interface FormRendererInterface extends BaseFormRendererInterface
         $blockNameSuffix,
         array $variables = [],
         $renderParentBlock = false
-    );
+    ): string;
 }

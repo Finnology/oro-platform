@@ -2,6 +2,7 @@
 
 namespace Oro\Bundle\EmailBundle\Form\Type;
 
+use Oro\Bundle\EmailBundle\Entity\EmailOrigin;
 use Oro\Bundle\EmailBundle\Model\FolderType;
 use Oro\Bundle\FormBundle\Form\Type\EntityIdentifierType;
 use Symfony\Component\Form\AbstractType;
@@ -10,11 +11,12 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 
+/**
+ * Represents email folder API form type.
+ */
 class EmailFolderApiType extends AbstractType
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
@@ -23,7 +25,7 @@ class EmailFolderApiType extends AbstractType
                 EntityIdentifierType::class,
                 [
                     'required' => false,
-                    'class'    => 'OroEmailBundle:EmailOrigin',
+                    'class'    => EmailOrigin::class,
                     'multiple' => false
                 ]
             )
@@ -69,18 +71,13 @@ class EmailFolderApiType extends AbstractType
             );
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getName()
     {
         return $this->getBlockPrefix();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return 'oro_email_email_folder_api';
     }

@@ -8,10 +8,8 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class SegmentSubscriber implements EventSubscriberInterface
 {
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedEvents()
+    #[\Override]
+    public static function getSubscribedEvents(): array
     {
         return [
             WidgetOptionsLoadEvent::EVENT_NAME => 'loadAggregatedFieldsWidgetOptions',

@@ -1,8 +1,20 @@
 /* @theme: admin.oro; */
 
+// Breakpoints
+
+// Desktop Media Breakpoint
+$breakpoint-lg: 1550px !default;
+$breakpoint-big: $breakpoint-lg - 1px !default;
+$breakpoint-md: 1310px !default;
+$breakpoint-sm: 1236px !default;
+
+$offset-inline: 16px;
+$offset-block: 16px;
+
 $content-padding: 24px;
 $content-padding-medium: 16px;
 $content-padding-small: $content-padding-medium * .5;
+$content-padding-xs: $content-padding-small * .5;
 $horizontal-padding: $content-padding;
 $vertical-padding: $content-padding;
 $top-padding: $content-padding;

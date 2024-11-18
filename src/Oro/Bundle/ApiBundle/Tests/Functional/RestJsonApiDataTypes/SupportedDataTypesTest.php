@@ -14,6 +14,7 @@ use Oro\Bundle\ApiBundle\Tests\Functional\RestJsonApiTestCase;
  */
 class SupportedDataTypesTest extends RestJsonApiTestCase
 {
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -385,7 +386,7 @@ class SupportedDataTypesTest extends RestJsonApiTestCase
             'BigInt NULL'                  => ['fieldBigInt', null, null, null],
             'BigInt Zero'                  => ['fieldBigInt', '0', '0', '0'],
             'BigInt Zero (int)'            => ['fieldBigInt', 0, '0', '0'],
-            'Boolean NULL'                 => ['fieldBoolean', null, null, null],
+            'Boolean NULL'                 => ['fieldBoolean', null, false, null],
             'Boolean FALSE'                => ['fieldBoolean', false, false, false],
             'Decimal NULL'                 => ['fieldDecimal', null, null, null],
             'Decimal Zero'                 => ['fieldDecimal', '0', '0', '0.00000000'],
@@ -471,10 +472,10 @@ class SupportedDataTypesTest extends RestJsonApiTestCase
     public function invalidValueDataProvider(): array
     {
         return [
-            'Int (empty string)'                  => ['fieldInt', ''],
-            'Int (not number string)'             => ['fieldInt', 'a'],
-            'SmallInt (empty string)'             => ['fieldSmallInt', ''],
-            'SmallInt (not number string)'        => ['fieldSmallInt', 'a'],
+            'Int (empty string)'                  => ['fieldInt', '', 'Please enter an integer.'],
+            'Int (not number string)'             => ['fieldInt', 'a', 'Please enter an integer.'],
+            'SmallInt (empty string)'             => ['fieldSmallInt', '', 'Please enter an integer.'],
+            'SmallInt (not number string)'        => ['fieldSmallInt', 'a', 'Please enter an integer.'],
             'BigInt (empty string)'               => ['fieldBigInt', ''],
             'BigInt (not number string)'          => ['fieldBigInt', 'a'],
             'Boolean (empty string)'              => ['fieldBoolean', ''],
@@ -484,8 +485,8 @@ class SupportedDataTypesTest extends RestJsonApiTestCase
             'Decimal (not number string)'         => ['fieldDecimal', 'a'],
             'Default Decimal (empty string)'      => ['fieldDecimalDefault', ''],
             'Default Decimal (not number string)' => ['fieldDecimalDefault', 'a'],
-            'Float (empty string)'                => ['fieldFloat', ''],
-            'Float (not number string)'           => ['fieldFloat', 'a'],
+            'Float (empty string)'                => ['fieldFloat', '', 'Please enter a number.'],
+            'Float (not number string)'           => ['fieldFloat', 'a', 'Please enter a number.'],
             'Array (empty string)'                => ['fieldArray', ''],
             'Array (not array)'                   => ['fieldArray', 0],
             'SimpleArray (empty string)'          => ['fieldSimpleArray', ''],
@@ -503,8 +504,8 @@ class SupportedDataTypesTest extends RestJsonApiTestCase
             'Time (empty string)'                 => ['fieldTime', ''],
             'Time (invalid string)'               => ['fieldTime', 'a', 'The "a" is not valid time.'],
             'Time (not string)'                   => ['fieldTime', false, 'The "false" is not valid time.'],
-            'Percent (empty string)'              => ['fieldPercent', ''],
-            'Percent (not number string)'         => ['fieldPercent', 'a'],
+            'Percent (empty string)'              => ['fieldPercent', '', 'Please enter a number.'],
+            'Percent (not number string)'         => ['fieldPercent', 'a', 'Please enter a number.'],
             'Percent_100 (empty string)'          => ['fieldPercent100', ''],
             'Percent_100 (not number string)'     => ['fieldPercent100', 'a'],
             'Money (empty string)'                => ['fieldMoney', ''],

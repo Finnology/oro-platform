@@ -2,6 +2,7 @@
 
 namespace Oro\Bundle\ApiBundle\Validator\Constraints;
 
+use Attribute;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Validator\Constraint;
 
@@ -10,6 +11,7 @@ use Symfony\Component\Validator\Constraint;
  *
  * @Annotation
  */
+#[Attribute]
 class HasAdderAndRemover extends Constraint implements ConstraintWithStatusCodeInterface
 {
     public $message = 'oro.api.form.no_adder_and_remover';
@@ -18,26 +20,20 @@ class HasAdderAndRemover extends Constraint implements ConstraintWithStatusCodeI
     public $class;
     public $property;
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getStatusCode(): int
     {
         return Response::HTTP_NOT_IMPLEMENTED;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getRequiredOptions()
+    #[\Override]
+    public function getRequiredOptions(): array
     {
         return ['class', 'property'];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getTargets()
+    #[\Override]
+    public function getTargets(): string|array
     {
         return self::PROPERTY_CONSTRAINT;
     }

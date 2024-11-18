@@ -4,6 +4,8 @@ namespace Oro\Bundle\SecurityBundle\Form\Extension;
 
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\FormExtensionInterface;
+use Symfony\Component\Form\FormTypeGuesserInterface;
+use Symfony\Component\Form\FormTypeInterface;
 
 /**
  * Form extension decorator that adds AclProtectedFieldTypeExtension extension as first extension for all forms.
@@ -27,26 +29,20 @@ class AclFormExtension implements FormExtensionInterface
         $this->innerExtension = $innerExtension;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function getType($name)
+    #[\Override]
+    public function getType($name): FormTypeInterface
     {
         return $this->innerExtension->getType($name);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function hasType($name)
+    #[\Override]
+    public function hasType($name): bool
     {
         return $this->innerExtension->hasType($name);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function getTypeExtensions($name)
+    #[\Override]
+    public function getTypeExtensions($name): array
     {
         $extensions = $this->innerExtension->getTypeExtensions($name);
         // register ACL field form extension as first for all forms except the parent FormType
@@ -57,18 +53,14 @@ class AclFormExtension implements FormExtensionInterface
         return $extensions;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function hasTypeExtensions($name)
+    #[\Override]
+    public function hasTypeExtensions($name): bool
     {
         return $this->innerExtension->hasTypeExtensions($name);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function getTypeGuesser()
+    #[\Override]
+    public function getTypeGuesser(): ?FormTypeGuesserInterface
     {
         return $this->innerExtension->getTypeGuesser();
     }

@@ -12,10 +12,8 @@ use Symfony\Component\Form\FormEvents;
  */
 class AddressIdentifierSubscriber implements EventSubscriberInterface
 {
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedEvents()
+    #[\Override]
+    public static function getSubscribedEvents(): array
     {
         return [
             FormEvents::POST_SET_DATA => 'postSetData',

@@ -2,10 +2,9 @@
 
 namespace Oro\Bundle\LocaleBundle\Tests\Unit\Translation\Strategy;
 
-use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\DBAL\Exception\InvalidFieldNameException;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Mapping\Driver\AnnotationDriver;
+use Doctrine\ORM\Mapping\Driver\AttributeDriver;
 use Doctrine\Persistence\ManagerRegistry;
 use Oro\Bundle\LocaleBundle\Entity\Localization;
 use Oro\Bundle\LocaleBundle\Translation\Strategy\LocalizationFallbackStrategy;
@@ -26,10 +25,11 @@ class LocalizationFallbackStrategyTest extends OrmTestCase
     /** @var LocalizationFallbackStrategy */
     private $strategy;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->em = $this->getTestEntityManager();
-        $this->em->getConfiguration()->setMetadataDriverImpl(new AnnotationDriver(new AnnotationReader()));
+        $this->em->getConfiguration()->setMetadataDriverImpl(new AttributeDriver([]));
 
         $this->cache = $this->createMock(CacheInterface::class);
 

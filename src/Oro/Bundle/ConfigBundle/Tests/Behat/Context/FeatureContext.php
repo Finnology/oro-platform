@@ -303,8 +303,8 @@ class FeatureContext extends OroFeatureContext implements
      * Used instead of manual walking on configuration like "System/ Configuration" configuration.
      *
      * Example: I change configuration options:
-     *      | oro_config.oprion1 | true  |
-     *      | oro_config.oprion2 | false |
+     *      | oro_config.option1 | true  |
+     *      | oro_config.option2 | false |
      *
      * @Given /^(?:|I )change configuration options:$/
      */
@@ -327,5 +327,47 @@ class FeatureContext extends OroFeatureContext implements
         $configManager = $this->getAppContainer()->get('oro_config.global');
         $configManager->set($key, $value);
         $configManager->flush();
+    }
+
+    /**
+     * Clicks on the info icon next a configuration field label to open the tooltip.
+     * Please pay attention to the label text capitalization - some labels only look capitalized because of CSS,
+     * but we need an exact match here. Check the label in the "Inspect" dev panel of your browser, if unsure.
+     * For example, "Responsive Grids" config option is actually "Responsive grids" (and that's what you need to provide
+     * as a parameter here), and the second word looks capitalized only because of CSS (text-transform: capitalize).
+     *
+     * Example: I click on info tooltip for "Application URL" config field
+     *
+     * @When /^I click on info tooltip for "(?P<label>[\w\s]+)" config field$/
+     */
+    public function iClickOnInfoTooltipForConfigOption($label): void
+    {
+        $this->getPage()->find('xpath', \sprintf(
+            "//label[contains(text(),'%s')]"
+            . "/i[contains(concat(' ', normalize-space(@class), ' '), ' fa-info-circle ')"
+            . "and contains(concat(' ', normalize-space(@class), ' '), ' tooltip-icon ')]",
+            $label
+        ))->click();
+    }
+
+    /**
+     * Clicks on the warning icon next a configuration field label to open the tooltip.
+     * Please pay attention to the label text capitalization - some labels only look capitalized because of CSS,
+     * but we need an exact match here. Check the label in the "Inspect" dev panel of your browser, if unsure.
+     * For example, "Responsive Grids" config option is actually "Responsive grids" (and that's what you need to provide
+     * as a parameter here), and the second word looks capitalized only because of CSS (text-transform: capitalize).
+     *
+     * Example: I click on warning tooltip for "Application URL" config field
+     *
+     * @When /^I click on warning tooltip for "(?P<label>[\w\s]+)" config field$/
+     */
+    public function iClickOnWarningTooltipForConfigOption($label): void
+    {
+        $this->getPage()->find('xpath', \sprintf(
+            "//label[contains(text(),'%s')]"
+            . "/i[contains(concat(' ', normalize-space(@class), ' '), ' fa-warning ')"
+            . "and contains(concat(' ', normalize-space(@class), ' '), ' tooltip-icon ')]",
+            $label
+        ))->click();
     }
 }

@@ -24,7 +24,7 @@ class TreeExecutor extends AbstractAction
     protected $logLevel;
 
     /**
-     * @param LoggerInterface $logger
+     * @param LoggerInterface|null $logger
      * @param string $logLevel
      */
     public function __construct(LoggerInterface $logger = null, $logLevel = 'ALERT')
@@ -48,9 +48,7 @@ class TreeExecutor extends AbstractAction
         return $this;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     protected function executeAction($context)
     {
         foreach ($this->actions as $actionConfig) {
@@ -68,9 +66,7 @@ class TreeExecutor extends AbstractAction
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function initialize(array $options)
     {
         return $this;

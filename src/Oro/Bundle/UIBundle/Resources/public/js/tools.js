@@ -47,7 +47,7 @@ define(function(require) {
                     obj = _.toArray(obj);
                 }
 
-                if (_.isArray(obj)) {
+                if (Array.isArray(obj)) {
                     obj.sort();
                     _.each(obj, function(value, key) {
                         buildParams(pref + '[' + (typeof value === 'object' ? key : '') + ']', value);
@@ -264,6 +264,16 @@ define(function(require) {
         },
 
         /**
+         * Detect if software keyboard is enabled probably
+         *
+         * @returns {boolean}
+         */
+        isSoftwareKeyboardEnabled() {
+            return visualViewport.height * visualViewport.scale / screen.height < 0.8 &&
+                ['input', 'textarea', 'select'].includes(document.activeElement.tagName.toLowerCase());
+        },
+
+        /**
          * Check if current page is an error page (404, 503, 504, etc.)
          * @returns {boolean}
          */
@@ -321,7 +331,7 @@ define(function(require) {
          * @returns {Array}
          */
         ensureArray: function(value) {
-            return _.isArray(value) ? value : [value];
+            return Array.isArray(value) ? value : [value];
         },
 
         /**

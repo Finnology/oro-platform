@@ -38,6 +38,7 @@ class WorkflowDataNormalizerTest extends \PHPUnit\Framework\TestCase
     /** @var AttributeManager|\PHPUnit\Framework\MockObject\MockObject */
     private $attributeManager;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->attributeNormalizer = $this->createMock(AttributeNormalizer::class);
@@ -85,7 +86,7 @@ class WorkflowDataNormalizerTest extends \PHPUnit\Framework\TestCase
     public function testNormalizeExceptionCantGetWorkflow(string $direction)
     {
         $this->expectException(SerializerException::class);
-        $this->expectExceptionMessage(\sprintf(
+        $this->expectExceptionMessage(sprintf(
             'Cannot get Workflow. Serializer must implement %s',
             WorkflowAwareSerializer::class
         ));

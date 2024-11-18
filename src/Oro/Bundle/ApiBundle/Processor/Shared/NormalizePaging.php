@@ -21,9 +21,7 @@ class NormalizePaging implements ProcessorInterface
         $this->maxEntitiesLimit = $maxEntitiesLimit;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function process(ContextInterface $context): void
     {
         /** @var Context $context */
@@ -39,15 +37,16 @@ class NormalizePaging implements ProcessorInterface
             return;
         }
 
-        if (-1 === $criteria->getMaxResults()) {
-            // a paging is disabled or unlimited page size is requested
-            $criteria->setFirstResult(null);
-            $criteria->setMaxResults(null);
-        }
-
-        // apply the configured max results limit
+        $maxResults = $criteria->getMaxResults();
         $maxResultsLimit = $this->getMaxResultsLimit($context->getConfig());
-        if ($maxResultsLimit > 0 && $criteria->getMaxResults() > $maxResultsLimit) {
+        if (-1 === $maxResultsLimit) {
+            if (-1 === $maxResults) {
+                // a paging is disabled or unlimited page size is requested
+                $criteria->setFirstResult(null);
+                $criteria->setMaxResults(null);
+            }
+        } elseif (-1 === $maxResults || $maxResults > $maxResultsLimit) {
+            // apply the configured max results limit
             $criteria->setMaxResults($maxResultsLimit);
         }
     }

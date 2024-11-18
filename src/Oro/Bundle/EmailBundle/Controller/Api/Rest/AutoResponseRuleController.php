@@ -3,7 +3,8 @@
 namespace Oro\Bundle\EmailBundle\Controller\Api\Rest;
 
 use Nelmio\ApiDocBundle\Annotation\ApiDoc;
-use Oro\Bundle\SecurityBundle\Annotation\Acl;
+use Oro\Bundle\EmailBundle\Entity\AutoResponseRule;
+use Oro\Bundle\SecurityBundle\Attribute\Acl;
 use Oro\Bundle\SoapBundle\Controller\Api\Rest\RestController;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -19,32 +20,28 @@ class AutoResponseRuleController extends RestController
      *      description="Delete Autoresponse Rule",
      *      resource=true
      * )
-     * @Acl(
-     *      id="oro_email_autoresponserule_delete",
-     *      type="entity",
-     *      permission="DELETE",
-     *      class="OroEmailBundle:AutoResponseRule"
-     * )
      * @return Response
      */
+    #[Acl(
+        id: 'oro_email_autoresponserule_delete',
+        type: 'entity',
+        class: AutoResponseRule::class,
+        permission: 'DELETE'
+    )]
     public function deleteAction(int $id)
     {
         return $this->handleDeleteRequest($id);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getFormHandler()
     {
         throw new \BadMethodCallException('This method is unsupported.');
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getManager()
     {
-        return $this->get('oro_email.manager.autoresponserule.api');
+        return $this->container->get('oro_email.manager.autoresponserule.api');
     }
 }

@@ -16,10 +16,8 @@ class FeatureCSChecker implements HealthCheckerInterface
      */
     protected $errors = [];
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedEvents()
+    #[\Override]
+    public static function getSubscribedEvents(): array
     {
         return [
             BeforeFeatureTested::BEFORE => [
@@ -58,9 +56,7 @@ class FeatureCSChecker implements HealthCheckerInterface
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getName()
     {
         return 'cs';
@@ -69,6 +65,7 @@ class FeatureCSChecker implements HealthCheckerInterface
     /**
      * @return bool
      */
+    #[\Override]
     public function isFailure()
     {
         return !empty($this->errors);
@@ -78,6 +75,7 @@ class FeatureCSChecker implements HealthCheckerInterface
      * Return array of strings error messages
      * @return string[]
      */
+    #[\Override]
     public function getErrors()
     {
         return $this->errors;

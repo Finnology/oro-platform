@@ -2,7 +2,7 @@
 
 namespace Oro\Bundle\DataAuditBundle\Tests\Functional\EventListener;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Event\PostFlushEventArgs;
 use Oro\Bundle\DataAuditBundle\Async\Topic\AuditChangedEntitiesTopic;
 use Oro\Bundle\DataAuditBundle\EventListener\SendChangedEntitiesToMessageQueueListener;
@@ -30,6 +30,7 @@ class SendChangedEntitiesToMessageQueueListenerTest extends WebTestCase
 {
     use MessageQueueExtension;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->initClient();
@@ -43,7 +44,7 @@ class SendChangedEntitiesToMessageQueueListenerTest extends WebTestCase
         return $this->getContainer()->get('oro_dataaudit.listener.send_changed_entities_to_message_queue');
     }
 
-    private function getEntityManager(): EntityManager
+    private function getEntityManager(): EntityManagerInterface
     {
         return $this->getContainer()->get('doctrine.orm.entity_manager');
     }
@@ -800,7 +801,7 @@ class SendChangedEntitiesToMessageQueueListenerTest extends WebTestCase
 
         $toBeUpdated = [];
         $toBeDeleted = [];
-        for ($i = 0; $i < 100; $i ++) {
+        for ($i = 0; $i < 100; $i++) {
             $toBeUpdated[$i] = new TestAuditDataOwner();
             $toBeUpdated[$i]->setStringProperty('aString');
             $em->persist($toBeUpdated[$i]);
@@ -812,7 +813,7 @@ class SendChangedEntitiesToMessageQueueListenerTest extends WebTestCase
 
         self::getMessageCollector()->clear();
 
-        for ($i = 0; $i < 100; $i ++) {
+        for ($i = 0; $i < 100; $i++) {
             $toBeUpdated[$i]->setStringProperty('anotherString');
             $em->remove($toBeUpdated[$i]);
 
@@ -828,7 +829,7 @@ class SendChangedEntitiesToMessageQueueListenerTest extends WebTestCase
 
     public function testShouldNotSendLoggedInUserInfoIfPresentButNotUserInstance()
     {
-        $token = new UsernamePasswordToken($this->createMock(UserInterface::class), 'someCredentinals', 'aProviderKey');
+        $token = new UsernamePasswordToken($this->createMock(UserInterface::class), 'aProviderKey');
 
         $tokenStorage = $this->getTokenStorage();
         $tokenStorage->setToken($token);
@@ -851,7 +852,7 @@ class SendChangedEntitiesToMessageQueueListenerTest extends WebTestCase
         $user = new User();
         $user->setId(123);
 
-        $token = new UsernamePasswordToken($user, 'someCredentinals', 'aProviderKey');
+        $token = new UsernamePasswordToken($user, 'aProviderKey');
 
         $tokenStorage = $this->getTokenStorage();
         $tokenStorage->setToken($token);
@@ -1074,6 +1075,38 @@ class SendChangedEntitiesToMessageQueueListenerTest extends WebTestCase
         $this->assertEquals($expectedEntitiesUpdated, $additionalMessage['message']['entities_updated']);
     }
 
+    public function testShouldSendEntityChangesWhenNoChangesInAdditionalUpdates()
+    {
+        $em = $this->getEntityManager();
+        $entity = new TestAuditDataOwner();
+        $entity->setStringProperty('string');
+        $em->persist($entity);
+        $em->flush();
+
+        $sentMessages = self::getSentMessages();
+        $this->assertCount(1, $sentMessages);
+
+        $storage = self::getContainer()->get('oro_dataaudit.model.additional_entity_changes_to_audit_storage');
+        $storage->addEntityUpdate($em, $entity, ['additionalChanges' => ['old', 'old']]);
+
+        $entity->setStringProperty('new string');
+        $em->persist($entity);
+        $em->flush();
+
+        $sentMessages = self::getSentMessages();
+        $this->assertCount(2, $sentMessages);
+        $additionalMessage = end($sentMessages);
+        $this->assertEquals(AuditChangedEntitiesTopic::getName(), $additionalMessage['topic']);
+        $expectedEntitiesUpdated = [
+            spl_object_hash($entity) => [
+                'entity_class' => TestAuditDataOwner::class,
+                'entity_id' => $entity->getId(),
+                'change_set' => ['stringProperty' => ['string', 'new string']]
+            ]
+        ];
+        $this->assertEquals($expectedEntitiesUpdated, $additionalMessage['message']['entities_updated']);
+    }
+
     public function testShouldSendUpdatedEntityWithIdFromUnitOfWorkInsteadOfIdFromEntityObject()
     {
         $em = $this->getEntityManager();
@@ -1195,7 +1228,7 @@ class SendChangedEntitiesToMessageQueueListenerTest extends WebTestCase
     {
         $user = $this->getAdminUser();
         $organization = $user->getOrganization();
-        $token = new UsernamePasswordOrganizationToken($user, $user->getUsername(), 'main', $organization);
+        $token = new UsernamePasswordOrganizationToken($user, 'main', $organization);
         $token->setAttribute('owner_description', 'Integration: #1');
 
         $tokenStorage = $this->getTokenStorage();
@@ -1217,7 +1250,7 @@ class SendChangedEntitiesToMessageQueueListenerTest extends WebTestCase
     public function testShouldSendOwnerDescriptionUsingAuthorName()
     {
         $user = $this->getAdminUser();
-        $token = new UsernamePasswordToken($user, $user->getUsername(), 'main');
+        $token = new UsernamePasswordToken($user, 'main');
 
         $tokenStorage = $this->getTokenStorage();
         $tokenStorage->setToken($token);

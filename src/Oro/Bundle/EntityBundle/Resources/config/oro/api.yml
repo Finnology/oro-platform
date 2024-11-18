@@ -11,6 +11,7 @@ api:
     entities:
         Oro\Bundle\EntityBundle\Entity\EntityFieldFallbackValue:
             documentation_resource: '@OroEntityBundle/Resources/doc/api/entity_field_fallback_value.md'
+            disable_meta_properties: [ title ]
             actions:
                 delete_list: false
                 delete: false
@@ -43,11 +44,15 @@ api:
                             data_type: string
                         name:
                             data_type: string
+                        normalizedName:
+                            data_type: string
                         type:
                             data_type: string
                         relationType:
                             data_type: string
                         relatedEntityName:
+                            data_type: string
+                        relatedEntityType:
                             data_type: string
                         options:
                             data_type: object
@@ -57,7 +62,7 @@ api:
                     data_type: object
             actions:
                 get_list:
-                    page_size: -1 # disable paging
+                    disable_paging: true
                     disable_sorting: true
                 create: false
                 update: false

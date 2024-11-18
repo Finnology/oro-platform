@@ -5,6 +5,9 @@ namespace Oro\Component\Testing\Unit\Command\Stub;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputInterface;
 
+/**
+ * Stub for Symfony\Component\Console\Input\InputInterface
+ */
 class InputStub implements InputInterface
 {
     /** @var string */
@@ -28,82 +31,60 @@ class InputStub implements InputInterface
         $this->options = $options;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getFirstArgument()
+    #[\Override]
+    public function getFirstArgument(): ?string
     {
         return current($this->arguments);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function hasParameterOption($values, $onlyParams = false)
+    #[\Override]
+    public function hasParameterOption($values, $onlyParams = false): bool
     {
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getParameterOption($values, $default = false, $onlyParams = false)
     {
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function bind(InputDefinition $definition)
     {
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function validate()
     {
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getArguments()
+    #[\Override]
+    public function getArguments(): array
     {
         return $this->arguments;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getArgument($name)
     {
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function setArgument($name, $value)
     {
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function hasArgument($name)
+    #[\Override]
+    public function hasArgument($name): bool
     {
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getOptions()
+    #[\Override]
+    public function getOptions(): array
     {
         return $this->options;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getOption($name)
     {
         if (isset($this->options[$name])) {
@@ -113,31 +94,23 @@ class InputStub implements InputInterface
         return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function setOption($name, $value)
     {
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function hasOption($name)
+    #[\Override]
+    public function hasOption($name): bool
     {
         return array_key_exists($name, $this->options);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function isInteractive()
+    #[\Override]
+    public function isInteractive(): bool
     {
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function setInteractive($interactive)
     {
     }
@@ -145,6 +118,7 @@ class InputStub implements InputInterface
     /**
      * @return string
      */
+    #[\Override]
     public function __toString()
     {
         return (string)$this->command;

@@ -17,22 +17,25 @@ use Oro\Bundle\EmailBundle\Entity\Manager\EmailAddressManager;
 use Oro\Bundle\EmailBundle\Entity\Provider\EmailOwnerProvider;
 use Oro\Bundle\EmailBundle\Tests\Unit\Entity\TestFixtures\TestEmailAddressProxy;
 use Oro\Component\Testing\ReflectionUtil;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 
-class EmailEntityBatchProcessorTest extends \PHPUnit\Framework\TestCase
+class EmailEntityBatchProcessorTest extends TestCase
 {
-    /** @var EmailAddressManager|\PHPUnit\Framework\MockObject\MockObject */
+    /** @var EmailAddressManager|MockObject */
     private $addressManager;
 
-    /** @var EmailOwnerProvider|\PHPUnit\Framework\MockObject\MockObject */
+    /** @var EmailOwnerProvider|MockObject */
     private $ownerProvider;
 
-    /** @var EventDispatcher|\PHPUnit\Framework\MockObject\MockObject */
+    /** @var EventDispatcher|MockObject */
     private $eventDispatcher;
 
     /** @var EmailEntityBatchProcessor */
     private $batch;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->ownerProvider = $this->createMock(EmailOwnerProvider::class);
@@ -98,7 +101,20 @@ class EmailEntityBatchProcessorTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals('Test', $this->batch->getFolder('trash', 'TeST')->getFullName());
         $this->assertNull($this->batch->getFolder('trash', 'Another'));
 
+        $this->assertSame([$folder, $folder1], $this->batch->getFolders());
+    }
+
+    public function testAddFolderWhenItAlreadyExists()
+    {
         $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage('The folder "TEST" (type: sent) already exists in the batch.');
+
+        $folder = new EmailFolder();
+        $folder->setType('sent');
+        $folder->setName('Test');
+        $folder->setFullName('Test');
+        $this->batch->addFolder($folder);
+
         $folder2 = new EmailFolder();
         $folder2->setType('sent');
         $folder2->setName('TEST');
@@ -107,9 +123,10 @@ class EmailEntityBatchProcessorTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
+     * @dataProvider persistDataProvider
      * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      */
-    public function testPersist()
+    public function testPersist(bool $dryRun)
     {
         $origin = $this->createMock(EmailOrigin::class);
         $origin->expects($this->any())
@@ -203,9 +220,9 @@ class EmailEntityBatchProcessorTest extends \PHPUnit\Framework\TestCase
         $em->expects($this->exactly(3))
             ->method('getRepository')
             ->willReturnMap([
-                ['OroEmailBundle:EmailFolder', $folderRepo],
+                [EmailFolder::class, $folderRepo],
                 [TestEmailAddressProxy::class, $addressRepo],
-                ['OroEmailBundle:Email', $emailRepo],
+                [Email::class, $emailRepo],
             ]);
 
         $folderRepo->expects($this->exactly(2))
@@ -229,7 +246,28 @@ class EmailEntityBatchProcessorTest extends \PHPUnit\Framework\TestCase
             ->method('findEmailOwner')
             ->willReturn($owner);
 
-        $this->batch->persist($em);
+        if ($dryRun) {
+            $em->expects($this->never())
+                ->method('persist');
+        } else {
+            $em->expects($this->exactly(6))
+                ->method('persist')
+                ->withConsecutive(
+                    [$this->identicalTo($newFolder)],
+                    [$this->identicalTo($newAddress)],
+                    [$this->identicalTo($emailUser1)],
+                    [$this->identicalTo($emailUser2)],
+                    [$this->identicalTo($emailUser3)],
+                    [$this->identicalTo($emailUser4)]
+                );
+        }
+
+        $persistedEntities = $this->batch->persist($em, $dryRun);
+
+        $this->assertSame(
+            [$newFolder, $newAddress, $emailUser1, $emailUser2, $emailUser3, $emailUser4],
+            $persistedEntities
+        );
 
         $this->assertCount(1, $email1->getEmailUsers());
         $this->assertCount(1, $email2->getEmailUsers());
@@ -260,5 +298,10 @@ class EmailEntityBatchProcessorTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($existingEmail, $changes[1]['new']);
         $this->assertSame($email4, $changes[2]['old']);
         $this->assertSame($existingEmail, $changes[2]['new']);
+    }
+
+    public function persistDataProvider(): array
+    {
+        return [[false], [true]];
     }
 }

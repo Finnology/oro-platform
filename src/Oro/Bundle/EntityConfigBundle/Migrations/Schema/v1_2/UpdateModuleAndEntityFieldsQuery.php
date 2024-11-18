@@ -9,9 +9,7 @@ use Psr\Log\LoggerInterface;
 
 class UpdateModuleAndEntityFieldsQuery extends ParametrizedMigrationQuery
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getDescription()
     {
         $logger = new ArrayLogger();
@@ -20,22 +18,17 @@ class UpdateModuleAndEntityFieldsQuery extends ParametrizedMigrationQuery
         return $logger->getMessages();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function execute(LoggerInterface $logger)
     {
         $this->doExecute($logger);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function doExecute(LoggerInterface $logger, $dryRun = false)
     {
         $getSql = 'SELECT id, class_name FROM oro_entity_config';
         $this->logQuery($logger, $getSql);
-        $configs   = $this->connection->fetchAll($getSql);
+        $configs   = $this->connection->fetchAllAssociative($getSql);
         $indexes   = $this->getIndexes($logger);
         $insertSql = 'INSERT INTO oro_entity_config_index_value '
             . '(entity_id, scope, code, value) '
@@ -97,7 +90,7 @@ class UpdateModuleAndEntityFieldsQuery extends ParametrizedMigrationQuery
             . 'WHERE entity_id IS NOT NULL AND scope = \'entity_config\' '
             . 'AND code IN (\'module_name\', \'entity_name\')';
         $this->logQuery($logger, $sql);
-        $rows = $this->connection->fetchAll($sql);
+        $rows = $this->connection->fetchAllAssociative($sql);
 
         $result = [];
         foreach ($rows as $row) {

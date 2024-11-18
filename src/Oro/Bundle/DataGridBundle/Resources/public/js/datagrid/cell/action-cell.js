@@ -43,7 +43,7 @@ define(function(require, exports, module) {
         launcherMode: '',
 
         /**
-         * Allow launcher to use / set default aria-label attribute if it not defined
+         * Allow launcher to use / set default aria-label attribute if it is not defined
          *
          * @property boolean
          * */
@@ -53,25 +53,14 @@ define(function(require, exports, module) {
         actionsState: '',
 
         /** @property */
-        baseMarkup: _.template(
-            '<div class="more-bar-holder">' +
-                '<div class="dropleft">' +
-                    '<a class="dropdown-toggle" href="#" role="button" id="<%- togglerId %>" data-toggle="dropdown" ' +
-                        'aria-haspopup="true" aria-expanded="false" aria-label="<%- label %>">' +
-                        '<span class="icon fa-ellipsis-h fa--no-offset" aria-hidden="true"></span>' +
-                    '</a>' +
-                    '<ul class="dropdown-menu dropdown-menu__action-cell launchers-dropdown-menu" ' +
-                        'aria-labelledby="<%- togglerId %>"></ul>' +
-                '</div>' +
-            '</div>'
-        ),
+        baseMarkup: require('tpl-loader!orodatagrid/templates/datagrid/action-cell-base-markup.html'),
 
         /** @property */
-        simpleBaseMarkup: _.template('<div class="more-bar-holder action-row"></div>'),
+        simpleBaseMarkup: _.template(`<div class="more-bar-holder action-row"></div>`),
 
         /** @property */
         closeButtonTemplate: _.template(
-            '<li class="dropdown-close"><i class="fa-close hide-text">' + __('Close') + '</i></li>'
+            `<li class="dropdown-close"><i class="fa-close hide-text">${__('Close')}</i></li>`
         ),
 
         /** @property */
@@ -79,25 +68,25 @@ define(function(require, exports, module) {
 
         /** @property */
         launchersListTemplate: _.template(
-            '<% if (withIcons) { %>' +
-                '<li><ul class="launchers-list"></ul></li>' +
-            '<% } else { %>' +
-                '<li class="well-small"><ul class="list-unstyled launchers-list"></ul></li>' +
-            '<% } %>'
+            `<% if (withIcons) { %>
+                <li><ul class="launchers-list"></ul></li>
+            <% } else { %>
+                <li class="well-small"><ul class="list-unstyled launchers-list"></ul></li>
+            <% } %>`
         ),
 
         /** @property */
         simpleLaunchersListTemplate: _.template(
-            '<% if (withIcons) { %>' +
-                '<ul class="nav nav--block nav-pills icons-holder launchers-list"></ul>' +
-            '<% } else { %>' +
-                '<ul class="unstyled launchers-list"></ul>' +
-            '<% } %>'
+            `<% if (withIcons) { %>
+                <ul class="nav nav--block nav-pills icons-holder launchers-list"></ul>
+            <% } else { %>
+                <ul class="unstyled launchers-list"></ul>
+            <% } %>`
         ),
 
         /** @property */
         launcherItemTemplate: _.template(
-            '<li class="launcher-item<% if (className) { %> <%= \'mode-\' + className %><% } %>"></li>'
+            `<li class="launcher-item<% if (className) { %> <%- 'mode-' + className %><% } %>"></li>`
         ),
 
         /** @property */
@@ -140,6 +129,7 @@ define(function(require, exports, module) {
 
             ActionCell.__super__.initialize.call(this, options);
             this.actions = this.createActions();
+            this.model.set('availableActions', this.actions);
             _.each(this.actions, function(action) {
                 this.listenTo(action, 'preExecute', this.onActionRun);
             }, this);
@@ -272,6 +262,7 @@ define(function(require, exports, module) {
 
             this.isLauncherListFilled = false;
             this.fillLauncherList();
+            this.model.set('availableActions', this.actions.filter(action => action.launcherInstance?.enabled));
         },
 
         /**
@@ -280,7 +271,11 @@ define(function(require, exports, module) {
         render: function() {
             // don't render anything if list of launchers is empty
             if (_.isEmpty(this.actions)) {
-                this.$el.empty();
+                this.$el.attr({
+                    'aria-label': null,
+                    'data-blank-content': null,
+                    'aria-colindex': null
+                }).empty();
 
                 return this;
             }
@@ -385,10 +380,26 @@ define(function(require, exports, module) {
             $launcherItem.append(launcher.render().$el);
             const className = 'mode-' + launcher.launcherMode;
             $launcherItem.addClass(className);
+            this.decorateLauncherItem(launcher);
+            return result;
+        },
+
+        /**
+         * Add extra classes to launcher
+         *
+         * @param {orodatagrid.datagrid.ActionLauncher} launcher
+         * @return {Object}
+         */
+        decorateLauncherItem(launcher) {
+            if (!launcher.$el) {
+                return this;
+            }
+
             if (this.isDropdownActions) {
                 launcher.$el.addClass('dropdown-item');
             }
-            return result;
+
+            return this;
         },
 
         /**
@@ -426,6 +437,7 @@ define(function(require, exports, module) {
                 this.$('[data-toggle="dropdown"]').dropdown('toggle');
             }
             this.model.set('isDropdownActions', this.isDropdownActions);
+            e.preventDefault();
             e.stopPropagation();
         },
 

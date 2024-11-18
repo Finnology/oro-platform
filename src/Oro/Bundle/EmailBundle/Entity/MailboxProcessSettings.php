@@ -2,30 +2,26 @@
 
 namespace Oro\Bundle\EmailBundle\Entity;
 
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Table(
- *      name="oro_email_mailbox_process"
- * )
- * @ORM\Entity
- * @ORM\InheritanceType("SINGLE_TABLE")
- * @ORM\DiscriminatorColumn(name="type", type="string", length=30)
- */
+* Entity that represents Mailbox Process Settings
+*
+*/
+#[ORM\Entity]
+#[ORM\Table(name: 'oro_email_mailbox_process')]
+#[ORM\InheritanceType('SINGLE_TABLE')]
+#[ORM\DiscriminatorColumn(name: 'type', type: 'string', length: 30)]
 abstract class MailboxProcessSettings
 {
-    /**
-     * @ORM\Id
-     * @ORM\Column(type="integer", name="id")
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
-    protected $id;
+    #[ORM\Id]
+    #[ORM\Column(name: 'id', type: Types::INTEGER)]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
+    protected ?int $id = null;
 
-    /**
-     * @var Mailbox
-     * @ORM\OneToOne(targetEntity="Mailbox", mappedBy="processSettings")
-     */
-    protected $mailbox;
+    #[ORM\OneToOne(mappedBy: 'processSettings', targetEntity: Mailbox::class)]
+    protected ?Mailbox $mailbox = null;
 
     /**
      * @return integer
@@ -50,9 +46,6 @@ abstract class MailboxProcessSettings
         return $this->mailbox;
     }
 
-    /**
-     * @param Mailbox $mailbox
-     */
     public function setMailbox(Mailbox $mailbox = null)
     {
         $this->mailbox = $mailbox;
@@ -61,6 +54,7 @@ abstract class MailboxProcessSettings
     /**
      * @return string
      */
+    #[\Override]
     public function __toString()
     {
         return (string)$this->getId();

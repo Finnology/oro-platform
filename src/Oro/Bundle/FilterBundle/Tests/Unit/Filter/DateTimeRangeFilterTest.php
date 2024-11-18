@@ -27,12 +27,13 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  */
 class DateTimeRangeFilterTest extends OrmTestCase
 {
-    /** @var \PHPUnit\Framework\MockObject\MockObject|FormFactoryInterface */
+    /** @var FormFactoryInterface|\PHPUnit\Framework\MockObject\MockObject */
     private $formFactory;
 
     /** @var DateTimeRangeFilter */
     private $filter;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->formFactory = $this->createMock(FormFactoryInterface::class);
@@ -83,14 +84,12 @@ class DateTimeRangeFilterTest extends OrmTestCase
         $ds = $this->createMock(FilterDatasourceAdapterInterface::class);
         $ds->expects($this->any())
             ->method('generateParameterName')
-            ->willReturnCallback(
-                static function ($name) {
-                    static $paramIndex = 0;
-                    $paramIndex++;
+            ->willReturnCallback(static function ($name) {
+                static $paramIndex = 0;
+                $paramIndex++;
 
-                    return \sprintf('%s%d', $name, $paramIndex);
-                }
-            );
+                return sprintf('%s%d', $name, $paramIndex);
+            });
         $ds->expects($this->exactly(2))
             ->method('setParameter')
             ->withConsecutive(
@@ -138,14 +137,12 @@ class DateTimeRangeFilterTest extends OrmTestCase
         $ds = $this->createMock(FilterDatasourceAdapterInterface::class);
         $ds->expects($this->any())
             ->method('generateParameterName')
-            ->willReturnCallback(
-                static function ($name) {
-                    static $paramIndex = 0;
-                    $paramIndex++;
+            ->willReturnCallback(static function ($name) {
+                static $paramIndex = 0;
+                $paramIndex++;
 
-                    return \sprintf('%s%d', $name, $paramIndex);
-                }
-            );
+                return sprintf('%s%d', $name, $paramIndex);
+            });
         $ds->expects($this->exactly(2))
             ->method('setParameter')
             ->withConsecutive(

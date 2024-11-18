@@ -12,11 +12,13 @@ class IsoYearTest extends WebTestCase
 {
     private EntityManager $entityManager;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->entityManager = self::getContainer()->get('doctrine')->getManagerForClass(User::class);
     }
 
+    #[\Override]
     protected function tearDown(): void
     {
         unset($this->entityManager);
@@ -33,7 +35,7 @@ class IsoYearTest extends WebTestCase
         $query = new Query($this->entityManager);
         $query->setDQL($dql);
 
-        self::assertEquals($sql, $query->getSQL(), \sprintf('Unexpected SQL for "%s"', $dql));
+        self::assertEquals($sql, $query->getSQL(), sprintf('Unexpected SQL for "%s"', $dql));
     }
 
     public function getDqlFunctionDataProvider(): array

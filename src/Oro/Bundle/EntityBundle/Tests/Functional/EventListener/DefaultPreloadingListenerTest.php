@@ -14,16 +14,11 @@ use Oro\Bundle\UserBundle\Entity\User;
 
 class DefaultPreloadingListenerTest extends WebTestCase
 {
+    #[\Override]
     protected function setUp(): void
     {
         $this->initClient([], $this->generateBasicAuthHeader());
-
-        $this->loadFixtures(
-            [
-                LoadUserData::class,
-                LoadUserEmailData::class,
-            ]
-        );
+        $this->loadFixtures([LoadUserData::class, LoadUserEmailData::class]);
     }
 
     public function testOnPreloadWhenNotExitingEntity(): void

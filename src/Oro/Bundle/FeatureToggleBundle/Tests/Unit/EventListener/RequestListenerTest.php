@@ -16,6 +16,7 @@ class RequestListenerTest extends \PHPUnit\Framework\TestCase
     /** @var RequestListener */
     private $listener;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->featureChecker = $this->createMock(FeatureChecker::class);
@@ -41,7 +42,7 @@ class RequestListenerTest extends \PHPUnit\Framework\TestCase
             ->method('getRequest')
             ->willReturn($request);
         $event->expects(self::once())
-            ->method('isMasterRequest')
+            ->method('isMainRequest')
             ->willReturn(true);
 
         $this->listener->onRequest($event);
@@ -64,7 +65,7 @@ class RequestListenerTest extends \PHPUnit\Framework\TestCase
             ->method('getRequest')
             ->willReturn($request);
         $event->expects(self::never())
-            ->method('isMasterRequest');
+            ->method('isMainRequest');
 
         $this->listener->onRequest($event);
     }
@@ -86,7 +87,7 @@ class RequestListenerTest extends \PHPUnit\Framework\TestCase
             ->method('getRequest')
             ->willReturn($request);
         $event->expects(self::once())
-            ->method('isMasterRequest')
+            ->method('isMainRequest')
             ->willReturn(false);
 
         $this->listener->onRequest($event);
@@ -107,7 +108,7 @@ class RequestListenerTest extends \PHPUnit\Framework\TestCase
             ->method('getRequest')
             ->willReturn($request);
         $event->expects(self::never())
-            ->method('isMasterRequest');
+            ->method('isMainRequest');
         $event->expects(self::never())
             ->method('setResponse');
 

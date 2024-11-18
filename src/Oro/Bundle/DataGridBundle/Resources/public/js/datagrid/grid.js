@@ -79,8 +79,7 @@ define(function(require) {
             },
             noDataBlock: '.no-data',
             filterBox: '.filter-box',
-            loadingMaskContainer: '.other-scroll-container',
-            floatTheadContainer: '.floatThead-container'
+            loadingMaskContainer: '.other-scroll-container'
         },
 
         /** @property {orodatagrid.datagrid.Header} */
@@ -117,6 +116,11 @@ define(function(require) {
         selectState: null,
 
         /**
+         * @property {Array[string]}
+         */
+        resettableFields: ['filters', 'gridView', 'pageSize'],
+
+        /**
          * Generates default properties
          *
          * @returns {Object}
@@ -145,7 +149,7 @@ define(function(require) {
                             label: __('oro_datagrid.action.refresh'),
                             ariaLabel: __('oro_datagrid.action.refresh.aria_label'),
                             className: 'btn refresh-action',
-                            iconClassName: 'fa-repeat',
+                            icon: 'repeat',
                             launcherMode: 'icon-only'
                         }
                     },
@@ -154,7 +158,7 @@ define(function(require) {
                             label: __('oro_datagrid.action.reset'),
                             ariaLabel: __('oro_datagrid.action.reset.aria_label'),
                             className: 'btn reset-action',
-                            iconClassName: 'fa-refresh',
+                            icon: 'refresh',
                             launcherMode: 'icon-only'
                         }
                     }
@@ -470,11 +474,9 @@ define(function(require) {
          * @returns {boolean} TRUE if values are not equal, otherwise - FALSE
          */
         stateIsResettable: function(previousState, state) {
-            const fields = ['filters', 'gridView', 'pageSize'];
-
             return !tools.isEqualsLoosely(
-                _.pick(previousState, fields),
-                _.pick(state, fields)
+                _.pick(previousState, this.resettableFields),
+                _.pick(state, this.resettableFields)
             );
         },
 
@@ -715,9 +717,13 @@ define(function(require) {
                 extraActions: this._getToolbarExtraActions(),
                 columns: this.columns,
                 componentConstructor: ComponentConstructor,
-                addToolbarAction: function(action) {
+                addToolbarAction: action => {
                     toolbarOptions.actions.push(action);
                     sortActions(toolbarOptions.actions);
+                },
+                addToolbarExtraAction: action => {
+                    toolbarOptions.extraActions.push(action);
+                    sortActions(toolbarOptions.extraActions);
                 }
             };
             _.defaults(toolbarOptions, options);
@@ -827,7 +833,7 @@ define(function(require) {
             if (!this.refreshAction) {
                 this.refreshAction = new RefreshCollectionAction({
                     datagrid: this,
-                    launcherOptions: this.actionOptions.refreshAction.launcherOptions,
+                    ...this.actionOptions.refreshAction,
                     order: 100
                 });
 
@@ -863,12 +869,12 @@ define(function(require) {
             if (!this.resetAction) {
                 this.resetAction = new ResetCollectionAction({
                     datagrid: this,
-                    launcherOptions: this.actionOptions.resetAction.launcherOptions,
+                    ...this.actionOptions.resetAction,
                     order: 200
                 });
 
-                this.listenTo(mediator, 'datagrid:doReset:' + this.name, _.debounce(function() {
-                    if (this.$el.is(':visible')) {
+                this.listenTo(mediator, 'datagrid:doReset:' + this.name, _.debounce(function(ignoreVisibility) {
+                    if (ignoreVisibility || this.$el.is(':visible')) {
                         this.resetAction.execute();
                     }
                 }, 100, true));
@@ -1076,6 +1082,7 @@ define(function(require) {
                 tableClassName: this.themeOptions.tableClassName || ''
             }));
             this.$grid = this.$(this.selectors.grid);
+            this.grid = this.el.querySelector(this.selectors.grid);
             this.renderToolbar();
             this.renderGrid();
             this.renderNoDataBlock();
@@ -1161,7 +1168,11 @@ define(function(require) {
                 return this.toolbars[placement];
             }
 
-            const toolbarOptions = _.extend(this.toolbarOptions, {el: this.$(this.selectors.toolbars[placement])});
+            const toolbarOptions = _.extend(this.toolbarOptions, {
+                el: this.$(this.selectors.toolbars[placement]),
+                position: placement
+
+            });
             this.toolbars[placement] = this._createToolbar(toolbarOptions);
 
             return this.toolbars[placement];
@@ -1375,7 +1386,7 @@ define(function(require) {
 
             if (collection) {
                 const fetchKeys = ['mode', 'parse', 'reset', 'wait', 'uniqueOnly',
-                    'add', 'remove', 'merge', 'toggleLoading'];
+                    'add', 'remove', 'merge', 'toggleLoading', 'global'];
                 let fetchOptions = {
                     reset: true,
                     alreadySynced: true // prevents recursion update
@@ -1383,7 +1394,8 @@ define(function(require) {
                 let params = _.pick(collection.options, fetchKeys);
 
                 if (collection.options.parseResponseOptions) {
-                    params = _.extend( params, _.pick(collection.options.parseResponseOptions(), fetchKeys));
+                    params = _.extend(params,
+                        _.pick(collection.options.parseResponseOptions.call(collection), fetchKeys));
                 }
 
                 fetchOptions = _.extend(fetchOptions, params, _.pick(options, fetchKeys));

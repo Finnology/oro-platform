@@ -4,7 +4,7 @@ namespace Oro\Bundle\AttachmentBundle\Migrations\Data\ORM;
 
 use Doctrine\Common\DataFixtures\AbstractFixture;
 use Doctrine\DBAL\Platforms\MySqlPlatform;
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadataInfo;
 use Doctrine\Persistence\ObjectManager;
 use Oro\Bundle\AttachmentBundle\Entity\File;
@@ -15,12 +15,10 @@ use Oro\Bundle\AttachmentBundle\Entity\File;
  */
 class UpdateAttachmentsParentFields extends AbstractFixture
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function load(ObjectManager $manager)
     {
-        if (!$manager instanceof EntityManager) {
+        if (!$manager instanceof EntityManagerInterface) {
             return;
         }
 
@@ -32,7 +30,7 @@ class UpdateAttachmentsParentFields extends AbstractFixture
         }
     }
 
-    private function getQueries(EntityManager $manager, bool $isMySql): array
+    private function getQueries(EntityManagerInterface $manager, bool $isMySql): array
     {
         $queries = [];
 

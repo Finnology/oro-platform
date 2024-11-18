@@ -60,11 +60,16 @@ features:
             - 'user_mailbox'
             - 'user_bar_settings'
             - 'integration_email_settings'
-            - 'oro_hangouts_call.enable_google_hangouts_for_email'
         sidebar_widgets:
             - 'recent_emails'
         dashboard_widgets:
             - 'recent_emails'
+        api_resources:
+            - 'Oro\Bundle\EmailBundle\Entity\Email'
+            - 'Oro\Bundle\EmailBundle\Api\Model\EmailContextEntity'
+            - 'Oro\Bundle\EmailBundle\Api\Model\EmailContextSearchItem'
+            - 'Oro\Bundle\EmailBundle\Api\Model\EmailContextItem'
+            - 'Oro\Bundle\EmailBundle\Api\Model\EmailThreadContextItem'
         entities:
             - 'Oro\Bundle\EmailBundle\Entity\Email'
             - 'Oro\Bundle\EmailBundle\Entity\EmailUser'
@@ -83,6 +88,7 @@ features:
             - oro_email_emailtemplate_create
             - oro_email_emailtemplate_clone
             - oro_email_emailtemplate_preview
+            - oro_email_ajax_email_compile
             - oro_api_delete_emailtemplate
             - oro_api_get_emailtemplates
             - oro_api_get_emailtemplate_variables

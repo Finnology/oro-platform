@@ -32,6 +32,7 @@ class OroRichTextTypeTest extends FormIntegrationTestCase
     /** @var OroRichTextType */
     private $formType;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->configManager = $this->createMock(ConfigManager::class);
@@ -50,9 +51,7 @@ class OroRichTextTypeTest extends FormIntegrationTestCase
         parent::setUp();
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     protected function getExtensions(): array
     {
         return [
@@ -134,7 +133,7 @@ class OroRichTextTypeTest extends FormIntegrationTestCase
     public function optionsDataProvider(): array
     {
         $toolbar = [
-            'undo redo | formatselect | bold italic underline | forecolor backcolor | bullist numlist ' .
+            'undo redo | blocks formatselect | bold italic underline | forecolor backcolor | bullist numlist ' .
             '| alignleft aligncenter alignright alignjustify | link image | fullscreen'
         ];
         $elements = [

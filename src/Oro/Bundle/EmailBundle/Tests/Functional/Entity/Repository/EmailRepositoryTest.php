@@ -10,6 +10,7 @@ use Oro\Bundle\TestFrameworkBundle\Test\WebTestCase;
 
 class EmailRepositoryTest extends WebTestCase
 {
+    #[\Override]
     protected function setUp(): void
     {
         $this->initClient();
@@ -33,20 +34,20 @@ class EmailRepositoryTest extends WebTestCase
         self::assertEquals($email->getMessageId(), $this->getRepository()->findMessageIdByEmailId($email->getId()));
     }
 
-    public function testGetEmailUserIdsByEmailAddressQbByFromAddress(): void
+    public function testGetEmailUserIdsByEmailAddressesQbByFromAddress(): void
     {
         $userEmailAddress = $this->getReference('simple_user')->getEmail();
         $emailUsers = $this->getRepository()
-            ->getEmailUserIdsByEmailAddressQb($userEmailAddress)
+            ->getEmailUserIdsByEmailAddressesQb([$userEmailAddress])
             ->getQuery()
             ->getArrayResult();
         self::assertCount(10, $emailUsers);
     }
 
-    public function testGetEmailUserIdsByEmailAddressQbByCcAddress(): void
+    public function testGetEmailUserIdsByEmailAddressesQbByCcAddress(): void
     {
         $emailUsers = $this->getRepository()
-            ->getEmailUserIdsByEmailAddressQb('cc1@example.com')
+            ->getEmailUserIdsByEmailAddressesQb(['cc1@example.com'])
             ->getQuery()
             ->getArrayResult();
         self::assertCount(1, $emailUsers);

@@ -8,10 +8,8 @@ use Symfony\Component\Form\FormEvents;
 
 class CommentSubscriber implements EventSubscriberInterface
 {
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedEvents()
+    #[\Override]
+    public static function getSubscribedEvents(): array
     {
         return [
             FormEvents::PRE_SET_DATA => 'preSetData',

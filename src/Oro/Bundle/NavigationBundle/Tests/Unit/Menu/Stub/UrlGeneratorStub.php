@@ -34,26 +34,20 @@ class UrlGeneratorStub implements UrlGeneratorInterface
      */
     private $context;
 
-    /**
-     * {@inheritdoc}
-     */
-    public function generate($name, $parameters = [], $referenceType = self::ABSOLUTE_PATH)
+    #[\Override]
+    public function generate($name, $parameters = [], $referenceType = self::ABSOLUTE_PATH): string
     {
         return [];
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function setContext(RequestContext $context)
     {
         $this->context = $context;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getContext()
+    #[\Override]
+    public function getContext(): RequestContext
     {
         return $this->context;
     }

@@ -21,33 +21,25 @@ class TokenAccessor implements TokenAccessorInterface
         $this->tokenStorage = $tokenStorage;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getToken()
+    #[\Override]
+    public function getToken(): ?TokenInterface
     {
         return $this->tokenStorage->getToken();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function setToken(TokenInterface $token = null)
     {
         $this->tokenStorage->setToken($token);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function hasUser()
+    #[\Override]
+    public function hasUser(): bool
     {
         return null !== $this->getUser();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getUser()
     {
         $result = null;
@@ -62,22 +54,15 @@ class TokenAccessor implements TokenAccessorInterface
         return $result;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getUserId()
     {
         $user = $this->getUser();
-        if (null === $user) {
-            return null;
-        }
 
-        return $user->getId();
+        return $user?->getId();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getOrganization()
     {
         $result = null;
@@ -92,16 +77,11 @@ class TokenAccessor implements TokenAccessorInterface
         return $result;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getOrganizationId()
     {
         $organization = $this->getOrganization();
-        if (null === $organization) {
-            return null;
-        }
 
-        return $organization->getId();
+        return $organization?->getId();
     }
 }

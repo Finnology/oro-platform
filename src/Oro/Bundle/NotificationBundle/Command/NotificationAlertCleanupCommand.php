@@ -37,6 +37,7 @@ class NotificationAlertCleanupCommand extends Command
         $this->tokenAccessor = $tokenAccessor;
     }
 
+    #[\Override]
     protected function configure()
     {
         $this
@@ -67,7 +68,8 @@ HELP
             );
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    #[\Override]
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
 
@@ -75,7 +77,7 @@ HELP
         if ($deleteAll) {
             $deleteAllConfirmation = $this->confirmDeleteAll($input, $io);
             if (!$deleteAllConfirmation) {
-                return;
+                return Command::SUCCESS;
             }
         } else {
             $this->processFilters($input);
@@ -97,7 +99,7 @@ HELP
             $io->text('<info>There are no notification alerts.</info>');
         }
 
-        return 0;
+        return Command::SUCCESS;
     }
 
     private function confirmDeleteAll(InputInterface $input, SymfonyStyle $io): bool

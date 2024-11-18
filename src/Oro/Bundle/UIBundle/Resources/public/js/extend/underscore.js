@@ -1,3 +1,5 @@
+const config = require('module-config').default(module.id);
+
 define(function(require) {
     'use strict';
 
@@ -107,7 +109,7 @@ define(function(require) {
         /**
          * Registers macros with Name Space, e.g.
          *     _.macros('oroui', {
-         *         renderPhone: require('tpl!oroui/templates/macros/phone.html')
+         *         renderPhone: require('tpl-loader!oroui/templates/macros/phone.html')
          *     });
          *
          * Imports macros object from Name Space, accessible inside templates
@@ -198,6 +200,22 @@ define(function(require) {
     });
 
     _.defer = asap;
+
+    _.getThemeSpriteUrl = function() {
+        if ('themeSpriteUrl' in config) {
+            return config.themeSpriteUrl;
+        }
+
+        return null;
+    };
+
+    _.getThemeSpriteMetadata = function() {
+        if ('themeSpriteMetadata' in config) {
+            return config.themeSpriteMetadata;
+        }
+
+        return null;
+    };
 
     return _;
 });

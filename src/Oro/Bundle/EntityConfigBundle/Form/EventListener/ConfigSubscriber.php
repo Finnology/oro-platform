@@ -40,10 +40,8 @@ class ConfigSubscriber implements EventSubscriberInterface
         $this->translator = $translator;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedEvents()
+    #[\Override]
+    public static function getSubscribedEvents(): array
     {
         return [
             FormEvents::POST_SUBMIT  => ['postSubmit', -10],

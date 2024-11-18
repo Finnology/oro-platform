@@ -28,26 +28,20 @@ abstract class AbstractFormGuesser implements FormTypeGuesserInterface
         $this->entityConfigProvider = $entityConfigProvider;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function guessRequired($class, $property)
+    #[\Override]
+    public function guessRequired($class, $property): ?ValueGuess
     {
         return new ValueGuess(false, ValueGuess::LOW_CONFIDENCE);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function guessMaxLength($class, $property)
+    #[\Override]
+    public function guessMaxLength($class, $property): ?ValueGuess
     {
         return new ValueGuess(null, ValueGuess::LOW_CONFIDENCE);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function guessPattern($class, $property)
+    #[\Override]
+    public function guessPattern($class, $property): ?ValueGuess
     {
         return new ValueGuess(null, ValueGuess::LOW_CONFIDENCE);
     }

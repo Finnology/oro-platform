@@ -12,6 +12,7 @@ use Oro\Bundle\TranslationBundle\Translation\TranslationMessageSanitizationError
 use Oro\Bundle\TranslationBundle\Translation\Translator;
 use Oro\Component\Testing\ReflectionUtil;
 use Oro\Component\Testing\TempDirExtension;
+use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\Translation\Formatter\MessageFormatter;
 use Symfony\Component\Translation\Loader\LoaderInterface;
@@ -71,6 +72,10 @@ class TranslatorTest extends \PHPUnit\Framework\TestCase
     /** @var TranslationMessageSanitizationErrorCollection */
     private $sanitizationErrorCollection;
 
+    /** @var MessageCatalogueSanitizer|MockObject */
+    private $messageCatalogueSanitizer;
+
+    #[\Override]
     protected function setUp(): void
     {
         $this->sanitizationErrorCollection = new TranslationMessageSanitizationErrorCollection();
@@ -83,29 +88,30 @@ class TranslatorTest extends \PHPUnit\Framework\TestCase
         $container = $this->createMock(ContainerInterface::class);
         $container->expects(self::any())
             ->method('get')
-            ->with('loader')
+            ->with('oro_database_translation')
             ->willReturn($this->getLoader(self::MESSAGES));
 
         $translator = new Translator(
             $container,
             new MessageFormatter(),
             $locale,
-            ['loader' => ['loader']],
+            ['oro_database_translation' => ['oro_database_translation']],
             ['resource_files' => [], 'cache_dir' => $cacheDir]
         );
-
-
+        $this->messageCatalogueSanitizer = $this->createMock(MessageCatalogueSanitizer::class);
         $translator->setStrategyProvider($strategyProvider);
         $translator->setResourceCache(new MemoryCache());
-        $translator->setMessageCatalogueSanitizer($this->createMock(MessageCatalogueSanitizer::class));
+        $translator->setMessageCatalogueSanitizer($this->messageCatalogueSanitizer);
         $translator->setSanitizationErrorCollection($this->sanitizationErrorCollection);
         $translator->setDynamicTranslationProvider($this->getDynamicTranslationProvider([]));
 
-        $translator->addResource('loader', 'foo.fr.loader', 'fr');
-        $translator->addResource('loader', 'foo.en.loader', 'en');
-        $translator->addResource('loader', 'foo.es.loader', 'es');
-        $translator->addResource('loader', 'foo.pt-PT.loader', 'pt-PT'); // European Portuguese
-        $translator->addResource('loader', 'foo.pt_BR.loader', 'pt_BR'); // Brazilian Portuguese
+        $translator->addResource('oro_database_translation', 'orm.fr.oro_database_translation', 'fr');
+        $translator->addResource('oro_database_translation', 'orm.en.oro_database_translation', 'en');
+        $translator->addResource('oro_database_translation', 'orm.es.oro_database_translation', 'es');
+        // European Portuguese
+        $translator->addResource('oro_database_translation', 'orm.pt-PT.oro_database_translation', 'pt-PT');
+        // Brazilian Portuguese
+        $translator->addResource('oro_database_translation', 'orm.pt_BR.oro_database_translation', 'pt_BR');
 
         return $translator;
     }
@@ -115,9 +121,7 @@ class TranslatorTest extends \PHPUnit\Framework\TestCase
         $loader = $this->createMock(LoaderInterface::class);
         $loader->expects(self::any())
             ->method('load')
-            ->willReturnCallback(function ($resource, $locale) use ($messages) {
-                return $this->getCatalogue($locale, $messages[$locale]);
-            });
+            ->willReturnCallback(fn ($resource, $locale) => $this->getCatalogue($locale, $messages[$locale]));
 
         return $loader;
     }
@@ -591,8 +595,15 @@ class TranslatorTest extends \PHPUnit\Framework\TestCase
         $locale = 'pt-PT';
         $domain = 'jsmessages';
 
-        $translator = $this->getTranslator($locale, $this->getStrategyProvider($locale, ['en']));
+        // Include all locales in as this guarantees that all catalogues will be rebuilt since there can be no
+        // situation when both the catalogue and the cache are missing at the same time.
+        $translator = $this->getTranslator($locale, $this->getStrategyProvider($locale, [$locale, 'en']));
+
         $translator->rebuildCache();
+
+        $this->messageCatalogueSanitizer
+            ->expects($this->never())
+            ->method('sanitizeCatalogue');
 
         self::assertTrue($translator->hasTrans('baz', $domain));
         self::assertEquals(
@@ -613,32 +624,28 @@ class TranslatorTest extends \PHPUnit\Framework\TestCase
         );
     }
 
+    public function testTransForFallbackTranslationWithoutCachedCatalogues(): void
+    {
+        $locale = 'pt-PT';
+        $domain = 'jsmessages';
+        $translator = $this->getTranslator($locale, $this->getStrategyProvider($locale, ['en'])); // Skip cache rebuilt
+
+        self::assertTrue($translator->hasTrans('foo', $domain));
+        self::assertEquals(
+            self::MESSAGES['en'][$domain]['foo'],
+            $translator->trans('foo', [], $domain, $locale)
+        );
+    }
+
     public function testGetCatalogue(): void
     {
         $locale = 'en_US';
-        $strategyName = 'default';
         $fallbackLocales = ['en'];
-
-        $strategy = $this->getStrategy($strategyName);
-
-        $strategyProvider = $this->createMock(TranslationStrategyProvider::class);
-        $strategyProvider->expects(self::any())
-            ->method('getStrategy')
-            ->willReturn($strategy);
-        $strategyProvider->expects(self::exactly(2))
-            ->method('getFallbackLocales')
-            ->with(self::identicalTo($strategy))
-            ->willReturnMap([
-                [$strategy, $locale, $fallbackLocales],
-                [$strategy, 'en', []]
-            ]);
-        $strategyProvider->expects(self::never())
-            ->method('getAllFallbackLocales');
-
-        $translator = $this->getTranslator($locale, $strategyProvider);
+        $translator = $this->getTranslator($locale, $this->getStrategyProvider($locale, ['en']));
 
         self::assertEmpty($translator->getFallbackLocales());
         $catalogue = $translator->getCatalogue($locale);
+        $translator->rebuildCache();
         self::assertEquals($locale, $catalogue->getLocale());
         self::assertEquals([], $catalogue->all());
         self::assertEquals($fallbackLocales, $translator->getFallbackLocales());

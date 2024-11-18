@@ -30,25 +30,19 @@ class CleanupEntityConfigQuery extends AbstractEntityConfigQuery
         $this->deprecatedFieldConfigs = $deprecatedFieldConfigs;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getRowBatchLimit()
     {
         return self::LIMIT;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getDescription()
     {
         return ["Allows to clean up entity and field configurations by given 'scope-to-property' list"];
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function execute(LoggerInterface $logger)
     {
         $this->hasEntityConfigChanges = $this->hasFieldConfigChanges = false;
@@ -63,7 +57,7 @@ class CleanupEntityConfigQuery extends AbstractEntityConfigQuery
             $rows = $fieldsConfigQb
                 ->setFirstResult($i * $this->getRowBatchLimit())
                 ->execute()
-                ->fetchAll(\PDO::FETCH_ASSOC);
+                ->fetchAllAssociative();
 
             foreach ($rows as $row) {
                 $this->processFieldRow($row, $logger);
@@ -78,9 +72,7 @@ class CleanupEntityConfigQuery extends AbstractEntityConfigQuery
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function processRow(array $row, LoggerInterface $logger)
     {
         $entityConfigData = $this->connection->convertToPHPValue($row['data'], 'array');
@@ -92,10 +84,6 @@ class CleanupEntityConfigQuery extends AbstractEntityConfigQuery
         }
     }
 
-    /**
-     * @param array $row
-     * @param LoggerInterface $logger
-     */
     private function processFieldRow(array $row, LoggerInterface $logger)
     {
         $fieldConfigData = $this->connection->convertToPHPValue($row['data'], 'array');
@@ -162,9 +150,7 @@ class CleanupEntityConfigQuery extends AbstractEntityConfigQuery
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function createEntityConfigQb()
     {
         $qb = parent::createEntityConfigQb();
@@ -173,13 +159,14 @@ class CleanupEntityConfigQuery extends AbstractEntityConfigQuery
         return $qb;
     }
 
+    #[\Override]
     protected function getEntityConfigCount(): int
     {
         return $this->createEntityConfigQb()
             ->select('COUNT(1)')
             ->resetQueryParts(['orderBy'])
             ->execute()
-            ->fetchColumn();
+            ->fetchOne();
     }
 
     private function createFieldsConfigQb(): QueryBuilder
@@ -196,6 +183,6 @@ class CleanupEntityConfigQuery extends AbstractEntityConfigQuery
             ->select('COUNT(1)')
             ->resetQueryParts(['orderBy'])
             ->execute()
-            ->fetchColumn();
+            ->fetchOne();
     }
 }

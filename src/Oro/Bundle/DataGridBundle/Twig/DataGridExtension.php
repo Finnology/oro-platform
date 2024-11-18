@@ -96,9 +96,7 @@ class DataGridExtension extends AbstractExtension implements ServiceSubscriberIn
         return $this->container->get(LoggerInterface::class);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getFunctions()
     {
         return [
@@ -271,14 +269,6 @@ class DataGridExtension extends AbstractExtension implements ServiceSubscriberIn
         return $request->getPathInfo() . '?' . http_build_query($queryStringComponents);
     }
 
-    /**
-     * @param string $routeName
-     * @param string $gridName
-     * @param array  $params
-     * @param int    $referenceType
-     *
-     * @return string
-     */
     public function generateGridUrl(
         string $routeName,
         string $gridName,
@@ -288,13 +278,6 @@ class DataGridExtension extends AbstractExtension implements ServiceSubscriberIn
         return $this->getRouteHelper()->generate($routeName, $gridName, $params, $referenceType);
     }
 
-    /**
-     * @param DatagridInterface $grid
-     * @param string            $route
-     * @param array             $params
-     *
-     * @return string
-     */
     protected function generateUrl(DatagridInterface $grid, string $route, array $params): string
     {
         $nameStrategy = $this->getNameStrategy();
@@ -328,10 +311,8 @@ class DataGridExtension extends AbstractExtension implements ServiceSubscriberIn
         return false;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedServices()
+    #[\Override]
+    public static function getSubscribedServices(): array
     {
         return [
             'oro_datagrid.datagrid.manager' => ManagerInterface::class,

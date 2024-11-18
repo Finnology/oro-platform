@@ -19,12 +19,12 @@ class SearchFilterExtensionTest extends AbstractFilterExtensionTestCase
     /** @var SearchDatasource|\PHPUnit\Framework\MockObject\MockObject */
     private $datasource;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->extension = new SearchFilterExtension(
-            $this->configurationProvider,
             $this->filterBag,
             $this->filtersProvider,
             $this->filtersMetadataProvider,

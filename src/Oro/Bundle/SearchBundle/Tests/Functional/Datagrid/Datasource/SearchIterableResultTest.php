@@ -28,6 +28,7 @@ class SearchIterableResultTest extends SearchBundleWebTestCase
         'item9@mail.com 0123-456900'
     ];
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->initClient();
@@ -74,7 +75,7 @@ class SearchIterableResultTest extends SearchBundleWebTestCase
         $this->assertAllRecordNames($result);
     }
 
-    private function assertAllRecordNames(SearchIterableResult $result)
+    private function assertAllRecordNames(SearchIterableResult $result): void
     {
         $items = iterator_to_array($result);
         $recordNames = array_map(function (\Oro\Bundle\SearchBundle\Query\Result\Item $item) {

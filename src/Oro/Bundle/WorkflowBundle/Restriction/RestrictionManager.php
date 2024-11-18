@@ -11,6 +11,9 @@ use Oro\Bundle\WorkflowBundle\Entity\WorkflowRestrictionIdentity;
 use Oro\Bundle\WorkflowBundle\Exception\WorkflowException;
 use Oro\Bundle\WorkflowBundle\Model\WorkflowRegistry;
 
+/**
+ * Manages workflow restrictions
+ */
 class RestrictionManager
 {
     /**
@@ -116,7 +119,7 @@ class RestrictionManager
     public function updateEntityRestrictions(WorkflowItem $workflowItem)
     {
         $definition = $workflowItem->getDefinition();
-        $currentStepName = $workflowItem->getCurrentStep()->getName();
+        $currentStepName = $workflowItem->getCurrentStep()?->getName();
 
         $restrictionIdentities = [];
         foreach ($definition->getRestrictions() as $restriction) {
@@ -204,7 +207,7 @@ class RestrictionManager
     {
         if (null === $this->restrictionRepository) {
             $this->restrictionRepository = $this->doctrineHelper
-                ->getEntityRepositoryForClass('OroWorkflowBundle:WorkflowRestriction');
+                ->getEntityRepositoryForClass(WorkflowRestriction::class);
         }
 
         return $this->restrictionRepository;

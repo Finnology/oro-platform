@@ -12,13 +12,12 @@ Oro\Bundle\UserBundle\Entity\User:
             - Length:
                 min: 3
                 max: 255
-                allowEmptyString: false
         email:
             - NotBlank: ~
             - Length:
                 min: 6
                 max: 255
-                allowEmptyString: false
+                groups: [UserForm, Registration]
             - Email:        ~
         plainPassword:
             - NotBlank:
@@ -57,10 +56,13 @@ Oro\Bundle\UserBundle\Entity\Role:
     constraints:
         - Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity: label
     properties:
-        label:
-            - NotBlank:     ~
+        role:
             - Length:
-                max:        30
+                max: 30
+        label:
+            - NotBlank: ~
+            - Length:
+                max: 30
         users:
             - Oro\Bundle\UserBundle\Validator\Constraints\UserWithoutRole: ~
 
@@ -69,9 +71,9 @@ Oro\Bundle\UserBundle\Entity\Group:
         - Oro\Bundle\OrganizationBundle\Validator\Constraints\OrganizationUniqueEntity: name
     properties:
         name:
-            - NotBlank:     ~
+            - NotBlank: ~
             - Length:
-                max:        30
+                max: 30
 
 Oro\Bundle\UserBundle\Entity\Email:
     properties:

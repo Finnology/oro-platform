@@ -29,9 +29,7 @@ abstract class AbstractProperty implements PropertyInterface
     /** @var array */
     protected $excludeParams = [];
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     final public function init(PropertyConfiguration $params)
     {
         $this->params = $params;
@@ -54,9 +52,7 @@ abstract class AbstractProperty implements PropertyInterface
      */
     abstract protected function getRawValue(ResultRecordInterface $record);
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getValue(ResultRecordInterface $record)
     {
         return $this->format($this->getRawValue($record));
@@ -76,13 +72,13 @@ abstract class AbstractProperty implements PropertyInterface
         switch ($this->getOr(self::FRONTEND_TYPE_KEY)) {
             case self::TYPE_DATETIME:
             case self::TYPE_DATE:
-                if ($value instanceof \DateTime) {
-                    $value = $value->format(\DateTime::ISO8601);
+                if ($value instanceof \DateTimeInterface) {
+                    $value = $value->format(\DateTimeInterface::ISO8601);
                 }
                 $result = (string)$value;
                 break;
             case self::TYPE_TIME:
-                if ($value instanceof \DateTime) {
+                if ($value instanceof \DateTimeInterface) {
                     $value = $value->format('H:i:s');
                 }
                 $result = (string)$value;
@@ -138,9 +134,7 @@ abstract class AbstractProperty implements PropertyInterface
         return $result;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getMetadata()
     {
         $defaultMetadata = [

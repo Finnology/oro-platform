@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\TranslationBundle\Tests\Functional\Operation;
@@ -14,6 +15,7 @@ use Oro\Bundle\TranslationBundle\Tests\Functional\DataFixtures\LoadLanguages;
  */
 class LanguageOperationsTest extends ActionTestCase
 {
+    #[\Override]
     protected function setUp(): void
     {
         $this->initClient([], self::generateBasicAuthHeader());

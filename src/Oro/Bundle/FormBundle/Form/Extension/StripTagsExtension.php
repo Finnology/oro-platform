@@ -29,19 +29,15 @@ class StripTagsExtension extends AbstractTypeExtension implements ServiceSubscri
         $this->container = $container;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public static function getSubscribedServices()
+    #[\Override]
+    public static function getSubscribedServices(): array
     {
         return [
             'oro_ui.html_tag_helper' => HtmlTagHelper::class
         ];
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         parent::buildForm($builder, $options);
@@ -51,9 +47,7 @@ class StripTagsExtension extends AbstractTypeExtension implements ServiceSubscri
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefined(self::OPTION_NAME);

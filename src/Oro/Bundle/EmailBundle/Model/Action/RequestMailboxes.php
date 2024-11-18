@@ -3,6 +3,7 @@
 namespace Oro\Bundle\EmailBundle\Model\Action;
 
 use Doctrine\Persistence\ManagerRegistry;
+use Oro\Bundle\EmailBundle\Entity\Mailbox;
 use Oro\Bundle\EmailBundle\Mailbox\MailboxProcessStorage;
 use Oro\Component\Action\Action\AbstractAction;
 use Oro\Component\Action\Exception\InvalidParameterException;
@@ -35,9 +36,7 @@ class RequestMailboxes extends AbstractAction
         $this->processStorage = $processStorage;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     protected function executeAction($context)
     {
         $settingsClass = $this->contextAccessor->getValue($context, $this->processType);
@@ -46,16 +45,14 @@ class RequestMailboxes extends AbstractAction
         $email = $this->contextAccessor->getValue($context, $this->email);
         $results = [];
         if ($email) {
-            $results = $this->doctrine->getRepository('OroEmailBundle:Mailbox')
+            $results = $this->doctrine->getRepository(Mailbox::class)
                 ->findBySettingsClassAndEmail($settingsClass, $email);
         }
 
         $this->contextAccessor->setValue($context, $this->attribute, $results);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function initialize(array $options)
     {
         if (count($options) !== 3) {

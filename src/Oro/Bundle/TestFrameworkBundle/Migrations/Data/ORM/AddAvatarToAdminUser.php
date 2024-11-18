@@ -5,7 +5,8 @@ namespace Oro\Bundle\TestFrameworkBundle\Migrations\Data\ORM;
 use Doctrine\Common\DataFixtures\AbstractFixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
-use Oro\Bundle\UserBundle\Entity;
+use Oro\Bundle\UserBundle\Entity\User;
+use Oro\Bundle\UserBundle\Entity\UserManager;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\DependencyInjection\ContainerAwareTrait;
 
@@ -16,25 +17,21 @@ class AddAvatarToAdminUser extends AbstractFixture implements ContainerAwareInte
 {
     use ContainerAwareTrait;
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getDependencies()
+    #[\Override]
+    public function getDependencies(): array
     {
         return [
             LoadUserData::class,
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function load(ObjectManager $manager)
+    #[\Override]
+    public function load(ObjectManager $manager): void
     {
-        /** @var Entity\UserManager $userManager */
+        /** @var UserManager $userManager */
         $userManager = $this->container->get('oro_user.manager');
-        /** @var Entity\User $admin */
-        $admin = $manager->getRepository('OroUserBundle:User')->findOneBy(['username' => 'admin']);
+        /** @var User $admin */
+        $admin = $manager->getRepository(User::class)->findOneBy(['username' => 'admin']);
 
         if ($admin) {
             $this->addAvatarToUser($manager, $admin);
@@ -42,7 +39,7 @@ class AddAvatarToAdminUser extends AbstractFixture implements ContainerAwareInte
         }
     }
 
-    protected function addAvatarToUser(ObjectManager $manager, Entity\User $adminUser)
+    private function addAvatarToUser(ObjectManager $manager, User $adminUser): void
     {
         try {
             $imagePath = $this->container->get('file_locator')

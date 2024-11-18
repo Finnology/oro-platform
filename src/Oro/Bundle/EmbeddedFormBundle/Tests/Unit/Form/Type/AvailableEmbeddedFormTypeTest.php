@@ -1,4 +1,5 @@
 <?php
+
 namespace Oro\Bundle\EmbeddedFormBundle\Tests\Unit\Form\Type;
 
 use Oro\Bundle\EmbeddedFormBundle\Form\Type\AvailableEmbeddedFormType;
@@ -14,6 +15,7 @@ class AvailableEmbeddedFormTypeTest extends \PHPUnit\Framework\TestCase
     /** @var AvailableEmbeddedFormType */
     private $formType;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->manager = $this->createMock(EmbeddedFormManager::class);

@@ -12,6 +12,7 @@ class DefaultFallbackMethodsNamesProviderTest extends \PHPUnit\Framework\TestCas
 
     private DefaultFallbackMethodsNamesProvider $provider;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->inflector = InflectorFactory::create()->build();
@@ -21,8 +22,6 @@ class DefaultFallbackMethodsNamesProviderTest extends \PHPUnit\Framework\TestCas
 
     /**
      * @dataProvider fieldNameDataProvider
-     *
-     * @param string $fieldName
      */
     public function testGetGetterMethodName(string $fieldName): void
     {
@@ -43,8 +42,6 @@ class DefaultFallbackMethodsNamesProviderTest extends \PHPUnit\Framework\TestCas
 
     /**
      * @dataProvider fieldNameDataProvider
-     *
-     * @param string $fieldName
      */
     public function testGetDefaultGetterMethodName(string $fieldName): void
     {
@@ -53,8 +50,6 @@ class DefaultFallbackMethodsNamesProviderTest extends \PHPUnit\Framework\TestCas
 
     /**
      * @dataProvider fieldNameDataProvider
-     *
-     * @param string $fieldName
      */
     public function testGetDefaultSetterMethodName(string $fieldName): void
     {

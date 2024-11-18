@@ -15,6 +15,7 @@ class CumulativeFileLoaderTest extends \PHPUnit\Framework\TestCase
 
     private string $bundleDir;
 
+    #[\Override]
     protected function setUp(): void
     {
         $tmpDir = $this->copyToTempDir('test_data', realpath(__DIR__ . '/../Fixtures'));
@@ -215,5 +216,18 @@ class CumulativeFileLoaderTest extends \PHPUnit\Framework\TestCase
                 'test.yml'
             ],
         ];
+    }
+
+    public function testSerialization(): void
+    {
+        $relativeFilePath = 'Resources/config/test.yml';
+        $loader = $this->getMockForAbstractClass(CumulativeFileLoader::class, [$relativeFilePath]);
+        $serialized = serialize($loader);
+        /** @var CumulativeFileLoader $unserialized */
+        $unserialized = unserialize($serialized);
+        $this->assertEquals('/Resources/config/test.yml', $unserialized->getRelativeFilePath());
+        $this->assertEquals('Resources/config/test.yml', $unserialized->getResource());
+        $reflection = new \ReflectionClass($unserialized);
+        $this->assertEquals('test', $reflection->getProperty('resourceName')->getValue($unserialized));
     }
 }

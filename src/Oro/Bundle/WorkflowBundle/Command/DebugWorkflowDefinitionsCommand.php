@@ -50,6 +50,7 @@ class DebugWorkflowDefinitionsCommand extends Command
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     protected function configure()
     {
         $this
@@ -72,7 +73,8 @@ HELP
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    #[\Override]
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         if ($input->hasArgument('workflow-name') && $input->getArgument('workflow-name')) {
             return $this->dumpWorkflowDefinition($input->getArgument('workflow-name'), $output);
@@ -207,7 +209,7 @@ HELP
         unset($item);
 
         if (isset($config[WorkflowConfiguration::NODE_VARIABLE_DEFINITIONS])) {
-            $variableDefinitions =& $config[WorkflowConfiguration::NODE_VARIABLE_DEFINITIONS];
+            $variableDefinitions = & $config[WorkflowConfiguration::NODE_VARIABLE_DEFINITIONS];
             foreach ($variableDefinitions[WorkflowConfiguration::NODE_VARIABLES] as &$item) {
                 unset($item['label'], $item['options']['form_options']['tooltip']);
             }

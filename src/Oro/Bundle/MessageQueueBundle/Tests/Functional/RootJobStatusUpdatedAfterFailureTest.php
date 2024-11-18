@@ -2,7 +2,7 @@
 
 namespace Oro\Bundle\MessageQueueBundle\Tests\Functional;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Oro\Bundle\MessageQueueBundle\Entity\Job;
 use Oro\Bundle\MessageQueueBundle\Test\Functional\MessageQueueExtension;
 use Oro\Bundle\MessageQueueBundle\Tests\Functional\DataFixtures\LoadStuckRootJobData;
@@ -15,6 +15,7 @@ class RootJobStatusUpdatedAfterFailureTest extends WebTestCase
 {
     use MessageQueueExtension;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->initClient();
@@ -50,15 +51,13 @@ class RootJobStatusUpdatedAfterFailureTest extends WebTestCase
         self::assertEmpty($stuckRootJobDependent);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function getDataFixturesExecutorEntityManager()
+    #[\Override]
+    protected function getDataFixturesExecutorEntityManager(): EntityManagerInterface
     {
         return $this->getEntityManager();
     }
 
-    private function getEntityManager(): EntityManager
+    private function getEntityManager(): EntityManagerInterface
     {
         return self::getContainer()->get('doctrine')->getManagerForClass(Job::class);
     }

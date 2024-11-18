@@ -20,6 +20,7 @@ class EntityFieldFixtureTest extends \PHPUnit\Framework\TestCase
 
     private EntityFieldFixture $fixture;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->fieldTypeProvider = $this->createMock(FieldTypeProvider::class);
@@ -172,7 +173,6 @@ class EntityFieldFixtureTest extends \PHPUnit\Framework\TestCase
             ]
         ];
     }
-
 
     /**
      * @dataProvider fillEntityDataForSearchableAttributeDataProvider

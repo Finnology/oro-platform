@@ -2,41 +2,30 @@
 
 namespace Oro\Bundle\SearchBundle\Entity;
 
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\MappedSuperclass
- */
+* AbstractIndexText abstract class
+*
+*/
+#[ORM\MappedSuperclass]
 abstract class AbstractIndexText implements ItemFieldInterface
 {
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
-    protected $id;
+    #[ORM\Column(name: 'id', type: Types::INTEGER)]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
+    protected ?int $id = null;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="Item", inversedBy="textFields")
-     * @ORM\JoinColumn(name="item_id", referencedColumnName="id", nullable=false)
-     */
-    protected $item;
+    #[ORM\ManyToOne(targetEntity: 'Item', inversedBy: 'textFields')]
+    #[ORM\JoinColumn(name: 'item_id', referencedColumnName: 'id', nullable: false)]
+    protected ?AbstractItem $item = null;
 
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="field", type="string", length=250, nullable=false)
-     */
-    protected $field;
+    #[ORM\Column(name: 'field', type: Types::STRING, length: 250, nullable: false)]
+    protected ?string $field = null;
 
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="value", type="text", nullable=false)
-     */
-    protected $value;
+    #[ORM\Column(name: 'value', type: Types::TEXT, nullable: false)]
+    protected ?string $value = null;
 
     /**
      * Get id
@@ -48,9 +37,7 @@ abstract class AbstractIndexText implements ItemFieldInterface
         return $this->id;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function setField($field)
     {
         $this->field = $field;
@@ -58,17 +45,13 @@ abstract class AbstractIndexText implements ItemFieldInterface
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getField()
     {
         return $this->field;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function setValue($value)
     {
         $this->value = $value;
@@ -76,17 +59,13 @@ abstract class AbstractIndexText implements ItemFieldInterface
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getValue()
     {
         return $this->value;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function setItem(AbstractItem $item)
     {
         $this->item = $item;
@@ -94,9 +73,7 @@ abstract class AbstractIndexText implements ItemFieldInterface
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getItem()
     {
         return $this->item;

@@ -3,7 +3,7 @@
 namespace Oro\Bundle\OrganizationBundle\Tests\Unit\Form\EventListener;
 
 use Doctrine\Common\Util\ClassUtils;
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
 use Oro\Bundle\OrganizationBundle\Form\EventListener\OwnerFormSubscriber;
@@ -31,6 +31,7 @@ class OwnerFormSubscriberTest extends \PHPUnit\Framework\TestCase
     /** @var OwnerFormSubscriber */
     private $subscriber;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->doctrineHelper = $this->createMock(DoctrineHelper::class);
@@ -58,9 +59,7 @@ class OwnerFormSubscriberTest extends \PHPUnit\Framework\TestCase
         $form = $this->createMock(Form::class);
         $form->expects($this->once())
             ->method('getParent')
-            ->willReturn(true);
-        $form->expects($this->never())
-            ->method('has');
+            ->willReturn(null);
 
         $event = new FormEvent($form, null);
         $this->subscriber->postSetData($event);
@@ -71,7 +70,7 @@ class OwnerFormSubscriberTest extends \PHPUnit\Framework\TestCase
         $form = $this->createMock(Form::class);
         $form->expects($this->once())
             ->method('getParent')
-            ->willReturn(false);
+            ->willReturn(null);
         $form->expects($this->once())
             ->method('has')
             ->with($this->fieldName)
@@ -88,7 +87,7 @@ class OwnerFormSubscriberTest extends \PHPUnit\Framework\TestCase
         $form = $this->createMock(Form::class);
         $form->expects($this->once())
             ->method('getParent')
-            ->willReturn(false);
+            ->willReturn(null);
         $form->expects($this->once())
             ->method('has')
             ->with($this->fieldName)
@@ -107,7 +106,7 @@ class OwnerFormSubscriberTest extends \PHPUnit\Framework\TestCase
         $form = $this->createMock(Form::class);
         $form->expects($this->once())
             ->method('getParent')
-            ->willReturn(false);
+            ->willReturn(null);
         $form->expects($this->once())
             ->method('has')
             ->with($this->fieldName)
@@ -130,7 +129,7 @@ class OwnerFormSubscriberTest extends \PHPUnit\Framework\TestCase
         $form = $this->createMock(Form::class);
         $form->expects($this->once())
             ->method('getParent')
-            ->willReturn(false);
+            ->willReturn(null);
         $form->expects($this->once())
             ->method('has')
             ->with($this->fieldName)
@@ -159,7 +158,7 @@ class OwnerFormSubscriberTest extends \PHPUnit\Framework\TestCase
         $form = $this->createMock(Form::class);
         $form->expects($this->once())
             ->method('getParent')
-            ->willReturn(false);
+            ->willReturn(null);
         $form->expects($this->once())
             ->method('has')
             ->with($this->fieldName)
@@ -207,7 +206,7 @@ class OwnerFormSubscriberTest extends \PHPUnit\Framework\TestCase
             ->method('getIdentifierValues')
             ->with($entity)
             ->willReturn([1]);
-        $entityManager = $this->createMock(EntityManager::class);
+        $entityManager = $this->createMock(EntityManagerInterface::class);
         $entityManager->expects($this->once())
             ->method('getClassMetadata')
             ->with($entityClass)
@@ -234,7 +233,7 @@ class OwnerFormSubscriberTest extends \PHPUnit\Framework\TestCase
         $form = $this->createMock(Form::class);
         $form->expects($this->once())
             ->method('getParent')
-            ->willReturn(false);
+            ->willReturn(null);
         $form->expects($this->once())
             ->method('has')
             ->with($this->fieldName)
@@ -261,7 +260,7 @@ class OwnerFormSubscriberTest extends \PHPUnit\Framework\TestCase
         $form = $this->createMock(Form::class);
         $form->expects($this->once())
             ->method('getParent')
-            ->willReturn(false);
+            ->willReturn(null);
         $form->expects($this->once())
             ->method('has')
             ->with($this->fieldName)

@@ -27,6 +27,7 @@ class RequestEntityTest extends \PHPUnit\Framework\TestCase
     /** @var RequestEntity */
     private $action;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->contextAccessor = new ContextAccessor();
@@ -211,8 +212,8 @@ class RequestEntityTest extends \PHPUnit\Framework\TestCase
             ],
             'attribute_class' => [
                 'options' => [
-                    'class' => new PropertyPath('class'),
-                    'identifier' => 1,
+                    'class' => \stdClass::class,
+                    'identifier' => new PropertyPath('class'),
                     'attribute' => new PropertyPath('entity_attribute'),
                 ]
             ],

@@ -2,7 +2,7 @@
 
 namespace Oro\Bundle\UIBundle\Tests\Unit\Twig;
 
-use Oro\Bundle\UIBundle\ContentProvider\TwigContentProviderManager;
+use Oro\Bundle\UIBundle\ContentProvider\ContentProviderManager;
 use Oro\Bundle\UIBundle\Event\BeforeFormRenderEvent;
 use Oro\Bundle\UIBundle\Event\BeforeListRenderEvent;
 use Oro\Bundle\UIBundle\Event\Events;
@@ -10,6 +10,8 @@ use Oro\Bundle\UIBundle\Provider\UserAgentProviderInterface;
 use Oro\Bundle\UIBundle\Twig\UiExtension;
 use Oro\Bundle\UIBundle\View\ScrollData;
 use Oro\Component\Testing\Unit\TwigExtensionTestCaseTrait;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Form\FormView;
 use Symfony\Component\HttpFoundation\Request;
@@ -23,33 +25,34 @@ use Twig\TemplateWrapper;
  * @SuppressWarnings(PHPMD.TooManyPublicMethods)
  * @SuppressWarnings(PHPMD.TooManyMethods)
  */
-class UiExtensionTest extends \PHPUnit\Framework\TestCase
+class UiExtensionTest extends TestCase
 {
     use TwigExtensionTestCaseTrait;
 
-    private Environment|\PHPUnit\Framework\MockObject\MockObject $environment;
+    private Environment|MockObject $environment;
 
-    private TwigContentProviderManager|\PHPUnit\Framework\MockObject\MockObject $contentProviderManager;
+    private ContentProviderManager|MockObject $contentProviderManager;
 
-    private EventDispatcherInterface|\PHPUnit\Framework\MockObject\MockObject $eventDispatcher;
+    private EventDispatcherInterface|MockObject $eventDispatcher;
 
-    private RequestStack|\PHPUnit\Framework\MockObject\MockObject $requestStack;
+    private RequestStack|MockObject $requestStack;
 
-    private RouterInterface|\PHPUnit\Framework\MockObject\MockObject $router;
+    private RouterInterface|MockObject $router;
 
     private UiExtension $extension;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->environment = $this->createMock(Environment::class);
-        $this->contentProviderManager = $this->createMock(TwigContentProviderManager::class);
+        $this->contentProviderManager = $this->createMock(ContentProviderManager::class);
         $userAgentProvider = $this->createMock(UserAgentProviderInterface::class);
         $this->eventDispatcher = $this->createMock(EventDispatcherInterface::class);
         $this->requestStack = $this->createMock(RequestStack::class);
         $this->router = $this->createMock(RouterInterface::class);
 
         $container = self::getContainerBuilder()
-            ->add('oro_ui.content_provider.manager.twig', $this->contentProviderManager)
+            ->add('oro_ui.content_provider.manager', $this->contentProviderManager)
             ->add('oro_ui.user_agent_provider', $userAgentProvider)
             ->add(EventDispatcherInterface::class, $this->eventDispatcher)
             ->add(RequestStack::class, $this->requestStack)
@@ -204,13 +207,13 @@ class UiExtensionTest extends \PHPUnit\Framework\TestCase
     public function contentDataProvider(): array
     {
         return [
-            [
+            'with additional content and keys' => [
                 'content' => ['b' => 'c'],
                 'additionalContent' => ['a' => 'b'],
                 'keys' => ['a', 'b', 'c'],
                 'expected' => ['a' => 'b', 'b' => 'c'],
             ],
-            [
+            'without additional content and keys' => [
                 'content' => ['b' => 'c'],
                 'additionalContent' => null,
                 'keys' => null,
@@ -767,7 +770,7 @@ class UiExtensionTest extends \PHPUnit\Framework\TestCase
                     'subblocks' => [
                         [
                             'title' => '',
-                            'useSpan'=>false,
+                            'useSpan' => false,
                             'data' => $additionalData,
                         ],
                     ],
@@ -815,6 +818,34 @@ class UiExtensionTest extends \PHPUnit\Framework\TestCase
                 'https://example.com:8080/test?hello=2&third=def&second=abc',
             ],
             ['/test', ['hello' => 2, 'second' => 'abc'], '/test?hello=2&second=abc'],
+        ];
+    }
+
+    /**
+     * @dataProvider getIsStringDataProvider
+     */
+    public function testIsString(mixed $value, bool $expectedResult): void
+    {
+        self::assertEquals(
+            $expectedResult,
+            self::callTwigFunction($this->extension, 'oro_is_string', [$value])
+        );
+    }
+
+    public function getIsStringDataProvider(): array
+    {
+        return [
+            [null, false],
+            ["null", true],
+            ['some_option_value', true],
+            [123, false],
+            ["123", true],
+            [123.321, false],
+            ["123.321", true],
+            [false, false],
+            ["false", true],
+            [['foo' => 'bar'], false],
+            [new \stdClass(), false],
         ];
     }
 }

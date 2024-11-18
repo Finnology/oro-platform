@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\TestFrameworkBundle\Command;
@@ -28,6 +29,7 @@ class ContainerTagsDocumentationCommand extends Command
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     protected function configure()
     {
         $this
@@ -86,7 +88,8 @@ HELP
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    #[\Override]
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $includedTags = (array)$input->getOption('included');
         $excludedTags = (array)$input->getOption('exclude');
@@ -109,7 +112,7 @@ HELP
             $io->text('Total: ' . count($rows));
         }
 
-        return 0;
+        return Command::SUCCESS;
     }
 
     protected function getAsTableRows(array $documentationInfo, bool $withDocs, bool $withoutDocs): array

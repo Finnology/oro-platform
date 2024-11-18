@@ -25,6 +25,7 @@ class ExportExtensionTest extends \PHPUnit\Framework\TestCase
     /** @var ExportExtension */
     private $extension;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->authorizationChecker = $this->createMock(AuthorizationCheckerInterface::class);
@@ -144,7 +145,6 @@ class ExportExtensionTest extends \PHPUnit\Framework\TestCase
         $this->extension->setParameters(new ParameterBag());
         self::assertTrue($this->extension->isApplicable($config));
     }
-
 
     public function testProcessConfigsWhenGridExportOptionIsNotSpecified(): void
     {

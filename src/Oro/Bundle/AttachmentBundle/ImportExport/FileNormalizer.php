@@ -35,25 +35,19 @@ class FileNormalizer implements ContextAwareNormalizerInterface, ContextAwareDen
         $this->attachmentEntityConfigProvider = $attachmentEntityConfigProvider;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function supportsDenormalization($data, string $type, string $format = null, array $context = []): bool
     {
         return File::class === $type;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function supportsNormalization($data, string $format = null, array $context = []): bool
     {
         return $data instanceof File;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function denormalize($data, string $type, string $format = null, array $context = [])
     {
         return $this->createFileEntity(
@@ -64,10 +58,10 @@ class FileNormalizer implements ContextAwareNormalizerInterface, ContextAwareDen
     }
 
     /**
-     * {@inheritdoc}
      *
      * @param File $object
      */
+    #[\Override]
     public function normalize($object, string $format = null, array $context = [])
     {
         $fileUrl = null;
@@ -131,5 +125,12 @@ class FileNormalizer implements ContextAwareNormalizerInterface, ContextAwareDen
         }
 
         return $isFileStoredExternally;
+    }
+
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+            File::class => false
+        ];
     }
 }

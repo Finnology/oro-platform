@@ -9,9 +9,7 @@ use Psr\Log\LoggerInterface;
 
 class UpdateSegmentSnapshotDataQuery extends ParametrizedMigrationQuery
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getDescription()
     {
         $logger = new ArrayLogger();
@@ -20,9 +18,7 @@ class UpdateSegmentSnapshotDataQuery extends ParametrizedMigrationQuery
         return $logger->getMessages();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function execute(LoggerInterface $logger)
     {
         $this->updateSnapshotData($logger);
@@ -49,7 +45,7 @@ SQL;
 
         $this->logQuery($logger, $query);
         if (!$dryRun) {
-            $this->connection->prepare($query)->execute();
+            $this->connection->prepare($query)->executeQuery();
         }
     }
 }

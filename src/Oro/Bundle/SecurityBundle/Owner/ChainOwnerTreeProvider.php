@@ -10,19 +10,14 @@ use Oro\Bundle\SecurityBundle\Exception\UnsupportedOwnerTreeProviderException;
 class ChainOwnerTreeProvider implements OwnerTreeProviderInterface
 {
     /** @var iterable|OwnerTreeProviderInterface[] */
-    private $providers;
+    private iterable $providers;
 
-    /**
-     * @param iterable|OwnerTreeProviderInterface[] $providers
-     */
     public function __construct(iterable $providers)
     {
         $this->providers = $providers;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function supports(): bool
     {
         foreach ($this->providers as $provider) {
@@ -34,6 +29,7 @@ class ChainOwnerTreeProvider implements OwnerTreeProviderInterface
         return false;
     }
 
+    #[\Override]
     public function getTree(): OwnerTreeInterface
     {
         foreach ($this->providers as $provider) {
@@ -45,9 +41,7 @@ class ChainOwnerTreeProvider implements OwnerTreeProviderInterface
         throw new UnsupportedOwnerTreeProviderException('Supported provider not found in chain');
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function clearCache(): void
     {
         foreach ($this->providers as $provider) {
@@ -55,9 +49,7 @@ class ChainOwnerTreeProvider implements OwnerTreeProviderInterface
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function warmUpCache(): void
     {
         foreach ($this->providers as $provider) {

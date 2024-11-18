@@ -8,18 +8,14 @@ use Oro\Bundle\MigrationBundle\Migration\QueryBag;
 
 class OroInstallerBundleInstaller implements Installation
 {
-    /**
-     * {@inheritdoc}
-     */
-    public function getMigrationVersion()
+    #[\Override]
+    public function getMigrationVersion(): string
     {
         return 'v1_1';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function up(Schema $schema, QueryBag $queries)
+    #[\Override]
+    public function up(Schema $schema, QueryBag $queries): void
     {
     }
 }

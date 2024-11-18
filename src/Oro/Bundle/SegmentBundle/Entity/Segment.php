@@ -2,155 +2,95 @@
 
 namespace Oro\Bundle\SegmentBundle\Entity;
 
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Oro\Bundle\EntityConfigBundle\Metadata\Annotation\Config;
-use Oro\Bundle\EntityConfigBundle\Metadata\Annotation\ConfigField;
+use Extend\Entity\Autocomplete\OroSegmentBundle_Entity_Segment;
+use Oro\Bundle\EntityConfigBundle\Metadata\Attribute\Config;
+use Oro\Bundle\EntityConfigBundle\Metadata\Attribute\ConfigField;
 use Oro\Bundle\EntityExtendBundle\Entity\ExtendEntityInterface;
 use Oro\Bundle\EntityExtendBundle\Entity\ExtendEntityTrait;
 use Oro\Bundle\OrganizationBundle\Entity\BusinessUnit;
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
+use Oro\Bundle\OrganizationBundle\Entity\OrganizationInterface;
 use Oro\Bundle\QueryDesignerBundle\Model\AbstractQueryDesigner;
 use Oro\Bundle\QueryDesignerBundle\Model\GridQueryDesignerInterface;
+use Oro\Bundle\SegmentBundle\Entity\Repository\SegmentRepository;
 
 /**
  * Main segment entity.
  *
- * @ORM\Table(name="oro_segment")
- * @ORM\Entity(repositoryClass="Oro\Bundle\SegmentBundle\Entity\Repository\SegmentRepository")
- * @ORM\HasLifecycleCallbacks
- * @Config(
- *      routeName="oro_segment_index",
- *      defaultValues={
- *          "ownership"={
- *              "owner_type"="BUSINESS_UNIT",
- *              "owner_field_name"="owner",
- *              "owner_column_name"="business_unit_owner_id",
- *              "organization_field_name"="organization",
- *              "organization_column_name"="organization_id"
- *          },
- *          "security"={
- *              "type"="ACL",
- *              "group_name"="",
- *              "category"="account_management"
- *          },
- *          "activity"={
- *              "immutable"=true
- *          },
- *          "attachment"={
- *              "immutable"=true
- *          }
- *      }
- * )
+ * @mixin OroSegmentBundle_Entity_Segment
  */
+#[ORM\Entity(repositoryClass: SegmentRepository::class)]
+#[ORM\Table(name: 'oro_segment')]
+#[ORM\HasLifecycleCallbacks]
+#[Config(
+    routeName: 'oro_segment_index',
+    defaultValues: [
+        'ownership' => [
+            'owner_type' => 'BUSINESS_UNIT',
+            'owner_field_name' => 'owner',
+            'owner_column_name' => 'business_unit_owner_id',
+            'organization_field_name' => 'organization',
+            'organization_column_name' => 'organization_id'
+        ],
+        'security' => ['type' => 'ACL', 'group_name' => '', 'category' => 'account_management'],
+        'activity' => ['immutable' => true],
+        'attachment' => ['immutable' => true]
+    ]
+)]
 class Segment extends AbstractQueryDesigner implements GridQueryDesignerInterface, ExtendEntityInterface
 {
     use ExtendEntityTrait;
 
     const GRID_PREFIX = 'oro_segment_grid_';
 
-    /**
-     * @ORM\Id
-     * @ORM\Column(type="integer", name="id")
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
-    protected $id;
+    #[ORM\Id]
+    #[ORM\Column(name: 'id', type: Types::INTEGER)]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
+    protected ?int $id = null;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=false)
-     */
-    protected $name;
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: false)]
+    protected ?string $name = null;
 
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="name_lowercase", type="string", unique=true, length=255, nullable=false)
-     * @ConfigField(mode="hidden")
-     */
-    protected $nameLowercase;
+    #[ORM\Column(name: 'name_lowercase', type: Types::STRING, length: 255, unique: true, nullable: false)]
+    #[ConfigField(mode: 'hidden')]
+    protected ?string $nameLowercase = null;
 
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="description", type="text", nullable=true)
-     */
-    protected $description;
+    #[ORM\Column(name: 'description', type: Types::TEXT, nullable: true)]
+    protected ?string $description = null;
 
-    /**
-     * @ORM\Column(name="entity", type="string", unique=false, length=255, nullable=false)
-     */
-    protected $entity;
+    #[ORM\Column(name: 'entity', type: Types::STRING, length: 255, unique: false, nullable: false)]
+    protected ?string $entity = null;
 
-    /**
-     * @var SegmentType
-     *
-     * @ORM\ManyToOne(targetEntity="SegmentType")
-     * @ORM\JoinColumn(name="type", referencedColumnName="name", nullable=false)
-     **/
-    protected $type;
+    #[ORM\ManyToOne(targetEntity: SegmentType::class)]
+    #[ORM\JoinColumn(name: 'type', referencedColumnName: 'name', nullable: false)]
+    protected ?SegmentType $type = null;
 
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="definition", type="text")
-     */
-    protected $definition;
+    #[ORM\Column(name: 'definition', type: Types::TEXT)]
+    protected ?string $definition = null;
 
-    /**
-     * @var BusinessUnit
-     * @ORM\ManyToOne(targetEntity="Oro\Bundle\OrganizationBundle\Entity\BusinessUnit")
-     * @ORM\JoinColumn(name="business_unit_owner_id", referencedColumnName="id", onDelete="SET NULL")
-     */
-    protected $owner;
+    #[ORM\ManyToOne(targetEntity: BusinessUnit::class)]
+    #[ORM\JoinColumn(name: 'business_unit_owner_id', referencedColumnName: 'id', onDelete: 'SET NULL')]
+    protected ?BusinessUnit $owner = null;
 
-    /**
-     * @var \Datetime $lastRun
-     *
-     * @ORM\Column(name="last_run", type="datetime", nullable=true)
-     */
-    protected $lastRun;
+    #[ORM\Column(name: 'last_run', type: Types::DATETIME_MUTABLE, nullable: true)]
+    protected ?\DateTimeInterface $lastRun = null;
 
-    /**
-     * @var \Datetime $created
-     *
-     * @ORM\Column(type="datetime")
-     * @ConfigField(
-     *      defaultValues={
-     *          "entity"={
-     *              "label"="oro.ui.created_at"
-     *          }
-     *      }
-     * )
-     */
-    protected $createdAt;
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[ConfigField(defaultValues: ['entity' => ['label' => 'oro.ui.created_at']])]
+    protected ?\DateTimeInterface $createdAt = null;
 
-    /**
-     * @var \Datetime $updated
-     *
-     * @ORM\Column(type="datetime")
-     * @ConfigField(
-     *      defaultValues={
-     *          "entity"={
-     *              "label"="oro.ui.updated_at"
-     *          }
-     *      }
-     * )
-     */
-    protected $updatedAt;
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[ConfigField(defaultValues: ['entity' => ['label' => 'oro.ui.updated_at']])]
+    protected ?\DateTimeInterface $updatedAt = null;
 
-    /**
-     * @var Organization
-     *
-     * @ORM\ManyToOne(targetEntity="Oro\Bundle\OrganizationBundle\Entity\Organization")
-     * @ORM\JoinColumn(name="organization_id", referencedColumnName="id", onDelete="SET NULL")
-     */
-    protected $organization;
+    #[ORM\ManyToOne(targetEntity: Organization::class)]
+    #[ORM\JoinColumn(name: 'organization_id', referencedColumnName: 'id', onDelete: 'SET NULL')]
+    protected ?OrganizationInterface $organization = null;
 
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="records_limit", type="integer", nullable=true)
-     */
-    protected $recordsLimit;
+    #[ORM\Column(name: 'records_limit', type: Types::INTEGER, nullable: true)]
+    protected ?int $recordsLimit = null;
 
     public function __clone()
     {
@@ -161,9 +101,7 @@ class Segment extends AbstractQueryDesigner implements GridQueryDesignerInterfac
         $this->cloneExtendEntityStorage();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getGridPrefix(): string
     {
         return self::GRID_PREFIX;
@@ -264,6 +202,7 @@ class Segment extends AbstractQueryDesigner implements GridQueryDesignerInterfac
      *
      * @return string
      */
+    #[\Override]
     public function getEntity()
     {
         return $this->entity;
@@ -275,6 +214,7 @@ class Segment extends AbstractQueryDesigner implements GridQueryDesignerInterfac
      * @param string $entity
      * @return Segment
      */
+    #[\Override]
     public function setEntity($entity)
     {
         $this->entity = $entity;
@@ -310,6 +250,7 @@ class Segment extends AbstractQueryDesigner implements GridQueryDesignerInterfac
      *
      * @return string
      */
+    #[\Override]
     public function getDefinition()
     {
         return $this->definition;
@@ -321,6 +262,7 @@ class Segment extends AbstractQueryDesigner implements GridQueryDesignerInterfac
      * @param string $definition
      * @return Segment
      */
+    #[\Override]
     public function setDefinition($definition)
     {
         $this->definition = $definition;
@@ -399,9 +341,8 @@ class Segment extends AbstractQueryDesigner implements GridQueryDesignerInterfac
 
     /**
      * Pre persist event listener
-     *
-     * @ORM\PrePersist
      */
+    #[ORM\PrePersist]
     public function beforeSave()
     {
         $this->createdAt = new \DateTime('now', new \DateTimeZone('UTC'));
@@ -410,8 +351,8 @@ class Segment extends AbstractQueryDesigner implements GridQueryDesignerInterfac
 
     /**
      * Pre update event handler
-     * @ORM\PreUpdate
      */
+    #[ORM\PreUpdate]
     public function doUpdate()
     {
         $this->updatedAt = new \DateTime('now', new \DateTimeZone('UTC'));
@@ -420,7 +361,7 @@ class Segment extends AbstractQueryDesigner implements GridQueryDesignerInterfac
     /**
      * Set organization
      *
-     * @param Organization $organization
+     * @param Organization|null $organization
      * @return Segment
      */
     public function setOrganization(Organization $organization = null)

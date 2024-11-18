@@ -15,20 +15,22 @@ services:
         arguments:
             - '@oro_search.api.search_field_resolver_factory'
 
+    oro_search.api.search_entity_class_provider:
+        class: Oro\Bundle\SearchBundle\Api\SearchEntityClassProvider
+        arguments:
+            - '@oro_search.index'
+            - '@oro_api.resources_provider'
+
     oro_search.api.search_entity_list_filter_helper:
         class: Oro\Bundle\SearchBundle\Api\SearchEntityListFilterHelper
         arguments:
-            - '@oro_search.provider.search_mapping'
-            - '@oro_search.index'
-            - '@oro_api.resources_provider'
+            - '@oro_search.api.search_entity_class_provider'
             - '@oro_api.value_normalizer'
 
     oro_search.api.search_entity_repository:
         class: Oro\Bundle\SearchBundle\Api\Repository\SearchEntityRepository
         arguments:
-            - '@oro_search.provider.search_mapping'
-            - '@oro_search.index'
-            - '@oro_api.resources_provider'
+            - '@oro_search.api.search_entity_class_provider'
             - '@oro_api.value_normalizer'
             - '@oro_entity_config.config_manager'
             - '@translator'
@@ -67,6 +69,12 @@ services:
         tags:
             - { name: oro.api.processor, action: get_list, group: normalize_input, priority: 95 }
 
+    oro_search.api.skip_default_search_text_ordering:
+        class: Oro\Bundle\SearchBundle\Api\Processor\SkipDefaultSearchTextOrdering
+        tags:
+            - { name: oro.api.processor, action: get_list, group: build_query, priority: -5 }
+            - { name: oro.api.processor, action: delete_list, group: build_query, priority: -5 }
+
     oro_search.api.build_search_query:
         class: Oro\Bundle\SearchBundle\Api\Processor\BuildSearchQuery
         arguments:
@@ -76,6 +84,7 @@ services:
             - '@security.authorization_checker'
         tags:
             - { name: oro.api.processor, action: get_list, group: build_query, priority: -90 }
+            - { name: oro.api.processor, action: delete_list, group: build_query, priority: -90 }
 
     oro_search.api.load_entities_by_search_text:
         class: Oro\Bundle\SearchBundle\Api\Processor\LoadEntitiesBySearchText

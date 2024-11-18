@@ -41,6 +41,7 @@ class ErrorCompleterTest extends \PHPUnit\Framework\TestCase
     /** @var ErrorCompleter */
     private $errorCompleter;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->exceptionTextExtractor = $this->createMock(ExceptionTextExtractorInterface::class);
@@ -697,11 +698,7 @@ class ErrorCompleterTest extends \PHPUnit\Framework\TestCase
 
         $this->valueNormalizer->expects(self::once())
             ->method('normalizeValue')
-            ->with(
-                'Test\Class',
-                DataType::ENTITY_TYPE,
-                self::identicalTo($this->requestType)
-            )
+            ->with('Test\Class', DataType::ENTITY_TYPE, self::identicalTo($this->requestType))
             ->willReturn('test_entity');
 
         $this->errorCompleter->complete($error, $this->requestType);

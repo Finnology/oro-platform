@@ -18,6 +18,7 @@ class EntityMetadataFactoryTest extends OrmRelatedTestCase
     /** @var EntityMetadataFactory */
     private $metadataFactory;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -55,9 +56,7 @@ class EntityMetadataFactoryTest extends OrmRelatedTestCase
 
     public function testCreateMetaPropertyMetadata()
     {
-        $expectedMetadata = new MetaPropertyMetadata();
-        $expectedMetadata->setName('name');
-        $expectedMetadata->setDataType('string');
+        $expectedMetadata = new MetaPropertyMetadata('name', 'string');
 
         $metadata = $this->metadataFactory->createMetaPropertyMetadata(
             $this->doctrineHelper->getEntityMetadataForClass(Entity\Product::class),
@@ -69,9 +68,7 @@ class EntityMetadataFactoryTest extends OrmRelatedTestCase
 
     public function testCreateMetaPropertyMetadataByPropertyPath()
     {
-        $expectedMetadata = new MetaPropertyMetadata();
-        $expectedMetadata->setName('id');
-        $expectedMetadata->setDataType('integer');
+        $expectedMetadata = new MetaPropertyMetadata('id', 'integer');
 
         $metadata = $this->metadataFactory->createMetaPropertyMetadata(
             $this->doctrineHelper->getEntityMetadataForClass(Entity\Product::class),
@@ -83,9 +80,7 @@ class EntityMetadataFactoryTest extends OrmRelatedTestCase
 
     public function testCreateMetaPropertyMetadataWhenDataTypeIsSpecified()
     {
-        $expectedMetadata = new MetaPropertyMetadata();
-        $expectedMetadata->setName('name');
-        $expectedMetadata->setDataType('integer');
+        $expectedMetadata = new MetaPropertyMetadata('name', 'integer');
 
         $metadata = $this->metadataFactory->createMetaPropertyMetadata(
             $this->doctrineHelper->getEntityMetadataForClass(Entity\Product::class),
@@ -98,8 +93,7 @@ class EntityMetadataFactoryTest extends OrmRelatedTestCase
 
     public function testCreateMetaPropertyMetadataForNotManageableField()
     {
-        $expectedMetadata = new MetaPropertyMetadata();
-        $expectedMetadata->setName('unmanageableField');
+        $expectedMetadata = new MetaPropertyMetadata('unmanageableField');
 
         $metadata = $this->metadataFactory->createMetaPropertyMetadata(
             $this->doctrineHelper->getEntityMetadataForClass(Entity\Product::class),

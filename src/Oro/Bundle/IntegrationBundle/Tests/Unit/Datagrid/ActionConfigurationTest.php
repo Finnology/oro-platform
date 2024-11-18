@@ -1,4 +1,5 @@
 <?php
+
 namespace Oro\Bundle\IntegrationBundle\Tests\Unit\Datagrid;
 
 use Oro\Bundle\DataGridBundle\Datasource\ResultRecord;
@@ -14,6 +15,7 @@ class ActionConfigurationTest extends \PHPUnit\Framework\TestCase
     /** @var ActionConfiguration */
     private $actionConfiguration;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->typesRegistry = $this->createMock(TypesRegistry::class);

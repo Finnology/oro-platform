@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\EntityExtendBundle\Doctrine\Persistence\Mapping;
@@ -11,9 +12,7 @@ use Oro\Bundle\EntityExtendBundle\Doctrine\Persistence\Reflection\ReflectionVirt
  */
 class VirtualPropertyRuntimeReflectionService extends RuntimeReflectionService
 {
-    /**
-     * @inheritDoc
-     */
+    #[\Override]
     public function getAccessibleProperty($class, $property)
     {
         if (property_exists($class, $property)) {
@@ -23,9 +22,7 @@ class VirtualPropertyRuntimeReflectionService extends RuntimeReflectionService
         return ReflectionVirtualProperty::create($property);
     }
 
-    /**
-     * @inheritDoc
-     */
+    #[\Override]
     public function getParentClasses($class)
     {
         if (!class_exists($class)) {

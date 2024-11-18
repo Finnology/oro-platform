@@ -16,6 +16,7 @@ use Oro\Bundle\WorkflowBundle\Tests\Functional\DataFixtures\LoadWorkflowDefiniti
 
 class WorkflowItemRepositoryTest extends WebTestCase
 {
+    #[\Override]
     protected function setUp(): void
     {
         $this->initClient();
@@ -319,7 +320,7 @@ class WorkflowItemRepositoryTest extends WebTestCase
 
         $ids = ['none' => []];
         foreach ($entities as $entity) {
-            $workflowName = $entity['workflowName'] ? : 'none';
+            $workflowName = $entity['workflowName'] ?: 'none';
 
             $ids[$workflowName][] = $entity['entityId'];
         }

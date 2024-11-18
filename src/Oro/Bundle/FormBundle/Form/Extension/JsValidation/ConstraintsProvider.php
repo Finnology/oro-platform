@@ -13,14 +13,9 @@ use Symfony\Component\Validator\Mapping\Factory\MetadataFactoryInterface;
  */
 class ConstraintsProvider implements ConstraintsProviderInterface
 {
-    /** @var MetadataFactoryInterface */
-    private $metadataFactory;
-
-    /** @var ConstraintConverterInterface */
-    private $constraintConverter;
-
-    /** @var array */
-    private $metadataConstraintsCache;
+    private MetadataFactoryInterface $metadataFactory;
+    private ConstraintConverterInterface $constraintConverter;
+    private array $metadataConstraintsCache = [];
 
     public function __construct(
         MetadataFactoryInterface $metadataFactory,
@@ -30,9 +25,7 @@ class ConstraintsProvider implements ConstraintsProviderInterface
         $this->constraintConverter = $constraintConverter;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getFormConstraints(FormInterface $form)
     {
         $constraints = $this->getMetadataConstraints($form);
@@ -48,7 +41,7 @@ class ConstraintsProvider implements ConstraintsProviderInterface
         foreach ($constraints as $constraint) {
             $groups = $constraint->groups ?? [Constraint::DEFAULT_GROUP];
             if (array_intersect($validationGroups, $groups)) {
-                $jsConstraint = $this->constraintConverter->convertConstraint($constraint);
+                $jsConstraint = $this->constraintConverter->convertConstraint($constraint, $form);
                 if (null !== $jsConstraint) {
                     $result[] = $jsConstraint;
                 }

@@ -9,9 +9,7 @@ use Oro\Bundle\ApiBundle\Collection\QueryExpressionVisitor;
  */
 class NinComparisonExpression implements ComparisonExpressionInterface
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function walkComparisonExpression(
         QueryExpressionVisitor $visitor,
         string $field,
@@ -22,6 +20,6 @@ class NinComparisonExpression implements ComparisonExpressionInterface
         $visitor->addParameter($parameterName, $value);
 
         return $visitor->getExpressionBuilder()
-            ->notIn($expression, $visitor->buildPlaceholder($parameterName));
+            ->notIn($expression, $visitor->buildParameterExpression($parameterName, $value));
     }
 }

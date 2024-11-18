@@ -2,7 +2,7 @@
 
 namespace Oro\Bundle\DataGridBundle\Tests\Unit\Extension\Sorter;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\QueryBuilder;
 use Oro\Bundle\DataGridBundle\Datagrid\Common\DatagridConfiguration;
@@ -15,6 +15,7 @@ class OrmSorterExtensionTest extends AbstractSorterExtensionTestCase
     /** @var OrmSorterExtension */
     protected $extension;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -29,7 +30,7 @@ class OrmSorterExtensionTest extends AbstractSorterExtensionTestCase
             ->method('getStateFromParameters')
             ->willReturn([]);
 
-        $em = $this->createMock(EntityManager::class);
+        $em = $this->createMock(EntityManagerInterface::class);
         $metadata = $this->createMock(ClassMetadata::class);
         $em->expects(self::once())
             ->method('getClassMetadata')
@@ -66,7 +67,7 @@ class OrmSorterExtensionTest extends AbstractSorterExtensionTestCase
             ->method('getStateFromParameters')
             ->willReturn([]);
 
-        $em = $this->createMock(EntityManager::class);
+        $em = $this->createMock(EntityManagerInterface::class);
         $em->expects(self::never())
             ->method('getClassMetadata');
 
@@ -97,7 +98,7 @@ class OrmSorterExtensionTest extends AbstractSorterExtensionTestCase
             ->method('getStateFromParameters')
             ->willReturn([]);
 
-        $em = $this->createMock(EntityManager::class);
+        $em = $this->createMock(EntityManagerInterface::class);
         $em->expects(self::never())
             ->method('getClassMetadata');
 
@@ -127,7 +128,7 @@ class OrmSorterExtensionTest extends AbstractSorterExtensionTestCase
             ->method('getStateFromParameters')
             ->willReturn([]);
 
-        $em = $this->createMock(EntityManager::class);
+        $em = $this->createMock(EntityManagerInterface::class);
         $em->expects(self::never())
             ->method('getClassMetadata');
 
@@ -158,7 +159,7 @@ class OrmSorterExtensionTest extends AbstractSorterExtensionTestCase
             ->method('getStateFromParameters')
             ->willReturn([]);
 
-        $em = $this->createMock(EntityManager::class);
+        $em = $this->createMock(EntityManagerInterface::class);
         $em->expects(self::never())
             ->method('getClassMetadata');
 

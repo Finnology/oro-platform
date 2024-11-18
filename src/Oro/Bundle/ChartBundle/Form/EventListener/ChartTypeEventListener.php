@@ -14,10 +14,8 @@ class ChartTypeEventListener implements EventSubscriberInterface
      */
     protected $optionsGroups = ['settings', 'data_schema'];
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedEvents()
+    #[\Override]
+    public static function getSubscribedEvents(): array
     {
         return [
             FormEvents::PRE_SET_DATA => 'preSetData',

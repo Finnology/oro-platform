@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\SecurityBundle\Command;
@@ -42,6 +43,7 @@ class LoadPermissionConfigurationCommand extends Command
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     protected function configure()
     {
         $this
@@ -71,7 +73,8 @@ HELP
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    #[\Override]
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $acceptedPermissions = $input->getOption('permissions') ?: null;
 
@@ -90,10 +93,10 @@ HELP
         } else {
             $output->writeln('No permissions found.');
 
-            return 1;
+            return Command::FAILURE;
         }
 
-        return 0;
+        return Command::SUCCESS;
     }
 
     protected function validatePermissionEntities(Permission $permission, OutputInterface $output): void

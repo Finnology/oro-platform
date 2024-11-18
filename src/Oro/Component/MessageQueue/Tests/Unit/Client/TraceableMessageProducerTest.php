@@ -1,4 +1,5 @@
 <?php
+
 namespace Oro\Component\MessageQueue\Tests\Unit\Client;
 
 use Oro\Component\MessageQueue\Client\CallbackMessageBuilder;
@@ -44,8 +45,8 @@ class TraceableMessageProducerTest extends \PHPUnit\Framework\TestCase
         $messageProducer->send('aFooTopic', 'aFooBody');
 
         $this->assertEquals([
-                ['topic'=> 'aFooTopic', 'message' => 'aFooBody'],
-                ['topic'=> 'aFooTopic', 'message' => 'aFooBody'],
+                ['topic' => 'aFooTopic', 'message' => 'aFooBody'],
+                ['topic' => 'aFooTopic', 'message' => 'aFooBody'],
         ], $messageProducer->getTraces());
     }
 
@@ -57,7 +58,7 @@ class TraceableMessageProducerTest extends \PHPUnit\Framework\TestCase
         $messageProducer->send('aBarTopic', 'aBarBody');
 
         $this->assertEquals([
-            ['topic'=> 'aFooTopic', 'message' => 'aFooBody'],
+            ['topic' => 'aFooTopic', 'message' => 'aFooBody'],
             ['topic' => 'aBarTopic', 'message' => 'aBarBody'],
         ], $messageProducer->getTraces());
     }
@@ -71,7 +72,7 @@ class TraceableMessageProducerTest extends \PHPUnit\Framework\TestCase
         }));
 
         $this->assertEquals([
-            ['topic'=> 'aFooTopic', 'message' => 'aFooBody']
+            ['topic' => 'aFooTopic', 'message' => 'aFooBody']
         ], $messageProducer->getTraces());
     }
 
@@ -81,7 +82,7 @@ class TraceableMessageProducerTest extends \PHPUnit\Framework\TestCase
         $internalMessageProducer
             ->expects($this->once())
             ->method('send')
-            ->willThrowException(new \Exception);
+            ->willThrowException(new \Exception());
 
         $messageProducer = new TraceableMessageProducer($internalMessageProducer);
 

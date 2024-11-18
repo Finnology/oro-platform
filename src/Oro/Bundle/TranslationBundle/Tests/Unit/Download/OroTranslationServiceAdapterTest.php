@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\TranslationBundle\Tests\Unit\Download;
@@ -62,6 +63,7 @@ class OroTranslationServiceAdapterTest extends TestCase
     /** @var OroTranslationServiceAdapter */
     private $adapter;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->client = $this->createMock(Client::class);

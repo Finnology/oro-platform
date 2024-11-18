@@ -111,17 +111,13 @@ class SearchIndexRepository extends ServiceEntityRepository implements DBALPersi
         $this->getDriverRepo()->truncateIndex();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function writeItem(AbstractItem $item)
     {
         $this->getDriverRepo()->writeItem($item);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function flushWrites()
     {
         $this->getDriverRepo()->flushWrites();
@@ -149,7 +145,7 @@ class SearchIndexRepository extends ServiceEntityRepository implements DBALPersi
      * Returns array of search items in following format:
      * array(
      *      '<entityClass>' => array(
-     *          <entityIdentifier> => <instance of OroSearchBundle:Item>,
+     *          <entityIdentifier> => <instance of Oro\Bundle\SearchBundle\Entity\Item>,
      *          ...
      *      ),
      *      ...

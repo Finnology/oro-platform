@@ -7,15 +7,16 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
 
+/**
+ * Origin folder subscriber for setting origin data to folder
+ */
 class OriginFolderSubscriber implements EventSubscriberInterface
 {
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedEvents()
+    #[\Override]
+    public static function getSubscribedEvents(): array
     {
         return [
-            FormEvents::POST_SUBMIT   => 'setOriginToFolders'
+            FormEvents::SUBMIT   => 'setOriginToFolders'
         ];
     }
 

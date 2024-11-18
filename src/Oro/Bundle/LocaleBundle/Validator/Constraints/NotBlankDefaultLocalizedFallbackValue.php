@@ -15,18 +15,14 @@ class NotBlankDefaultLocalizedFallbackValue extends Constraint
      */
     public $errorMessage = 'oro.locale.validators.not_blank_default_localized_value.error_message';
 
-    /**
-     * {@inheritdoc}
-     */
-    public function validatedBy()
+    #[\Override]
+    public function validatedBy(): string
     {
         return 'oro_locale.default_localized_fallback_value.not_blank';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getTargets()
+    #[\Override]
+    public function getTargets(): string|array
     {
         return self::PROPERTY_CONSTRAINT;
     }

@@ -11,6 +11,7 @@ class ImagineControllerTest extends WebTestCase
 
     private string $publicDir;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->initClient();
@@ -26,6 +27,7 @@ class ImagineControllerTest extends WebTestCase
         );
     }
 
+    #[\Override]
     protected function tearDown(): void
     {
         $this->client->enableReboot();
@@ -46,6 +48,13 @@ class ImagineControllerTest extends WebTestCase
                 ]
             )
         );
+        $result = $this->client->getResponse();
+        self::assertHtmlResponseStatusCodeEquals($result, 404);
+    }
+
+    public function testGetFilteredImageReturns404WhenImageNotExist(): void
+    {
+        $this->client->request('GET', '/media/cache/resolve/product_large/bundles/oroproduct/images');
         $result = $this->client->getResponse();
         self::assertHtmlResponseStatusCodeEquals($result, 404);
     }

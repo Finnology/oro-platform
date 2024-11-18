@@ -10,9 +10,9 @@ use Oro\Bundle\EntityMergeBundle\Metadata\MetadataFactory;
 
 class MetadataFactoryTest extends \PHPUnit\Framework\TestCase
 {
-    /** @var MetadataFactory */
-    private $factory;
+    private MetadataFactory $factory;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->factory = new MetadataFactory();
@@ -45,7 +45,7 @@ class MetadataFactoryTest extends \PHPUnit\Framework\TestCase
     public function testCreateEntityMetadataFails()
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage(\sprintf(
+        $this->expectExceptionMessage(sprintf(
             '$doctrineMetadata must be an array of "%s", but "stdClass" given.',
             DoctrineMetadata::class
         ));
@@ -83,7 +83,7 @@ class MetadataFactoryTest extends \PHPUnit\Framework\TestCase
     public function testCreateFieldMetadataFails()
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage(\sprintf(
+        $this->expectExceptionMessage(sprintf(
             '$doctrineMetadata must be an array of "%s", but "stdClass" given.',
             DoctrineMetadata::class
         ));

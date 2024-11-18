@@ -13,10 +13,8 @@ use Symfony\Component\Routing\Annotation\Route;
  */
 class DashboardController extends AbstractController
 {
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedServices()
+    #[\Override]
+    public static function getSubscribedServices(): array
     {
         return array_merge(parent::getSubscribedServices(), [
             TokenAccessorInterface::class,
@@ -25,14 +23,12 @@ class DashboardController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route(
-     *      "/recent_emails/{widget}/{activeTab}/{contentType}",
-     *      name="oro_email_dashboard_recent_emails",
-     *      requirements={"widget"="[\w\-]+", "activeTab"="inbox|sent|new", "contentType"="full|tab"},
-     *      defaults={"activeTab" = "inbox", "contentType" = "full"}
-     * )
-     */
+    #[Route(
+        path: '/recent_emails/{widget}/{activeTab}/{contentType}',
+        name: 'oro_email_dashboard_recent_emails',
+        requirements: ['widget' => '[\w\-]+', 'activeTab' => 'inbox|sent|new', 'contentType' => 'full|tab'],
+        defaults: ['activeTab' => 'inbox', 'contentType' => 'full']
+    )]
     public function recentEmailsAction($widget, $activeTab, $contentType)
     {
         $loggedUser = $this->getUser();
@@ -49,11 +45,11 @@ class DashboardController extends AbstractController
         if ($contentType === 'tab') {
             return $activeTabContent;
         } else {
-            $currentOrganization = $this->get(TokenAccessorInterface::class)->getOrganization();
+            $currentOrganization = $this->container->get(TokenAccessorInterface::class)->getOrganization();
 
             $unreadMailCount = 0;
             if ($this->isGranted('oro_email_email_user_view')) {
-                $unreadMailCount = $this
+                $unreadMailCount = $this->container
                     ->get(EmailNotificationManager::class)
                     ->getCountNewEmails($loggedUser, $currentOrganization);
             }
@@ -65,7 +61,7 @@ class DashboardController extends AbstractController
                     'activeTabContent' => $activeTabContent,
                     'unreadMailCount'  => $unreadMailCount,
                 ],
-                $this->get(WidgetConfigs::class)->getWidgetAttributesForTwig($widget)
+                $this->container->get(WidgetConfigs::class)->getWidgetAttributesForTwig($widget)
             );
 
             return $this->render(

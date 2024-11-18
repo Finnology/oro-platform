@@ -1,3 +1,4 @@
+@regression
 @ticket-BAP-11576
 @ticket-BAP-21323
 
@@ -91,3 +92,14 @@ Feature: User Login Attempts
       | Success | Source  | Username   | User     |
       | No      | Default | wrong_user |          |
       | Yes     | Default | admin      | John Doe |
+
+  Scenario: Check users attempts grid "id" filter
+    When I filter id as Contains "-"
+    Then there are 2 records in grid
+    Then I should see following grid:
+      | Success | Source  | Username   | User     |
+      | No      | Default | wrong_user |          |
+      | Yes     | Default | admin      | John Doe |
+    When I reset id filter
+    When I filter id as Contains "="
+    Then there are 0 records in grid

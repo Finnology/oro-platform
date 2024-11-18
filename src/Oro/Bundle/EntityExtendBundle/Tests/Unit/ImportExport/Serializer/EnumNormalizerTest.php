@@ -3,23 +3,27 @@
 namespace Oro\Bundle\EntityExtendBundle\Tests\Unit\ImportExport\Serializer;
 
 use Oro\Bundle\EntityBundle\Helper\FieldHelper;
-use Oro\Bundle\EntityExtendBundle\Entity\AbstractEnumValue;
+use Oro\Bundle\EntityExtendBundle\Entity\EnumOptionInterface;
 use Oro\Bundle\EntityExtendBundle\ImportExport\Serializer\EnumNormalizer;
+use Oro\Bundle\EntityExtendBundle\Provider\EnumOptionsProvider;
 use Oro\Bundle\EntityExtendBundle\Tests\Unit\Fixtures\TestEnumValue;
+use Oro\Bundle\EntityExtendBundle\Tools\ExtendHelper;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 
-class EnumNormalizerTest extends \PHPUnit\Framework\TestCase
+class EnumNormalizerTest extends TestCase
 {
-    /** @var FieldHelper|\PHPUnit\Framework\MockObject\MockObject */
-    private $fieldHelper;
+    private FieldHelper|MockObject $fieldHelper;
+    private EnumOptionsProvider|MockObject $enumOptionsProvider;
+    private EnumNormalizer $normalizer;
 
-    /** @var EnumNormalizer */
-    private $normalizer;
-
+    #[\Override]
     protected function setUp(): void
     {
         $this->fieldHelper = $this->createMock(FieldHelper::class);
+        $this->enumOptionsProvider = $this->createMock(EnumOptionsProvider::class);
 
-        $this->normalizer = new EnumNormalizer($this->fieldHelper);
+        $this->normalizer = new EnumNormalizer($this->fieldHelper, $this->enumOptionsProvider);
     }
 
     /**
@@ -38,7 +42,7 @@ class EnumNormalizerTest extends \PHPUnit\Framework\TestCase
             [true, false],
             [[], false],
             [new \stdClass(), false],
-            [new TestEnumValue(uniqid(), uniqid()), true]
+            [new TestEnumValue('test_enum_code', 'Test', uniqid(), 1), true]
         ];
     }
 
@@ -60,28 +64,30 @@ class EnumNormalizerTest extends \PHPUnit\Framework\TestCase
             [true, false],
             [[], false],
             [new \stdClass(), false],
-            [new TestEnumValue(uniqid(), uniqid()), true]
+            [new TestEnumValue('test_enum_code', 'Test', uniqid(), 1), true]
         ];
     }
 
     /**
      * @dataProvider normalizeDataProvider
      */
-    public function testNormalize(mixed $value, ?array $expected, array $context = [], string $identityField = 'name')
+    public function testNormalize(mixed $value, ?array $expected, array $context = [], string $extendScope = 'System')
     {
         $type = is_object($value) ? get_class($value) : gettype($value);
 
         $this->fieldHelper->expects($this->any())
-            ->method('getConfigValue')
-            ->with($type, 'name', 'identity')
-            ->willReturn($identityField === 'name');
+            ->method('getExtendConfigOwner')
+            ->with('entityName', 'fieldName')
+            ->willReturn($extendScope);
 
         $this->assertEquals($expected, $this->normalizer->normalize($value, $type, $context));
     }
 
     public function normalizeDataProvider(): array
     {
-        $id = uniqid();
+        $enumCode = 'test_enum_code';
+        $internalId = 'internalId';
+        $id = ExtendHelper::buildEnumOptionId($enumCode, $internalId);
 
         return [
             [null, null],
@@ -89,37 +95,79 @@ class EnumNormalizerTest extends \PHPUnit\Framework\TestCase
             [true, null],
             [[], null],
             [new \stdClass(), null],
-            [new TestEnumValue($id, 'name'), ['id' => $id, 'name' => 'name', 'priority' => 0, 'is_default' => false]],
             [
-                new TestEnumValue($id, 'name', 100, true),
-                ['id' => $id, 'name' => 'name', 'priority' => 100, 'is_default' => true]
+                new TestEnumValue($enumCode, 'name', $internalId),
+                [
+                    'id' => $id,
+                    'enumCode' => $enumCode,
+                    'name' => 'name',
+                    'internalId' => $internalId,
+                    'priority' => 0,
+                    'is_default' => false
+                ]
             ],
             [
-                new TestEnumValue($id, 'name', 100, true),
-                ['id' => $id, 'name' => 'name', 'priority' => 100, 'is_default' => true],
+                new TestEnumValue($enumCode, 'name', $internalId, 100, true),
+                [
+                    'id' => $id,
+                    'enumCode' => $enumCode,
+                    'name' => 'name',
+                    'internalId' => $internalId,
+                    'priority' => 100,
+                    'is_default' => true
+                ]
+            ],
+            [
+                new TestEnumValue($enumCode, 'name', $internalId, 100, true),
+                [
+                    'id' => $id,
+                    'enumCode' => $enumCode,
+                    'name' => 'name',
+                    'internalId' => $internalId,
+                    'priority' => 100,
+                    'is_default' => true
+                ],
                 ['mode' => 'full']
             ],
             [
-                new TestEnumValue('0', '0', 100, true),
-                ['id' => '0', 'name' => '0', 'priority' => 100, 'is_default' => true],
+                new TestEnumValue($enumCode, 'test', '0', 100, true),
+                [
+                    'id' => 'test_enum_code.0',
+                    'enumCode' => 'test_enum_code',
+                    'name' => 'test',
+                    'internalId' => '0',
+                    'priority' => 100,
+                    'is_default' => true
+                ],
                 ['mode' => 'full']
             ],
             [
-                new TestEnumValue($id, 'name', 100, true),
+                new TestEnumValue($enumCode, 'name', 'name', 100, true),
                 ['name' => 'name'],
-                ['mode' => 'short']
+                [
+                    'mode' => 'short',
+                    'entityName' => 'entityName',
+                    'fieldName' => 'fieldName'
+                ],
+                'Custom'
             ],
             [
-                new TestEnumValue($id, 'name', 100, true),
-                ['id' => $id],
-                ['mode' => 'short'],
-                'id'
+                new TestEnumValue($enumCode, 'Test', 'name', 100, true),
+                ['id' => 'name'],
+                [
+                    'mode' => 'short',
+                    'entityName' => 'entityName',
+                    'fieldName' => 'fieldName'
+                ],
             ],
             [
-                new TestEnumValue('0', '0', 100, true),
+                new TestEnumValue($enumCode, 'Test', '0', 100, true),
                 ['id' => '0'],
-                ['mode' => 'short'],
-                'id'
+                [
+                    'mode' => 'short',
+                    'entityName' => 'entityName',
+                    'fieldName' => 'fieldName'
+                ],
             ],
         ];
     }
@@ -127,30 +175,75 @@ class EnumNormalizerTest extends \PHPUnit\Framework\TestCase
     /**
      * @dataProvider denormalizeDataProvider
      */
-    public function testDenormalize(array $data, AbstractEnumValue $expected)
+    public function testDenormalize(array $data, EnumOptionInterface $expected): void
     {
         $class = get_class($expected);
+        $this->enumOptionsProvider->expects(self::once())
+            ->method('getEnumChoicesByCode')
+            ->with($class)
+            ->willReturn(['Option 1' => 'option_1', 'Option 2' => 'option_2']);
 
         $this->assertEquals($expected, $this->normalizer->denormalize($data, $class));
     }
 
     public function denormalizeDataProvider(): array
     {
-        $id = uniqid();
-
         return [
-            [['id' => $id, 'name' => 'name', 'priority' => 0, 'default' => false], new TestEnumValue($id, 'name')],
             [
-                ['id' => $id, 'name' => 'name', 'priority' => 100, 'default' => true],
-                new TestEnumValue($id, 'name', 100, true)
+                [
+                    'enumCode' => 'test_enum_code',
+                    'name' => 'Option 1',
+                    'internalId' => 'test1',
+                    'priority' => 0,
+                    'default' => false
+                ],
+                new TestEnumValue('test_enum_code', 'Option 1', 'test1')
             ],
             [
-                ['id' => $id, 'name' => 'name', 'priority' => 100, 'default' => true],
-                new TestEnumValue($id, 'name', 100, true)
+                [
+                    'enumCode' => 'test_enum_code',
+                    'name' => 'Option 1',
+                    'internalId' => 'test1',
+                    'priority' => 100,
+                    'default' => true
+                ],
+                new TestEnumValue('test_enum_code', 'Option 1', 'test1', 100, true)
+            ],
+            [
+                [
+                    'enumCode' => 'test_enum_code',
+                    'name' => 'Option 1',
+                    'internalId' => 'test1',
+                    'priority' => 100,
+                    'default' => true
+                ],
+                new TestEnumValue('test_enum_code', 'Option 1', 'test1', 100, true)
             ],
             'Check that id with "0" value is handled correctly' => [
-                ['id' => '0', 'name' => 'name', 'priority' => 100, 'default' => true],
-                new TestEnumValue('0', 'name', 100, true)
+                [
+                    'enumCode' => 'test_enum_code',
+                    'name' => 'Option 1',
+                    'internalId' => '0',
+                    'priority' => 100,
+                    'default' => true
+                ],
+                new TestEnumValue('test_enum_code', 'Option 1', '0', 100, true)
+            ],
+            'Check that a translated value could be transformed back to key value' => [
+                ['enumCode' => '', 'name' => 'Option 1', 'internalId' => '', 'priority' => 100, 'default' => true],
+                new TestEnumValue('', 'Option 1', '', 100, true)
+            ],
+            'Check with an unknown enum value' => [
+                ['enumCode' => 'test_enum_code',
+                    'name' => 'Option 3',
+                    'internalId' => '',
+                    'priority' => 100,
+                    'default' => true],
+                new TestEnumValue('test_enum_code', 'Option 3', '', 100, true)
+            ],
+            'Check without name value' => [
+                ['enumCode' => 'test_enum_code', 'internalId' => 'test1', 'priority' => 100, 'default' => true],
+                new TestEnumValue('test_enum_code', '', 'test1', 100, true)
             ],
         ];
     }

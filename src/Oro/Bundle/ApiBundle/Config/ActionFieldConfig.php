@@ -90,6 +90,7 @@ class ActionFieldConfig implements FieldConfigInterface
     /**
      * Indicates whether the exclusion flag is set explicitly.
      */
+    #[\Override]
     public function hasExcluded(): bool
     {
         return null !== $this->exclude;
@@ -98,6 +99,7 @@ class ActionFieldConfig implements FieldConfigInterface
     /**
      * Indicates whether the exclusion flag.
      */
+    #[\Override]
     public function isExcluded(): bool
     {
         return $this->exclude ?? false;
@@ -108,6 +110,7 @@ class ActionFieldConfig implements FieldConfigInterface
      *
      * @param bool|null $exclude The exclude flag or NULL to remove this option
      */
+    #[\Override]
     public function setExcluded(?bool $exclude = true): void
     {
         $this->exclude = $exclude;
@@ -191,6 +194,7 @@ class ActionFieldConfig implements FieldConfigInterface
     /**
      * Indicates whether the path of the field value exists.
      */
+    #[\Override]
     public function hasPropertyPath(): bool
     {
         return $this->has(ConfigUtil::PROPERTY_PATH);
@@ -199,6 +203,7 @@ class ActionFieldConfig implements FieldConfigInterface
     /**
      * Gets the path of the field value.
      */
+    #[\Override]
     public function getPropertyPath(string $defaultValue = null): ?string
     {
         if (empty($this->items[ConfigUtil::PROPERTY_PATH])) {
@@ -211,6 +216,7 @@ class ActionFieldConfig implements FieldConfigInterface
     /**
      * Sets the path of the field value.
      */
+    #[\Override]
     public function setPropertyPath(string $propertyPath = null): void
     {
         if ($propertyPath) {
@@ -249,6 +255,18 @@ class ActionFieldConfig implements FieldConfigInterface
     }
 
     /**
+     * Gets a form option.
+     */
+    public function getFormOption(string $name, mixed $defaultValue = null): mixed
+    {
+        $formOptions = $this->get(ConfigUtil::FORM_OPTIONS);
+
+        return null !== $formOptions && \array_key_exists($name, $formOptions)
+            ? $formOptions[$name]
+            : $defaultValue;
+    }
+
+    /**
      * Sets the form options.
      */
     public function setFormOptions(?array $formOptions): void
@@ -265,9 +283,9 @@ class ActionFieldConfig implements FieldConfigInterface
      */
     public function setFormOption(string $name, mixed $value): void
     {
-        $formOptions = $this->getFormOptions();
+        $formOptions = $this->items[ConfigUtil::FORM_OPTIONS] ?? [];
         $formOptions[$name] = $value;
-        $this->setFormOptions($formOptions);
+        $this->items[ConfigUtil::FORM_OPTIONS] = $formOptions;
     }
 
     /**
@@ -277,7 +295,7 @@ class ActionFieldConfig implements FieldConfigInterface
      */
     public function getFormConstraints(): ?array
     {
-        return FormConstraintUtil::getFormConstraints($this->getFormOptions());
+        return FormConstraintUtil::getFormConstraints($this->get(ConfigUtil::FORM_OPTIONS));
     }
 
     /**
@@ -285,7 +303,10 @@ class ActionFieldConfig implements FieldConfigInterface
      */
     public function addFormConstraint(Constraint $constraint): void
     {
-        $this->setFormOptions(FormConstraintUtil::addFormConstraint($this->getFormOptions(), $constraint));
+        $this->items[ConfigUtil::FORM_OPTIONS] = FormConstraintUtil::addFormConstraint(
+            $this->get(ConfigUtil::FORM_OPTIONS),
+            $constraint
+        );
     }
 
     /**
@@ -293,7 +314,9 @@ class ActionFieldConfig implements FieldConfigInterface
      */
     public function removeFormConstraint(string $constraintClass): void
     {
-        $this->setFormOptions(FormConstraintUtil::removeFormConstraint($this->getFormOptions(), $constraintClass));
+        $this->setFormOptions(
+            FormConstraintUtil::removeFormConstraint($this->get(ConfigUtil::FORM_OPTIONS), $constraintClass)
+        );
     }
 
     /**

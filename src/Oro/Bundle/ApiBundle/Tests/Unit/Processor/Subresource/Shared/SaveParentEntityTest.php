@@ -2,7 +2,6 @@
 
 namespace Oro\Bundle\ApiBundle\Tests\Unit\Processor\Subresource\Shared;
 
-use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Oro\Bundle\ApiBundle\Processor\CustomizeFormData\FlushDataHandlerContext;
 use Oro\Bundle\ApiBundle\Processor\CustomizeFormData\FlushDataHandlerInterface;
@@ -21,6 +20,7 @@ class SaveParentEntityTest extends ChangeRelationshipProcessorTestCase
     /** @var SaveParentEntity */
     private $processor;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -90,7 +90,7 @@ class SaveParentEntityTest extends ChangeRelationshipProcessorTestCase
     {
         $entity = new \stdClass();
 
-        $em = $this->createMock(EntityManager::class);
+        $em = $this->createMock(EntityManagerInterface::class);
 
         $this->doctrineHelper->expects(self::once())
             ->method('getEntityManager')

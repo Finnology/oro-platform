@@ -4,26 +4,20 @@ namespace Oro\Bundle\EntityBundle\Provider;
 
 use Doctrine\Common\Util\ClassUtils;
 use Doctrine\Persistence\ManagerRegistry;
-use Oro\Bundle\EntityBundle\EntityConfig\GroupingScope;
 use Oro\Bundle\EntityConfigBundle\Config\ConfigManager;
 use Oro\Component\DoctrineUtils\ORM\DqlUtil;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 
 /**
- * The name provider for dictionaries.
+ * Provides a text representation of dictionary entities.
  */
 class DictionaryEntityNameProvider implements EntityNameProviderInterface
 {
     private const DEFAULT_REPRESENTATION_FIELD = 'label';
 
-    /** @var ConfigManager */
-    private $configManager;
-
-    /** @var ManagerRegistry */
-    private $doctrine;
-
-    /** @var PropertyAccessorInterface */
-    private $propertyAccessor;
+    private ConfigManager $configManager;
+    private ManagerRegistry $doctrine;
+    private PropertyAccessorInterface $propertyAccessor;
 
     public function __construct(
         ConfigManager $configManager,
@@ -35,9 +29,7 @@ class DictionaryEntityNameProvider implements EntityNameProviderInterface
         $this->propertyAccessor = $propertyAccessor;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getName($format, $locale, $entity)
     {
         $fieldNames = $this->getRepresentationFieldNames(ClassUtils::getClass($entity));
@@ -45,7 +37,7 @@ class DictionaryEntityNameProvider implements EntityNameProviderInterface
             return false;
         }
 
-        if (count($fieldNames) > 1) {
+        if (\count($fieldNames) > 1) {
             return implode(' ', \array_map(
                 function ($fieldName) use ($entity) {
                     return $this->propertyAccessor->getValue($entity, $fieldName);
@@ -57,9 +49,7 @@ class DictionaryEntityNameProvider implements EntityNameProviderInterface
         return $this->propertyAccessor->getValue($entity, $fieldNames[0]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getNameDQL($format, $locale, $className, $alias)
     {
         $fieldNames = $this->getRepresentationFieldNames($className);
@@ -67,7 +57,7 @@ class DictionaryEntityNameProvider implements EntityNameProviderInterface
             return false;
         }
 
-        if (count($fieldNames) > 1) {
+        if (\count($fieldNames) > 1) {
             return DqlUtil::buildConcatExpr(\array_map(
                 function ($fieldName) use ($alias) {
                     return sprintf('%s.%s', $alias, $fieldName);
@@ -79,12 +69,7 @@ class DictionaryEntityNameProvider implements EntityNameProviderInterface
         return sprintf('%s.%s', $alias, $fieldNames[0]);
     }
 
-    /**
-     * @param string $className
-     *
-     * @return string[]|null
-     */
-    private function getRepresentationFieldNames($className)
+    private function getRepresentationFieldNames(string $className): ?array
     {
         if (!$this->isDictionary($className)) {
             return null;
@@ -106,12 +91,7 @@ class DictionaryEntityNameProvider implements EntityNameProviderInterface
         return null;
     }
 
-    /**
-     * @param string $className
-     *
-     * @return bool
-     */
-    private function isDictionary($className)
+    private function isDictionary(string $className): bool
     {
         if (!$this->configManager->hasConfig($className)) {
             return false;
@@ -119,16 +99,10 @@ class DictionaryEntityNameProvider implements EntityNameProviderInterface
 
         $groups = $this->configManager->getEntityConfig('grouping', $className)->get('groups');
 
-        return !empty($groups) && in_array(GroupingScope::GROUP_DICTIONARY, $groups, true);
+        return !empty($groups) && \in_array('dictionary', $groups, true);
     }
 
-    /**
-     * @param string $className
-     * @param string $fieldName
-     *
-     * @return bool
-     */
-    private function hasField($className, $fieldName)
+    private function hasField(string $className, string $fieldName): bool
     {
         $manager = $this->doctrine->getManagerForClass($className);
         if (null === $manager) {

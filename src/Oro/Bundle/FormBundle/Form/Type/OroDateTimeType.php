@@ -12,9 +12,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
  */
 class OroDateTimeType extends OroDateType
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         parent::configureOptions($resolver);
@@ -22,18 +20,14 @@ class OroDateTimeType extends OroDateType
         $resolver->setDefaults(['format' => DateTimeExtension::HTML5_FORMAT_WITH_TIMEZONE, 'html5' => false]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getParent()
+    #[\Override]
+    public function getParent(): ?string
     {
         return DateTimeType::class;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return 'oro_datetime';
     }

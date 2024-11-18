@@ -30,17 +30,13 @@ class CookieTokenStorage implements TokenStorageInterface
         $this->requestStack = $requestStack;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getToken($tokenId)
+    #[\Override]
+    public function getToken(string $tokenId): string
     {
         return $this->getCookieValue($tokenId);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function setToken($tokenId, $token)
     {
         $request = $this->getRequest();
@@ -54,18 +50,16 @@ class CookieTokenStorage implements TokenStorageInterface
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function removeToken($tokenId)
+    #[\Override]
+    public function removeToken(string $tokenId): ?string
     {
         $this->setToken($tokenId, '');
+
+        return $tokenId;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function hasToken($tokenId)
+    #[\Override]
+    public function hasToken($tokenId): bool
     {
         return $this->getCookieValue($tokenId) !== '';
     }

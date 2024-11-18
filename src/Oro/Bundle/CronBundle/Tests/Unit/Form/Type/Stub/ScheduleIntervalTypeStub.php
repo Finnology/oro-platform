@@ -10,17 +10,13 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class ScheduleIntervalTypeStub extends AbstractType
 {
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return ScheduleIntervalType::NAME;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setNormalizer('data_class', function (Options $options, $value) {

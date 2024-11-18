@@ -3,6 +3,7 @@
 namespace Oro\Component\Testing\Unit;
 
 use Symfony\Component\Form\FormTypeGuesserInterface;
+use Symfony\Component\Form\FormTypeInterface;
 use Symfony\Component\Form\PreloadedExtension as BasePreloadExtension;
 
 /**
@@ -16,9 +17,6 @@ class PreloadedExtension extends BasePreloadExtension
      */
     private $types = [];
 
-    /**
-     * {@inheritdoc}
-     */
     public function __construct(array $types, array $typeExtensions, FormTypeGuesserInterface $typeGuesser = null)
     {
         foreach ($types as $key => $type) {
@@ -30,10 +28,8 @@ class PreloadedExtension extends BasePreloadExtension
         parent::__construct($types, $typeExtensions, $typeGuesser);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getType($name)
+    #[\Override]
+    public function getType($name): FormTypeInterface
     {
         if (isset($this->types[$name])) {
             return $this->types[$name];
@@ -42,10 +38,8 @@ class PreloadedExtension extends BasePreloadExtension
         return parent::getType($name);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function hasType($name)
+    #[\Override]
+    public function hasType($name): bool
     {
         return isset($this->types[$name]) || parent::hasType($name);
     }

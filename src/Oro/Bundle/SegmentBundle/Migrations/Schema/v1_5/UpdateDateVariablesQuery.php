@@ -2,19 +2,18 @@
 
 namespace Oro\Bundle\SegmentBundle\Migrations\Schema\v1_5;
 
-use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\QueryBuilder;
 use Oro\Bundle\MigrationBundle\Migration\ConnectionAwareInterface;
+use Oro\Bundle\MigrationBundle\Migration\ConnectionAwareTrait;
 use Oro\Bundle\MigrationBundle\Migration\MigrationQuery;
 use Psr\Log\LoggerInterface;
 
 class UpdateDateVariablesQuery implements MigrationQuery, ConnectionAwareInterface
 {
-    const LIMIT = 100;
+    use ConnectionAwareTrait;
 
-    /** @var Connection */
-    protected $connection;
+    const LIMIT = 100;
 
     /** @var string */
     protected $segmentTable;
@@ -27,25 +26,13 @@ class UpdateDateVariablesQuery implements MigrationQuery, ConnectionAwareInterfa
         $this->segmentTable = $segmentTable;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getDescription()
     {
         return 'Fixes month variables to use new format';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function setConnection(Connection $connection)
-    {
-        $this->connection = $connection;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function execute(LoggerInterface $logger)
     {
         $steps = ceil($this->getSegmentCount() / static::LIMIT);
@@ -57,7 +44,7 @@ class UpdateDateVariablesQuery implements MigrationQuery, ConnectionAwareInterfa
             $rows = $segmentQb
                 ->setFirstResult($i * static::LIMIT)
                 ->execute()
-                ->fetchAll(\PDO::FETCH_ASSOC);
+                ->fetchAllAssociative();
 
             foreach ($rows as $row) {
                 $this->processRow($row);
@@ -172,7 +159,7 @@ class UpdateDateVariablesQuery implements MigrationQuery, ConnectionAwareInterfa
         return $this->createSegmentQb()
             ->select('COUNT(1)')
             ->execute()
-            ->fetchColumn();
+            ->fetchOne();
     }
 
     /**

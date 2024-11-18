@@ -11,26 +11,19 @@ class WorkflowTransitionType extends AbstractType
 {
     const NAME = 'oro_workflow_transition';
 
-    /**
-     * {@inheritDoc}
-     */
     public function getName()
     {
         return $this->getBlockPrefix();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return self::NAME;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function getParent()
+    #[\Override]
+    public function getParent(): ?string
     {
         return WorkflowAttributesType::class;
     }
@@ -40,8 +33,8 @@ class WorkflowTransitionType extends AbstractType
      * - "workflow_item" - required, instance of WorkflowItem entity
      * - "transition_name" - required, name of transition
      *
-     * {@inheritdoc}
      */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setRequired(array('workflow_item', 'transition_name'));

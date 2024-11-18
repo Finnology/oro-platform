@@ -8,6 +8,7 @@ use Oro\Bundle\ApiBundle\Tests\Functional\RestJsonApiTestCase;
 
 class MaxResultsForAssociationTest extends RestJsonApiTestCase
 {
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -129,7 +130,6 @@ class MaxResultsForAssociationTest extends RestJsonApiTestCase
         self::assertCount(105, $data['data']['relationships']['staff']['data']);
         self::assertCount(105, $data['included']);
     }
-
 
     public function testAssociationCustomMaxResultsLimitAndOrderBy()
     {

@@ -6,17 +6,18 @@ use Oro\Bundle\ActivityListBundle\Entity\Manager\ActivityListManager;
 use Oro\Bundle\ActivityListBundle\Tests\Functional\DataFixtures\LoadEmailActivityData;
 use Oro\Bundle\SecurityBundle\Authentication\Token\UsernamePasswordOrganizationToken;
 use Oro\Bundle\TestFrameworkBundle\Test\WebTestCase;
-use Oro\Bundle\TestFrameworkBundle\Tests\Functional\DataFixtures\LoadOrganization;
+use Oro\Bundle\TestFrameworkBundle\Tests\Functional\DataFixtures\LoadUser;
 use Oro\Bundle\UserBundle\Entity\User;
 
 class ActivityListManagerTest extends WebTestCase
 {
     private ActivityListManager $manager;
 
+    #[\Override]
     protected function setUp(): void
     {
-        $this->initClient([]);
-        $this->loadFixtures([LoadOrganization::class, LoadEmailActivityData::class]);
+        $this->initClient();
+        $this->loadFixtures([LoadEmailActivityData::class, LoadUser::class]);
         $this->manager = self::getContainer()->get(ActivityListManager::class);
     }
 
@@ -25,19 +26,14 @@ class ActivityListManagerTest extends WebTestCase
      */
     public function testGetEntityViewModelEmailWithNoThread(int $expectedCommentCount, string $activityReference)
     {
-        $organization = $this->getReference('organization');
-        $user = self::getContainer()->get('doctrine')
-            ->getRepository(User::class)
-            ->findOneBy(['username' => 'admin']);
-        $adminToken = new UsernamePasswordOrganizationToken(
+        /** @var User $user */
+        $user = $this->getReference(LoadUser::USER);
+        self::getContainer()->get('security.token_storage')->setToken(new UsernamePasswordOrganizationToken(
             $user,
-            'admin',
             'key',
-            $organization,
+            $user->getOrganization(),
             $user->getUserRoles()
-        );
-
-        self::getContainer()->get('security.token_storage')->setToken($adminToken);
+        ));
 
         $result = $this->manager->getEntityViewModel($this->getReference($activityReference));
 

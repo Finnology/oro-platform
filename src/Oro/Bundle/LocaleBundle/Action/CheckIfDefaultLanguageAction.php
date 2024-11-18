@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\LocaleBundle\Action;
@@ -33,6 +34,7 @@ class CheckIfDefaultLanguageAction extends AbstractLanguageResultAction
         $this->configManager = $configManager;
     }
 
+    #[\Override]
     protected function executeAction($context): void
     {
         $result = null;

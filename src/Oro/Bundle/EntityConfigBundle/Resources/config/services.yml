@@ -51,12 +51,12 @@ services:
     oro_entity_config.metadata.annotation_metadata_factory:
         class: Oro\Bundle\EntityConfigBundle\Metadata\Factory\MetadataFactory
         arguments:
-            - '@oro_entity_config.metadata.annotation_driver'
+            - '@oro_entity_config.metadata.attribute_driver'
 
-    oro_entity_config.metadata.annotation_driver:
-        class: Oro\Bundle\EntityConfigBundle\Metadata\Driver\AnnotationDriver
+    oro_entity_config.metadata.attribute_driver:
+        class: Oro\Bundle\EntityConfigBundle\Metadata\Driver\AttributeDriver
         arguments:
-            - '@annotation_reader'
+            - '@oro_platform.attribute_reader'
 
     oro_entity_config.config_model_lock_object:
         public: false
@@ -108,11 +108,13 @@ services:
             - '@.inner'
             - '@oro_cache.oro_data_cache_manager'
 
-    oro_entity_config.config_loader:
-        class: Oro\Bundle\EntityConfigBundle\Tools\ConfigLoader
+    Oro\Bundle\EntityConfigBundle\Tools\ConfigLoader:
         arguments:
-            - '@oro_entity_config.config_manager'
             - '@oro_entity_config.entity_manager_bag'
+            - '@oro_entity_config.metadata.annotation_metadata_factory'
+            - '@oro_entity_config.configuration_handler'
+            - '@oro_entity_config.provider_bag'
+            - '@oro_entity_config.config_cache_impl'
 
     oro_entity_config.cache:
         public: false
@@ -224,11 +226,9 @@ services:
         class: Oro\Bundle\EntityConfigBundle\Form\Handler\ConfigHelperHandler
         arguments:
             - '@form.factory'
-            - '@session'
+            - '@request_stack'
             - '@oro_ui.router'
             - '@oro_entity_config.config.config_helper'
-            - '@translator'
-            - '@router'
 
     Oro\Bundle\EntityConfigBundle\Manager\AttributeManager:
         alias: oro_entity_config.manager.attribute_manager
@@ -295,7 +295,7 @@ services:
             - '@oro_entity_config.config_manager'
             - '@oro_entity_extend.extend.field_name_validation_helper'
             - '@oro_entity_config.config.config_helper'
-            - '@session'
+            - '@request_stack'
             - '@doctrine'
 
     Oro\Bundle\EntityConfigBundle\Form\Handler\RemoveRestoreConfigFieldHandler:
@@ -325,6 +325,8 @@ services:
         abstract: true
         arguments:
             - '@oro_entity_config.manager.attribute_manager'
+            - '@oro_security.form.field_acl_helper'
+
 
     oro_entity_config.voter.attribute_family_voter:
         class: Oro\Bundle\EntityConfigBundle\Voter\AttributeFamilyVoter
@@ -341,6 +343,7 @@ services:
         class: Oro\Bundle\EntityConfigBundle\Form\Extension\AttributeFamilyExtension
         arguments:
             - '@oro_entity_config.provider.attribute'
+            - '@oro_entity.entity_name_resolver'
         tags:
             - { name: form.type_extension, alias: form, extended_type: Symfony\Component\Form\Extension\Core\Type\FormType }
 
@@ -465,7 +468,6 @@ services:
         arguments:
             - '@oro_message_queue.message_producer'
             - '@oro_entity_config.provider.deleted_attribute'
-            - '@Doctrine\Inflector\Inflector'
         calls:
             - [setTopic, [!php/const Oro\Bundle\EntityConfigBundle\Async\Topic\AttributeRemovedFromFamilyTopic::NAME]]
         tags:
@@ -486,6 +488,11 @@ services:
         arguments:
             - '@oro_entity_config.config_model_manager'
             - '@oro_entity_config.provider.attribute_value'
+
+    oro_entity_config.provider.attribute_family_entity_name:
+        class: Oro\Bundle\EntityConfigBundle\Provider\AttributeFamilyEntityNameProvider
+        tags:
+            - { name: oro_entity.name_provider, priority: 100 }
 
     oro_entity_config.provider.attribute_value:
         class: Oro\Bundle\EntityConfigBundle\Provider\AttributeValueProvider
@@ -572,6 +579,7 @@ services:
         class: Oro\Bundle\EntityConfigBundle\EventListener\InvalidateTranslationCacheListener
         arguments:
             - '@doctrine'
+            - '@oro_security.acl_query.cache_provider'
         tags:
             - { name: kernel.event_listener, event: oro_translation.invalidate_dynamic_translation_cache, method: onInvalidateDynamicTranslationCache }
 
@@ -640,3 +648,20 @@ services:
             - '@oro_entity_config.config_manager'
         tags:
             - { name: oro_entity_extend.warmer, priority: -1000 }
+
+    Oro\Bundle\EntityConfigBundle\EntityConfig\EntityManagementConfig:
+        tags:
+            - oro_entity_config.validation.entity_config
+
+    oro_entity_config.voter.entity_management_config_voter:
+        class: Oro\Bundle\EntityConfigBundle\Voter\EntityManagementConfigVoter
+        tags:
+            - { name: security.voter }
+
+    oro_entity_config.datagrid.entity_management_grid_action_extension:
+        class: Oro\Bundle\EntityConfigBundle\Datagrid\EntityManagementGridActionExtension
+        arguments:
+            - '@oro_security.authorization_checker'
+            - '@doctrine'
+        tags:
+            - { name: oro_datagrid.extension }

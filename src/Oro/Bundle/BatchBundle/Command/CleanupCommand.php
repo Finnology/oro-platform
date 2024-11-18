@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\BatchBundle\Command;
@@ -41,17 +42,13 @@ class CleanupCommand extends Command implements
         parent::__construct();
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getDefaultDefinition(): string
     {
         return '0 1 * * *';
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function isActive(): bool
     {
         $date = new \DateTime('now', new \DateTimeZone('UTC'));
@@ -66,6 +63,7 @@ class CleanupCommand extends Command implements
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     protected function configure()
     {
         $this
@@ -96,7 +94,8 @@ HELP
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    #[\Override]
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $interval = $input->getOption('interval');
 
@@ -108,7 +107,7 @@ HELP
         if (!count($jobInstanceIterator)) {
             $output->writeln('<info>There are no jobs eligible for clean up</info>');
 
-            return 1;
+            return Command::FAILURE;
         }
         $output->writeln(sprintf('<comment>Batch jobs will be deleted:</comment> %d', count($jobInstanceIterator)));
 
@@ -116,7 +115,7 @@ HELP
 
         $output->writeln('<info>Batch job history cleanup complete</info>');
 
-        return 0;
+        return Command::SUCCESS;
     }
 
     /**

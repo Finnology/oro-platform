@@ -23,17 +23,12 @@ abstract class AbstractLoadMultipleUserData extends AbstractFixture implements C
     const ACL_PERMISSION = 'permission';
     const ACL_LEVEL = 'level';
 
-    /**
-     * {@inheritdoc}
-     */
     public function getDependencies()
     {
         return [LoadAdminUserData::class];
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function load(ObjectManager $manager)
     {
         $this->loadRoles($manager);
@@ -105,7 +100,7 @@ abstract class AbstractLoadMultipleUserData extends AbstractFixture implements C
 
             $userManager->updateUser($user);
 
-            $this->setReference($user->getUsername(), $user);
+            $this->setReference($user->getUserIdentifier(), $user);
         }
     }
 

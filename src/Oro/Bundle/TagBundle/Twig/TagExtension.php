@@ -40,9 +40,7 @@ class TagExtension extends AbstractExtension implements ServiceSubscriberInterfa
         return $this->container->get('oro_tag.helper.taggable_helper');
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getFunctions()
     {
         return [
@@ -73,10 +71,8 @@ class TagExtension extends AbstractExtension implements ServiceSubscriberInterfa
         return $this->getTaggableHelper()->isTaggable($entity);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedServices()
+    #[\Override]
+    public static function getSubscribedServices(): array
     {
         return [
             'oro_tag.tag.manager' => TagManager::class,

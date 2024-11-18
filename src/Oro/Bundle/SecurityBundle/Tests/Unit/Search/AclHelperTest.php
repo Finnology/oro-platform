@@ -35,11 +35,10 @@ class AclHelperTest extends \PHPUnit\Framework\TestCase
     /** @var OwnershipMetadataInterface|\PHPUnit\Framework\MockObject\MockObject */
     private $ownershipMetadata;
 
-    /** @var SearchAclHelperConditionProvider|\PHPUnit\Framework\MockObject\MockObject  */
+    /** @var SearchAclHelperConditionProvider|\PHPUnit\Framework\MockObject\MockObject */
     private $searchAclHelperConditionProvider;
 
-    /** @var array */
-    private $mappings = [
+    private array $mappings = [
         'Oro\Test\Entity\Organization'      => [
             'alias'        => 'testOrganization',
             'aclCondition' => [null, null, 'organization', 1, false] // no access
@@ -89,6 +88,7 @@ class AclHelperTest extends \PHPUnit\Framework\TestCase
         ],
     ];
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->mappingProvider = $this->createMock(SearchMappingProvider::class);
@@ -202,7 +202,6 @@ class AclHelperTest extends \PHPUnit\Framework\TestCase
         $query = new Query();
         $query->from(['testProduct', 'businessUnit']);
         $query->getCriteria()->andWhere(new Comparison('all_text', Comparison::EQ, new Value('some_value')));
-
 
         $this->searchAclHelperConditionProvider->expects(self::exactly(2))
             ->method('isApplicable')

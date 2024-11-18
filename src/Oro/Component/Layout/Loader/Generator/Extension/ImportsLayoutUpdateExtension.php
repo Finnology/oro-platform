@@ -15,9 +15,7 @@ class ImportsLayoutUpdateExtension implements ConfigLayoutUpdateGeneratorExtensi
 {
     const NODE_IMPORTS = 'imports';
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function prepare(GeneratorData $data, VisitorCollection $visitorCollection)
     {
         $source = $data->getSource();
@@ -29,7 +27,7 @@ class ImportsLayoutUpdateExtension implements ConfigLayoutUpdateGeneratorExtensi
 
         // imported layout update
         $delimiter = PathProviderInterface::DELIMITER;
-        if (str_contains($data->getFilename(), $delimiter . ImportVisitor::IMPORT_FOLDER . $delimiter)) {
+        if (str_contains($data->getFilename() ?? '', $delimiter . ImportVisitor::IMPORT_FOLDER . $delimiter)) {
             $visitorCollection->append(new ImportLayoutUpdateVisitor());
         }
     }

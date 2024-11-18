@@ -15,24 +15,29 @@ class AddScopeFilter implements ProcessorInterface
 {
     public const FILTER_KEY = 'scope';
 
-    /**
-     * {@inheritdoc}
-     */
+    private array $scopes;
+
+    public function __construct(array $scopes)
+    {
+        $this->scopes = $scopes;
+    }
+
+    #[\Override]
     public function process(ContextInterface $context): void
     {
         /** @var Context $context */
 
-        $filters = $context->getFilters();
-        if ($filters->has(self::FILTER_KEY)) {
+        $filterCollection = $context->getFilters();
+        if ($filterCollection->has(self::FILTER_KEY)) {
             // the filter already exists
             return;
         }
 
-        $filters->add(
+        $filterCollection->add(
             self::FILTER_KEY,
             new StandaloneFilterWithDefaultValue(
                 DataType::STRING,
-                'Configuration Scope',
+                sprintf('The configuration scope. Possible values: %s.', implode(', ', $this->scopes)),
                 'user'
             )
         );

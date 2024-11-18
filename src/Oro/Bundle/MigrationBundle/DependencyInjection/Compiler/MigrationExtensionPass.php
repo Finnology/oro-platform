@@ -14,19 +14,10 @@ class MigrationExtensionPass implements CompilerPassInterface
 {
     use TaggedServiceTrait;
 
-    private const MANAGER_SERVICE_KEY = 'oro_migration.migrations.extension_manager';
-    private const TAG                 = 'oro_migration.extension';
-
-    /**
-     * {@inheritdoc}
-     */
-    public function process(ContainerBuilder $container)
+    #[\Override]
+    public function process(ContainerBuilder $container): void
     {
-        if (!$container->hasDefinition(self::MANAGER_SERVICE_KEY)) {
-            return;
-        }
-
-        $storageDefinition = $container->getDefinition(self::MANAGER_SERVICE_KEY);
+        $storageDefinition = $container->getDefinition('oro_migration.migrations.extension_manager');
         $extensions = $this->loadExtensions($container);
         foreach ($extensions as $extensionName => $extensionServiceId) {
             $storageDefinition->addMethodCall(
@@ -38,13 +29,14 @@ class MigrationExtensionPass implements CompilerPassInterface
 
     private function loadExtensions(ContainerBuilder $container): array
     {
+        $tag = 'oro_migration.extension';
         $extensions = [];
-        $taggedServices = $container->findTaggedServiceIds(self::TAG);
+        $taggedServices = $container->findTaggedServiceIds($tag);
         foreach ($taggedServices as $id => $tags) {
             $container->getDefinition($id)->setPublic(false);
             $attributes = $tags[0];
             $priority = $this->getPriorityAttribute($attributes);
-            $extensionName = $this->getRequiredAttribute($attributes, 'extension_name', $id, self::TAG);
+            $extensionName = $this->getRequiredAttribute($attributes, 'extension_name', $id, $tag);
             if (!isset($extensions[$extensionName])) {
                 $extensions[$extensionName] = [];
             }
@@ -53,7 +45,7 @@ class MigrationExtensionPass implements CompilerPassInterface
 
         $result = [];
         foreach ($extensions as $name => $extension) {
-            if (count($extension) > 1) {
+            if (\count($extension) > 1) {
                 krsort($extension);
             }
             $result[$name] = array_pop($extension);

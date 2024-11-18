@@ -8,16 +8,14 @@ use Psr\Log\LoggerInterface;
 
 class ReplaceDateTimeFilterPartQuery extends ParametrizedSqlMigrationQuery
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function processQueries(LoggerInterface $logger, $dryRun = false)
     {
         $segments = $this->connection->createQueryBuilder()
             ->select('s.id, s.definition')
             ->from('oro_segment', 's')
             ->execute()
-            ->fetchAll(\PDO::FETCH_ASSOC);
+            ->fetchAllAssociative();
         $segmentsToUpdate = [];
         foreach ($segments as $segment) {
             $definition = $segment['definition'];

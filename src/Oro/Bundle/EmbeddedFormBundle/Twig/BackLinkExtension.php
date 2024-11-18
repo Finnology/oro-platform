@@ -42,6 +42,7 @@ class BackLinkExtension extends AbstractExtension implements ServiceSubscriberIn
     /**
      * @return TwigFilter[]
      */
+    #[\Override]
     public function getFilters()
     {
         return [
@@ -87,10 +88,8 @@ class BackLinkExtension extends AbstractExtension implements ServiceSubscriberIn
         return sprintf('<a href="%s">%s</a>', $url, $linkText);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedServices()
+    #[\Override]
+    public static function getSubscribedServices(): array
     {
         return [
             RouterInterface::class,

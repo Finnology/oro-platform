@@ -2,22 +2,25 @@
 
 namespace Oro\Bundle\CommentBundle\Tests\Unit\EventListener;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Event\PreUpdateEventArgs;
 use Doctrine\ORM\UnitOfWork;
 use Oro\Bundle\CommentBundle\Entity\Comment;
 use Oro\Bundle\CommentBundle\EventListener\CommentLifecycleListener;
 use Oro\Bundle\SecurityBundle\Authentication\TokenAccessorInterface;
 use Oro\Bundle\UserBundle\Entity\User;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 
-class CommentLifecycleListenerTest extends \PHPUnit\Framework\TestCase
+class CommentLifecycleListenerTest extends TestCase
 {
     /** @var CommentLifecycleListener */
     private $subscriber;
 
-    /** @var TokenAccessorInterface|\PHPUnit\Framework\MockObject\MockObject */
+    /** @var TokenAccessorInterface|MockObject */
     private $tokenAccessor;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->tokenAccessor = $this->createMock(TokenAccessorInterface::class);
@@ -97,16 +100,16 @@ class CommentLifecycleListenerTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * @return EntityManager|\PHPUnit\Framework\MockObject\MockObject
+     * @return EntityManagerInterface|MockObject
      */
     private function getEntityManagerMock(bool $reloadUser = false, User $newUser = null)
     {
-        $result = $this->createMock(EntityManager::class);
+        $result = $this->createMock(EntityManagerInterface::class);
 
         if ($reloadUser) {
             $result->expects($this->once())
                 ->method('find')
-                ->with('OroUserBundle:User')
+                ->with(User::class)
                 ->willReturn($newUser);
         } else {
             $result->expects($this->never())

@@ -32,6 +32,7 @@ class AttributeConfigExtensionTest extends TypeTestCase
     /** @var AttributeConfigExtension */
     private $extension;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -228,9 +229,6 @@ class AttributeConfigExtensionTest extends TypeTestCase
     public function testOnPostSubmit(bool $isSerialized)
     {
         $form = $this->createMock(FormInterface::class);
-        $form->expects($this->once())
-            ->method('isValid')
-            ->willReturn(true);
 
         $formConfig = $this->createMock(FormConfigInterface::class);
         $formConfig->expects($this->once())
@@ -260,10 +258,10 @@ class AttributeConfigExtensionTest extends TypeTestCase
             ->method('addListener');
         $this->extension->buildForm($this->builder, ['config_model' => $fieldConfigModel]);
 
-        $this->extension->onPostSubmit($event);
+        $this->extension->onSubmit($event);
 
         $expectedData = [
-            'extend'=> [
+            'extend' => [
                 'is_serialized' => $isSerialized
             ]
         ];
@@ -271,26 +269,10 @@ class AttributeConfigExtensionTest extends TypeTestCase
         $this->assertEquals($expectedData, $event->getData());
     }
 
-    public function testOnPostSubmitNotValid()
-    {
-        $form = $this->createMock(FormInterface::class);
-        $form->expects($this->once())
-            ->method('isValid')
-            ->willReturn(false);
-        $this->serializedFieldProvider->expects($this->never())
-            ->method('isSerializedByData');
-
-        $event = new FormEvent($form, []);
-        $this->extension->onPostSubmit($event);
-    }
-
     public function testOnPostIsValidAndFieldConfigModelExists(): void
     {
         $fieldConfigModel = $this->getFieldConfigModel(1);
         $form = $this->createMock(FormInterface::class);
-        $form->expects($this->once())
-            ->method('isValid')
-            ->willReturn(true);
 
         $formConfig = $this->createMock(FormConfigInterface::class);
         $formConfig->expects($this->once())
@@ -307,7 +289,7 @@ class AttributeConfigExtensionTest extends TypeTestCase
 
         $event = new FormEvent($form, []);
         $this->extension->buildForm($this->builder, ['config_model' => $fieldConfigModel]);
-        $this->extension->onPostSubmit($event);
+        $this->extension->onSubmit($event);
 
         $this->assertEmpty($event->getData());
     }

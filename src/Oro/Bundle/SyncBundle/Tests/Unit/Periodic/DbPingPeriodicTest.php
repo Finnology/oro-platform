@@ -8,17 +8,18 @@ use Doctrine\DBAL\Statement;
 use Doctrine\Persistence\ManagerRegistry;
 use Oro\Bundle\SyncBundle\Periodic\DbPingPeriodic;
 use Oro\Bundle\TestFrameworkBundle\Test\Logger\LoggerAwareTraitTestTrait;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 
-class DbPingPeriodicTest extends \PHPUnit\Framework\TestCase
+class DbPingPeriodicTest extends TestCase
 {
     use LoggerAwareTraitTestTrait;
 
-    /** @var ManagerRegistry|\PHPUnit\Framework\MockObject\MockObject */
-    private $doctrine;
+    private ManagerRegistry|MockObject $doctrine;
 
-    /** @var DbPingPeriodic */
-    private $dbPing;
+    private DbPingPeriodic $dbPing;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->doctrine = $this->createMock(ManagerRegistry::class);
@@ -27,17 +28,17 @@ class DbPingPeriodicTest extends \PHPUnit\Framework\TestCase
         $this->setUpLoggerMock($this->dbPing);
     }
 
-    public function testGetTimeout()
+    public function testGetTimeout(): void
     {
         self::assertSame(20, (new DbPingPeriodic($this->doctrine))->getTimeout());
         self::assertEquals(60, (new DbPingPeriodic($this->doctrine, 60))->getTimeout());
     }
 
-    public function testTick()
+    public function testTick(): void
     {
         $statement1 = $this->createMock(Statement::class);
         $statement1->expects(self::once())
-            ->method('execute');
+            ->method('executeQuery');
 
         $connection1 = $this->createMock(Connection::class);
         $connection1->expects(self::once())
@@ -45,28 +46,24 @@ class DbPingPeriodicTest extends \PHPUnit\Framework\TestCase
             ->with('SELECT 1')
             ->willReturn($statement1);
 
-        $statement2 = $this->createMock(Statement::class);
-        $statement2->expects(self::once())
-            ->method('execute');
-
         $connection2 = $this->createMock(Connection::class);
-        $connection2->expects(self::once())
-            ->method('prepare')
-            ->with('SELECT 1')
-            ->willReturn($statement2);
+        $connection2->expects(self::never())->method('prepare');
 
         $this->doctrine->expects(self::once())
             ->method('getConnections')
-            ->willReturn([$connection1, $connection2]);
+            ->willReturn([
+                'default' => $connection1,
+                'unexpected' => $connection2,
+            ]);
 
         $this->dbPing->tick();
     }
 
-    public function testTickException()
+    public function testTickException(): void
     {
         $statement1 = $this->createMock(Statement::class);
         $statement1->expects(self::once())
-            ->method('execute')
+            ->method('executeQuery')
             ->willThrowException(new DBALException());
 
         $connection = $this->createMock(Connection::class);
@@ -77,7 +74,7 @@ class DbPingPeriodicTest extends \PHPUnit\Framework\TestCase
 
         $this->doctrine->expects(self::once())
             ->method('getConnections')
-            ->willReturn([$connection]);
+            ->willReturn(['default' => $connection]);
 
         $this->assertLoggerErrorMethodCalled();
 

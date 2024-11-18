@@ -2,6 +2,7 @@
 
 namespace Oro\Bundle\LayoutBundle\Layout\Extension;
 
+use Oro\Bundle\ThemeBundle\Form\Provider\ConfigurationBuildersProvider;
 use Symfony\Component\Config\Definition\Builder\NodeBuilder;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
@@ -19,8 +20,14 @@ class ThemeConfiguration implements ConfigurationInterface
 
     public const AUTO = 'auto';
 
+    public const OPTION_KEY_DELIMITER = '__';
+
     /** @var ThemeConfigurationExtensionInterface[] */
-    private $extensions = [];
+    private array $extensions = [];
+
+    public function __construct(private ConfigurationBuildersProvider $configurationBuildersProvider)
+    {
+    }
 
     public function addExtension(ThemeConfigurationExtensionInterface $extension)
     {
@@ -46,15 +53,18 @@ class ThemeConfiguration implements ConfigurationInterface
         return array_merge(...$fileNames);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getConfigTreeBuilder()
+    #[\Override]
+    public function getConfigTreeBuilder(): TreeBuilder
     {
         $treeBuilder = new TreeBuilder(self::ROOT_NODE);
         $rootNode = $treeBuilder->getRootNode();
 
         $configTreeBuilder = new TreeBuilder('config');
+        $configurationTreeBuilder = new TreeBuilder('configuration');
+        $configurationNode = $configurationTreeBuilder->getRootNode();
+        $configurationNode->info(
+            'Configuration that defines which parameters a storefront theme configurable by a store owner.'
+        );
         $configNode = $configTreeBuilder->getRootNode();
         $configNode->info('Layout theme additional config')->end();
         // Allow extra configuration keys to be present in this configuration node.
@@ -83,11 +93,20 @@ class ThemeConfiguration implements ConfigurationInterface
                     ->scalarNode('logo')
                         ->info('The logo image is displayed in the UI')
                     ->end()
+                    ->scalarNode('logo_small')
+                        ->info('The logo small image is displayed in the UI')
+                    ->end()
                     ->scalarNode('screenshot')
                         ->info('The screenshot image is used in theme management UI for the theme preview')
                     ->end()
                     ->booleanNode('rtl_support')
                         ->info('Defines whether Theme supports RTL and additional *.rtl.css files have to be build')
+                    ->end()
+                    ->booleanNode('svg_icons_support')
+                        ->info(
+                            'Defines whether Theme supports SVG icons. '
+                            . 'Default value will be inherited from the parent themes if any, otherwise - false.'
+                        )
                     ->end()
                     ->scalarNode('directory')
                         ->info('The directory name where to look up for layout updates. By default theme identifier')
@@ -98,6 +117,12 @@ class ThemeConfiguration implements ConfigurationInterface
                     ->arrayNode('groups')
                         ->info('Layout groups for which the theme is applicable')
                         ->example('[main, embedded_forms, frontend]')
+                        ->prototype('scalar')->end()
+                        ->requiresAtLeastOneElement()
+                    ->end()
+                    ->arrayNode('resolve_extra_paths')
+                        ->info('Extra js paths which will be included in module builder')
+                        ->example('[/bundles/orothemedefault51]')
                         ->prototype('scalar')->end()
                         ->requiresAtLeastOneElement()
                     ->end()
@@ -117,10 +142,12 @@ class ThemeConfiguration implements ConfigurationInterface
                             ->end()
                         ->end()
                     ->end()
+                    ->append($configurationNode)
                     ->append($configNode)
                 ->end()
             ->end();
 
+        $this->appendConfigurationNode($configurationNode->children());
         $this->appendConfigNodes($configNode->children());
 
         return $treeBuilder;
@@ -136,7 +163,7 @@ class ThemeConfiguration implements ConfigurationInterface
         }
     }
 
-    private function appendAssets(NodeBuilder $configNode)
+    private function appendAssets(NodeBuilder $configNode): void
     {
         $configNode->arrayNode('assets')
             ->useAttributeAsKey('name')
@@ -162,7 +189,7 @@ class ThemeConfiguration implements ConfigurationInterface
             ->end();
     }
 
-    private function appendImages(NodeBuilder $configNode)
+    private function appendImages(NodeBuilder $configNode): void
     {
         $widthHeightValidator = function ($value) {
             return null !== $value && !is_int($value) && self::AUTO !== $value;
@@ -182,7 +209,6 @@ class ThemeConfiguration implements ConfigurationInterface
                         ->end()
                     ->end()
                 ->end()
-
                 ->arrayNode('dimensions')
                     ->useAttributeAsKey('name')
                     ->prototype('array')
@@ -216,7 +242,7 @@ class ThemeConfiguration implements ConfigurationInterface
             ->end();
     }
 
-    private function appendPageTemplates(NodeBuilder $configNode)
+    private function appendPageTemplates(NodeBuilder $configNode): void
     {
         $configNode->arrayNode('page_templates')
             ->children()
@@ -238,5 +264,88 @@ class ThemeConfiguration implements ConfigurationInterface
                     ->prototype('scalar')->end()
                 ->end()
             ->end();
+    }
+
+    private function appendConfigurationNode(NodeBuilder $configNode): void
+    {
+        $configNode
+            ->arrayNode('sections')
+                ->info(
+                    <<<INFO
+Groups theme configuration parameters, options related to the section - will be displayed in a separate tab.
+INFO
+                )
+                ->arrayPrototype()
+                    ->children()
+                        ->scalarNode('label')
+                            ->info('The section label is displayed in the theme configuration UI.')
+                            ->isRequired()
+                            ->cannotBeEmpty()
+                        ->end()
+                        ->arrayNode('options')
+                            ->arrayPrototype()
+                                ->children()
+                                    ->scalarNode('label')
+                                        ->info(
+                                            <<<INFO
+The option label is displayed in the theme configuration UI.
+INFO
+                                        )
+                                        ->isRequired()
+                                        ->cannotBeEmpty()
+                                    ->end()
+                                    ->enumNode('type')
+                                        ->info('The type of the input in theme configuration UI.')
+                                        ->values($this->configurationBuildersProvider->getConfigurationTypes())
+                                        ->isRequired()
+                                        ->cannotBeEmpty()
+                                    ->end()
+                                    ->scalarNode('default')
+                                        ->info(
+                                            <<<INFO
+The value is displayed by default in the theme configuration UI.
+INFO
+                                        )
+                                    ->end()
+                                    ->arrayNode('values')
+                                        ->info('Available input values')
+                                        ->normalizeKeys(false)
+                                        ->prototype('scalar')
+                                            ->cannotBeEmpty()
+                                        ->end()
+                                    ->end()
+                                    ->arrayNode('attr')
+                                        ->normalizeKeys(false)
+                                        ->info("Attributes to be added to the input html tag")
+                                        ->prototype('scalar')
+                                            ->cannotBeEmpty()
+                                        ->end()
+                                    ->end()
+                                    ->arrayNode('options')
+                                        ->info("Options to be added to the form type")
+                                        ->prototype('variable')->end()
+                                    ->end()
+                                    ->arrayNode('previews')
+                                        ->info(
+                                            <<<INFO
+Images that will illustrate UI changes if this option is selected.
+INFO
+                                        )
+                                        ->normalizeKeys(false)
+                                        ->prototype('scalar')
+                                            ->cannotBeEmpty()
+                                        ->end()
+                                    ->end()
+                                ->end()
+                            ->end()
+                        ->end()
+                    ->end()
+                ->end()
+            ->end();
+    }
+
+    public static function buildOptionKey(string $sectionKey, string $optionKey): string
+    {
+        return sprintf('%s' . self::OPTION_KEY_DELIMITER . '%s', $sectionKey, $optionKey);
     }
 }

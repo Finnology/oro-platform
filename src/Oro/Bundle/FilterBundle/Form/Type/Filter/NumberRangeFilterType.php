@@ -4,11 +4,13 @@ namespace Oro\Bundle\FilterBundle\Form\Type\Filter;
 
 use Oro\Bundle\FilterBundle\Filter\FilterUtility;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
+/**
+ * Number range filter form type.
+ */
 class NumberRangeFilterType extends AbstractType implements NumberRangeFilterTypeInterface
 {
     const NAME = 'oro_type_number_range_filter';
@@ -23,43 +25,35 @@ class NumberRangeFilterType extends AbstractType implements NumberRangeFilterTyp
         $this->translator = $translator;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function getName()
     {
         return $this->getBlockPrefix();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return self::NAME;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function getParent()
+    #[\Override]
+    public function getParent(): ?string
     {
         return NumberFilterType::class;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $builder
-            ->add('value_end', HiddenType::class) // range end
-        ;
+        $builder->add('value_end', $options['field_type'], $this->createFieldOptions($options));
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    protected function createFieldOptions(array $options): array
+    {
+        return array_merge(array('required' => false), $options['field_options']);
+    }
+
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         $operatorChoices = [

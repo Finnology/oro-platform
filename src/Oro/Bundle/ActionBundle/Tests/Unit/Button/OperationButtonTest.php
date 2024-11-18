@@ -10,6 +10,7 @@ use Oro\Bundle\ActionBundle\Model\Assembler\AttributeAssembler;
 use Oro\Bundle\ActionBundle\Model\Assembler\FormOptionsAssembler;
 use Oro\Bundle\ActionBundle\Model\Operation;
 use Oro\Bundle\ActionBundle\Model\OperationDefinition;
+use Oro\Bundle\ActionBundle\Resolver\OptionsResolver;
 use Oro\Component\Action\Action\ActionFactoryInterface;
 use Oro\Component\ConfigExpression\ExpressionFactory;
 
@@ -30,6 +31,7 @@ class OperationButtonTest extends \PHPUnit\Framework\TestCase
     /** @var OperationButton */
     private $button;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->originOperationName = 'origin_name';
@@ -185,6 +187,7 @@ class OperationButtonTest extends \PHPUnit\Framework\TestCase
             $this->createMock(ExpressionFactory::class),
             $this->createMock(AttributeAssembler::class),
             $this->createMock(FormOptionsAssembler::class),
+            $this->createMock(OptionsResolver::class),
             $definition
         );
     }

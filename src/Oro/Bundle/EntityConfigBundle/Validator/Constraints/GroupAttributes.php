@@ -16,18 +16,14 @@ class GroupAttributes extends Constraint
      */
     public $missingSystemAttributesMessage = 'oro.entity_config.validator.attribute_family.missing_system_attributes';
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getTargets()
+    #[\Override]
+    public function getTargets(): string|array
     {
         return self::CLASS_CONSTRAINT;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function validatedBy()
+    #[\Override]
+    public function validatedBy(): string
     {
         return GroupAttributesValidator::ALIAS;
     }

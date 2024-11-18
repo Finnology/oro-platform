@@ -30,9 +30,9 @@ class JobTest extends \PHPUnit\Framework\TestCase
     /** @var EventDispatcherInterface|\PHPUnit\Framework\MockObject\MockObject */
     private $eventDispatcher;
 
-    /** @var Job */
     private Job $job;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->jobRepository = $this->createMock(JobRepositoryInterface::class);

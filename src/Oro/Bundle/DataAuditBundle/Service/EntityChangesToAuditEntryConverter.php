@@ -16,7 +16,7 @@ use Oro\Bundle\DataAuditBundle\Loggable\AuditEntityMapper;
 use Oro\Bundle\DataAuditBundle\Model\EntityReference;
 use Oro\Bundle\DataAuditBundle\Provider\AuditConfigProvider;
 use Oro\Bundle\DataAuditBundle\Provider\EntityNameProvider;
-use Oro\Bundle\EntityExtendBundle\Entity\AbstractEnumValue;
+use Oro\Bundle\EntityExtendBundle\Entity\EnumOptionInterface;
 
 /**
  * This converter is intended to add the data audit records to the database
@@ -183,7 +183,7 @@ class EntityChangesToAuditEntryConverter
 
             $entityClass = $entityChange['entity_class'];
             $entityId = $entityChange['entity_id'];
-            if (\is_a($entityClass, AbstractEnumValue::class, true) ||
+            if (\is_a($entityClass, EnumOptionInterface::class, true) ||
                 !$this->configProvider->isAuditableEntity($entityClass)) {
                 continue;
             }
@@ -226,10 +226,10 @@ class EntityChangesToAuditEntryConverter
         }
 
         if ($audit->getVersion() < 2) {
-            return $defaultAction ? : AbstractAudit::ACTION_CREATE;
+            return $defaultAction ?: AbstractAudit::ACTION_CREATE;
         }
 
-        return $defaultAction ? : AbstractAudit::ACTION_UPDATE;
+        return $defaultAction ?: AbstractAudit::ACTION_UPDATE;
     }
 
     /**
@@ -284,6 +284,7 @@ class EntityChangesToAuditEntryConverter
             ->setParameter('objectClass', $entityClass)
             ->setParameter('objectId', (string) $entityId)
             ->orderBy('a.version', Criteria::DESC)
+            ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
 

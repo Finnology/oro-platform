@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\EntityExtendBundle\DependencyInjection\Compiler;
@@ -15,9 +16,7 @@ class EntityManagerPass implements CompilerPassInterface
     public const ORM_METADATA_FACTORY_SERVICE_KEY    = 'oro_entity_extend.orm.metadata_factory';
     public const ORM_METADATA_REFLECTION_SERVICE_KEY = 'oro_entity_extend.orm.metadata_reflection_service';
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function process(ContainerBuilder $container)
     {
         $em = $container->findDefinition('doctrine.orm.entity_manager');

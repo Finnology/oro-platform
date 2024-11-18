@@ -9,12 +9,10 @@ use Oro\Bundle\DataGridBundle\Datagrid\RequestParameterBagFactory;
  */
 class PinbarTabUrlNormalizer implements PinbarTabUrlNormalizerInterface
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getNormalizedUrl(string $url): string
     {
-        $urlQuery = parse_url($url, PHP_URL_QUERY);
+        $urlQuery = (string)parse_url($url, PHP_URL_QUERY);
         parse_str($urlQuery, $urlQueryArray);
 
         $this->normalizeDatagridParameters($urlQueryArray);

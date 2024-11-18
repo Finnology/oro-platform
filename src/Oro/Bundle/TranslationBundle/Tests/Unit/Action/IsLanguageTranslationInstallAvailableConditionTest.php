@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\TranslationBundle\Tests\Unit\Action;
@@ -25,6 +26,7 @@ class IsLanguageTranslationInstallAvailableConditionTest extends \PHPUnit\Framew
     private IsLanguageTranslationInstallAvailableCondition $condition2;
     private IsLanguageTranslationInstallAvailableCondition $condition3;
 
+    #[\Override]
     protected function setUp(): void
     {
         $now = new \DateTime();
@@ -32,7 +34,7 @@ class IsLanguageTranslationInstallAvailableConditionTest extends \PHPUnit\Framew
         $this->codeWithout = 'fr_FR';
         $this->codeNotInstalled = 'de_DE';
         $this->codeInstalled = 'es_ES';
-        $this->codedFilesBased= 'ua_UA';
+        $this->codedFilesBased = 'ua_UA';
 
         $this->languageWithoutTranslations = (new Language())->setCode($this->codeWithout);
         $this->languageNotInstalled = (new Language())->setCode($this->codeNotInstalled);

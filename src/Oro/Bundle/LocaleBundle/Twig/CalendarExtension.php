@@ -24,9 +24,7 @@ class CalendarExtension extends AbstractExtension implements ServiceSubscriberIn
         $this->container = $container;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getFunctions()
     {
         return [
@@ -83,10 +81,8 @@ class CalendarExtension extends AbstractExtension implements ServiceSubscriberIn
         return $this->getLocaleSettings()->getCalendar($locale)->getFirstDayOfWeek();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedServices()
+    #[\Override]
+    public static function getSubscribedServices(): array
     {
         return [
             LocaleSettings::class,

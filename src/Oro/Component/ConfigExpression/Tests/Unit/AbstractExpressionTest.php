@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Component\ConfigExpression\Tests\Unit;
@@ -11,6 +12,7 @@ class AbstractExpressionTest extends \PHPUnit\Framework\TestCase
     /** @var AbstractExpression */
     private $condition;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->condition = new class() extends AbstractExpression {

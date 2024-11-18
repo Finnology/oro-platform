@@ -36,9 +36,9 @@ class MaterializedViewManagerTest extends \PHPUnit\Framework\TestCase
     /** @var UnitOfWork|\PHPUnit\Framework\MockObject\MockObject */
     private $unitOfWork;
 
-    /** @var MaterializedViewManager */
     private MaterializedViewManager $manager;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

@@ -3,10 +3,7 @@ services:
         class: Oro\Bundle\ImportExportBundle\Serializer\Serializer
         arguments:
           - []
-          - ['@oro_importexport.serializer.dummy_encoder']
-
-    oro_importexport.serializer.dummy_encoder:
-        class: Oro\Bundle\ImportExportBundle\Serializer\Encoder\DummyEncoder
+          - []
 
     oro_importexport.serializer.datetime_normalizer:
         class: Oro\Bundle\ImportExportBundle\Serializer\Normalizer\DateTimeNormalizer
@@ -27,6 +24,8 @@ services:
         calls:
             - [setDispatcher, ['@event_dispatcher']]
             - [setScalarFieldDenormalizer, ['@oro_importexport.serializer.scalar_field_denormalizer']]
+            - [setEnumOptionProvider, ['@oro_entity_extend.enum_options_provider']]
+            - [setDoctrineHelper, ['@oro_entity.doctrine_helper']]
         tags:
             - { name: oro_importexport.normalizer, priority: -10 }
 

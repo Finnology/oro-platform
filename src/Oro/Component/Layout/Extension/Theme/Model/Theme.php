@@ -6,6 +6,8 @@ use Doctrine\Common\Collections\ArrayCollection;
 
 /**
  * Stores all configuration values which may be configured in `theme.yml`.
+ *
+ * @SuppressWarnings(PHPMD.TooManyFields)
  */
 class Theme
 {
@@ -27,8 +29,14 @@ class Theme
     /** @var bool */
     protected $rtlSupport = false;
 
+    /** @var bool|null */
+    protected $svgIconsSupport = null;
+
     /** @var string */
     protected $logo;
+
+    /** @var string */
+    protected $logoSmall;
 
     /** @var string */
     protected $screenshot;
@@ -138,6 +146,16 @@ class Theme
         $this->rtlSupport = $rtlSupport;
     }
 
+    public function isSvgIconsSupport(): ?bool
+    {
+        return $this->svgIconsSupport;
+    }
+
+    public function setSvgIconsSupport(?bool $svgIconsSupport): void
+    {
+        $this->svgIconsSupport = $svgIconsSupport;
+    }
+
     /**
      * @return string
      */
@@ -152,6 +170,16 @@ class Theme
     public function setLogo($logo)
     {
         $this->logo = $logo;
+    }
+
+    public function getLogoSmall(): ?string
+    {
+        return $this->logoSmall;
+    }
+
+    public function setLogoSmall(string $logoSmall): void
+    {
+        $this->logoSmall = $logoSmall;
     }
 
     /**

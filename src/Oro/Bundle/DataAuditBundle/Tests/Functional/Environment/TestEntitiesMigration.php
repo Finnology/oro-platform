@@ -6,29 +6,16 @@ use Doctrine\DBAL\Schema\Schema;
 use Oro\Bundle\EntityConfigBundle\Entity\ConfigModel;
 use Oro\Bundle\EntityExtendBundle\EntityConfig\ExtendScope;
 use Oro\Bundle\EntityExtendBundle\Migration\ExtendOptionsManager;
-use Oro\Bundle\EntityExtendBundle\Migration\Extension\ExtendExtension;
 use Oro\Bundle\EntityExtendBundle\Migration\Extension\ExtendExtensionAwareInterface;
+use Oro\Bundle\EntityExtendBundle\Migration\Extension\ExtendExtensionAwareTrait;
 use Oro\Bundle\MigrationBundle\Migration\Migration;
 use Oro\Bundle\MigrationBundle\Migration\QueryBag;
 
 class TestEntitiesMigration implements Migration, ExtendExtensionAwareInterface
 {
-    /**
-     * @var ExtendExtension
-     */
-    private $extendExtension;
+    use ExtendExtensionAwareTrait;
 
-    /**
-     * {@inheritdoc}
-     */
-    public function setExtendExtension(ExtendExtension $extendExtension)
-    {
-        $this->extendExtension = $extendExtension;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function up(Schema $schema, QueryBag $queries)
     {
         if ($schema->hasTable('oro_test_dataaudit_owner')) {
@@ -49,6 +36,8 @@ class TestEntitiesMigration implements Migration, ExtendExtensionAwareInterface
 
     /**
      * Create oro_test_dataaudit_owner table
+     *
+     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      */
     protected function createTestDataAuditOwnerTable(Schema $schema)
     {
@@ -70,6 +59,11 @@ class TestEntitiesMigration implements Migration, ExtendExtensionAwareInterface
             'crypted_string_property',
             'crypted_string',
             ['notnull' => false, 'comment' => '(DC2Type:crypted_string)']
+        );
+        $table->addColumn(
+            'crypted_text_property',
+            'crypted_text',
+            ['notnull' => false, 'comment' => '(DC2Type:crypted_text)']
         );
         $table->addColumn('currency_property', 'currency', ['notnull' => false, 'comment' => '(DC2Type:currency)']);
         $table->addColumn('date_property', 'date', ['notnull' => false, 'comment' => '(DC2Type:date)']);

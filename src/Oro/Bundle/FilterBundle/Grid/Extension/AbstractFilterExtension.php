@@ -6,7 +6,6 @@ use Oro\Bundle\DataGridBundle\Datagrid\Common\DatagridConfiguration;
 use Oro\Bundle\DataGridBundle\Datagrid\Common\MetadataObject;
 use Oro\Bundle\DataGridBundle\Extension\AbstractExtension;
 use Oro\Bundle\DataGridBundle\Extension\Formatter\Configuration as FormatterConfiguration;
-use Oro\Bundle\DataGridBundle\Provider\RawConfigurationProvider;
 use Oro\Bundle\DataGridBundle\Provider\State\DatagridStateProviderInterface;
 use Oro\Bundle\FilterBundle\Filter\FilterBagInterface;
 use Oro\Bundle\FilterBundle\Filter\FilterExecutionContext;
@@ -27,9 +26,6 @@ abstract class AbstractFilterExtension extends AbstractExtension
     public const FILTER_ROOT_PARAM = '_filter';
     public const MINIFIED_FILTER_PARAM = 'f';
 
-    /** @var RawConfigurationProvider */
-    protected $configurationProvider;
-
     /** @var FilterBagInterface */
     protected $filterBag;
 
@@ -44,14 +40,12 @@ abstract class AbstractFilterExtension extends AbstractExtension
     protected $filterExecutionContext;
 
     public function __construct(
-        RawConfigurationProvider $configurationProvider,
         FilterBagInterface $filterBag,
         DatagridFiltersProviderInterface $datagridFiltersProvider,
         FiltersMetadataProvider $filtersMetadataProvider,
         DatagridStateProviderInterface $filtersStateProvider,
         FilterExecutionContext $filterExecutionContext
     ) {
-        $this->configurationProvider = $configurationProvider;
         $this->filterBag = $filterBag;
         $this->filtersProvider = $datagridFiltersProvider;
         $this->filtersMetadataProvider = $filtersMetadataProvider;
@@ -59,9 +53,7 @@ abstract class AbstractFilterExtension extends AbstractExtension
         $this->filterExecutionContext = $filterExecutionContext;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function processConfigs(DatagridConfiguration $config)
     {
         $filters = $config->offsetGetByPath(Configuration::FILTERS_PATH);
@@ -76,9 +68,7 @@ abstract class AbstractFilterExtension extends AbstractExtension
         $config->offsetSetByPath(Configuration::FILTERS_PATH, array_replace_recursive($filters, $filtersNormalized));
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function visitMetadata(DatagridConfiguration $config, MetadataObject $metadata)
     {
         $filters = $this->filtersProvider->getDatagridFilters($config);
@@ -152,7 +142,7 @@ abstract class AbstractFilterExtension extends AbstractExtension
      */
     protected function updateState(array $filters, DatagridConfiguration $config, MetadataObject $metadata): void
     {
-        $filtersState = $this->filtersStateProvider->getState($config, $this->getParameters());
+        $filtersState = $this->filtersStateProvider->getStateFromParameters($config, $this->getParameters());
         $initialFiltersState = $this->filtersStateProvider->getDefaultState($config);
 
         foreach ($filters as $filterName => $filter) {

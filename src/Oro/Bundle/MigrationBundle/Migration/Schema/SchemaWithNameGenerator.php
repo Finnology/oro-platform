@@ -20,7 +20,7 @@ class SchemaWithNameGenerator extends Schema
      * @param DbIdentifierNameGenerator $nameGenerator
      * @param Table[]                   $tables
      * @param Sequence[]                $sequences
-     * @param SchemaConfig              $schemaConfig
+     * @param SchemaConfig|null $schemaConfig
      */
     public function __construct(
         DbIdentifierNameGenerator $nameGenerator,
@@ -33,9 +33,7 @@ class SchemaWithNameGenerator extends Schema
         parent::__construct($tables, $sequences, $schemaConfig);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function createTableObject(array $args)
     {
         $args['nameGenerator'] = $this->nameGenerator;
@@ -43,9 +41,7 @@ class SchemaWithNameGenerator extends Schema
         return parent::createTableObject($args);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function renameTable($oldTableName, $newTableName)
     {
         throw new DBALException(

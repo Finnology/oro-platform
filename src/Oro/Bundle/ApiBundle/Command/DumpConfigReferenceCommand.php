@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\ApiBundle\Command;
@@ -30,6 +31,7 @@ class DumpConfigReferenceCommand extends Command
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     protected function configure(): void
     {
         $this
@@ -58,6 +60,7 @@ HELP
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $output = new SymfonyStyle($input, $output);
@@ -84,6 +87,6 @@ HELP
         $dumper = new YamlReferenceDumper();
         $output->writeln($dumper->dump($configuration));
 
-        return 0;
+        return Command::SUCCESS;
     }
 }

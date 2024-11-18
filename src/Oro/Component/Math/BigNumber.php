@@ -539,7 +539,7 @@ abstract class BigNumber implements \JsonSerializable
     /**
      * String representation of object
      * @link http://php.net/manual/en/serializable.serialize.php
-     * @return string the string representation of the object or null
+     * @return array the string representation of the object or null
      */
     public function __serialize(): array
     {
@@ -554,6 +554,7 @@ abstract class BigNumber implements \JsonSerializable
      *
      * @return string
      */
+    #[\Override]
     public function __toString()
     {
         return $this->getTargetObject()->__toString();
@@ -565,6 +566,7 @@ abstract class BigNumber implements \JsonSerializable
      * @return string data which can be serialized by <b>json_encode</b>,
      * which is a value of any type other than a resource.
      */
+    #[\Override]
     public function jsonSerialize(): string
     {
         return $this->__toString();
@@ -573,7 +575,7 @@ abstract class BigNumber implements \JsonSerializable
     /**
      * Constructs the object
      * @link http://php.net/manual/en/serializable.unserialize.php
-     * @param string $serialized <p>
+     * @param array $serialized <p>
      * The string representation of the object.
      * </p>
      * @return void

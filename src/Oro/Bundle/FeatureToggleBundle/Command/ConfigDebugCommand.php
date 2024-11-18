@@ -36,9 +36,7 @@ class ConfigDebugCommand extends Command
         $this->translator = $translator;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     protected function configure(): void
     {
         $this
@@ -55,9 +53,7 @@ HELP
             );
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
@@ -80,7 +76,7 @@ HELP
             throw new InvalidArgumentException('Unknown feature.');
         }
 
-        return 0;
+        return Command::SUCCESS;
     }
 
     private function getConfigs(array $configs, bool $verbose): array

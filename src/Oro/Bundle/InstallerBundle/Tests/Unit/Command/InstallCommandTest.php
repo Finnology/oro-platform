@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\InstallerBundle\Tests\Unit\Command;
@@ -15,6 +16,7 @@ use Symfony\Component\Console\Helper\HelperSet;
 use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
  * @group regression
@@ -34,6 +36,7 @@ class InstallCommandTest extends TestCase
         $this->assertProducedWarning($commandTester, 'All data will be lost');
     }
 
+    #[\Override]
     protected function setUp(): void
     {
         $container = $this->createMock(ContainerInterface::class);
@@ -49,7 +52,8 @@ class InstallCommandTest extends TestCase
             $this->createMock(ManagerRegistry::class),
             $this->createMock(EventDispatcherInterface::class),
             $applicationState,
-            $this->createMock(ScriptManager::class)
+            $this->createMock(ScriptManager::class),
+            $this->createMock(ValidatorInterface::class)
         );
 
         $questionHelper = $this->createMock(QuestionHelper::class);

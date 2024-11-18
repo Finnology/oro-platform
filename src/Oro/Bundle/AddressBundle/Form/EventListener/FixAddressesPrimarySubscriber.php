@@ -33,10 +33,8 @@ class FixAddressesPrimarySubscriber implements EventSubscriberInterface
         $this->propertyAccessor = $propertyAccessor ?? PropertyAccess::createPropertyAccessor();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedEvents()
+    #[\Override]
+    public static function getSubscribedEvents(): array
     {
         return [
             FormEvents::POST_SUBMIT => 'postSubmit'

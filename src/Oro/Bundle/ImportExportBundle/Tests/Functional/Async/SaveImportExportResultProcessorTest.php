@@ -19,6 +19,7 @@ class SaveImportExportResultProcessorTest extends WebTestCase
 {
     use MessageQueueExtension;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->initClient();
@@ -62,7 +63,7 @@ class SaveImportExportResultProcessorTest extends WebTestCase
         self::assertEquals(ImportExportResult::class, $rootJobResult->getEntity());
     }
 
-    public function testProcessSaveJobWithInvalidData():void
+    public function testProcessSaveJobWithInvalidData(): void
     {
         $message = new Message();
         $message->setMessageId('abc');

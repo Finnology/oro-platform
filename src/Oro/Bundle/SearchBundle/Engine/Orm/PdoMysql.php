@@ -30,6 +30,7 @@ class PdoMysql extends BaseDriver
     /**
      * Init additional doctrine functions
      */
+    #[\Override]
     public function initRepo(EntityManagerInterface $em, ClassMetadata $class)
     {
         $ormConfig = $em->getConfiguration();
@@ -64,6 +65,7 @@ class PdoMysql extends BaseDriver
      *
      * @return string
      */
+    #[\Override]
     public function addTextField(QueryBuilder $qb, $index, $searchCondition, $setOrderBy = true)
     {
         $fieldValue = $searchCondition['fieldValue'];
@@ -188,7 +190,7 @@ class PdoMysql extends BaseDriver
     protected function getFullTextMinWordLength()
     {
         if (null === $this->fullTextMinWordLength) {
-            $this->fullTextMinWordLength = (int)$this->entityManager->getConnection()->fetchColumn(
+            $this->fullTextMinWordLength = (int)$this->entityManager->getConnection()->fetchOne(
                 "SHOW VARIABLES LIKE 'ft_min_word_len'",
                 [],
                 1
@@ -391,21 +393,17 @@ class PdoMysql extends BaseDriver
         return $fieldName === Indexer::TEXT_ALL_DATA_FIELD;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function truncateEntities(AbstractPlatform $dbPlatform, Connection $connection)
     {
-        $connection->query('SET FOREIGN_KEY_CHECKS=0');
+        $connection->executeQuery('SET FOREIGN_KEY_CHECKS=0');
 
         parent::truncateEntities($dbPlatform, $connection);
 
-        $connection->query('SET FOREIGN_KEY_CHECKS=1');
+        $connection->executeQuery('SET FOREIGN_KEY_CHECKS=1');
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function getTruncateQuery(AbstractPlatform $dbPlatform, $tableName)
     {
         if ($this->entityManager->getConnection()->isTransactionActive()) {

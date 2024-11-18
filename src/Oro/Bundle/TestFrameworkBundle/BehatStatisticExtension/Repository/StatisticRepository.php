@@ -40,9 +40,7 @@ class StatisticRepository implements BatchRepositoryInterface, ObjectRepository,
         $this->connection = $connection;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function add(StatisticModelInterface $model)
     {
         $this->collection[] = $model;
@@ -66,7 +64,7 @@ class StatisticRepository implements BatchRepositoryInterface, ObjectRepository,
         if ($criteria) {
             $this->addCriteria($criteria, $buildIdsQueryBuilder);
         }
-        $ids = $buildIdsQueryBuilder->execute()->fetchAll();
+        $ids = $buildIdsQueryBuilder->execute()->fetchAllAssociative();
 
         $ids = array_map(function ($data) {
             return $data['build_id'];
@@ -94,7 +92,7 @@ class StatisticRepository implements BatchRepositoryInterface, ObjectRepository,
             $this->addCriteria($criteria, $queryBuilder);
         }
 
-        $result = $queryBuilder->execute()->fetchAll();
+        $result = $queryBuilder->execute()->fetchAllAssociative();
 
         $paths = [];
 
@@ -105,9 +103,7 @@ class StatisticRepository implements BatchRepositoryInterface, ObjectRepository,
         return $this->paths = $paths;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function flush()
     {
         $this->connection->connect();
@@ -124,9 +120,7 @@ class StatisticRepository implements BatchRepositoryInterface, ObjectRepository,
         $this->collection = [];
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
     {
         $orderBy = $orderBy ?: ['id', 'DESC'];
@@ -156,7 +150,7 @@ class StatisticRepository implements BatchRepositoryInterface, ObjectRepository,
         }
 
         $result = $queryBuilder->execute()
-            ->fetchAll()
+            ->fetchAllAssociative()
         ;
 
         $models = array_map(function (array $data) {
@@ -169,9 +163,7 @@ class StatisticRepository implements BatchRepositoryInterface, ObjectRepository,
         return $models;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function find($id)
     {
         if (isset($this->collection[$id])) {
@@ -185,11 +177,11 @@ class StatisticRepository implements BatchRepositoryInterface, ObjectRepository,
             ->setParameter(0, $id)
             ->orderBy('id', 'DESC')
             ->execute()
-            ->fetch()
+            ->fetchAssociative()
         ;
 
         if (!$result) {
-            return new $this->className;
+            return new $this->className();
         }
 
         $model = $this->className::fromArray($result);
@@ -220,25 +212,19 @@ class StatisticRepository implements BatchRepositoryInterface, ObjectRepository,
         return $qb->execute();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function findAll()
     {
         throw new \RuntimeException('It\'s prohibited call "findAll" on statistics. Use "findBy" method');
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function findOneBy(array $criteria)
     {
         throw new \RuntimeException('Not implemented');
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getClassName()
     {
         return $this->className;
@@ -252,6 +238,7 @@ class StatisticRepository implements BatchRepositoryInterface, ObjectRepository,
         $this->className = $className;
     }
 
+    #[\Override]
     public function setAvgStrategy(AvgStrategyInterface $avgStrategy)
     {
         $this->avgStrategy = $avgStrategy;

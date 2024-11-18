@@ -4,27 +4,25 @@ namespace Oro\Bundle\EmbeddedFormBundle\Migrations\Data\ORM;
 
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
+use Oro\Bundle\EmbeddedFormBundle\Entity\EmbeddedForm;
 use Oro\Bundle\MigrationBundle\Fixture\RenamedFixtureInterface;
+use Oro\Bundle\OrganizationBundle\Migrations\Data\ORM\LoadOrganizationAndBusinessUnitData;
 use Oro\Bundle\OrganizationBundle\Migrations\Data\ORM\UpdateWithOrganization;
 
 /**
- * Adds organizations to embedded forms.
+ * Sets a default organization to EmbeddedForm entity.
  */
 class UpdateEmbeddedFormWithOrganization extends UpdateWithOrganization implements
     DependentFixtureInterface,
     RenamedFixtureInterface
 {
-    /**
-     * {@inheritdoc}
-     */
-    public function getDependencies()
+    #[\Override]
+    public function getDependencies(): array
     {
-        return ['Oro\Bundle\OrganizationBundle\Migrations\Data\ORM\LoadOrganizationAndBusinessUnitData'];
+        return [LoadOrganizationAndBusinessUnitData::class];
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getPreviousClassNames(): array
     {
         return [
@@ -32,11 +30,9 @@ class UpdateEmbeddedFormWithOrganization extends UpdateWithOrganization implemen
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function load(ObjectManager $manager)
+    #[\Override]
+    public function load(ObjectManager $manager): void
     {
-        $this->update($manager, 'OroEmbeddedFormBundle:EmbeddedForm', 'owner');
+        $this->update($manager, EmbeddedForm::class, 'owner');
     }
 }

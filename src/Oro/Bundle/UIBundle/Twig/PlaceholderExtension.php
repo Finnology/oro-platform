@@ -26,9 +26,7 @@ class PlaceholderExtension extends AbstractExtension implements ServiceSubscribe
         $this->container = $container;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getFunctions()
     {
         return [
@@ -123,10 +121,8 @@ class PlaceholderExtension extends AbstractExtension implements ServiceSubscribe
         return $result;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedServices()
+    #[\Override]
+    public static function getSubscribedServices(): array
     {
         return [
             'oro_ui.placeholder.provider' => PlaceholderProvider::class,

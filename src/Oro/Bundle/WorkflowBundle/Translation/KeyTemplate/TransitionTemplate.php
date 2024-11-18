@@ -9,9 +9,7 @@ class TransitionTemplate extends WorkflowTemplate
 {
     const NAME = 'transition';
 
-    /**
-     * @return string
-     */
+    #[\Override]
     public function getTemplate(): string
     {
         return parent::getTemplate() . '.transition.{{ transition_name }}';
@@ -20,6 +18,7 @@ class TransitionTemplate extends WorkflowTemplate
     /**
      * @return array
      */
+    #[\Override]
     public function getRequiredKeys()
     {
         return array_merge(parent::getRequiredKeys(), ['transition_name']);

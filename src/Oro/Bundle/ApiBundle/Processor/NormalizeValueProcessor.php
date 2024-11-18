@@ -3,31 +3,29 @@
 namespace Oro\Bundle\ApiBundle\Processor;
 
 use Oro\Bundle\ApiBundle\Processor\NormalizeValue\NormalizeValueContext;
+use Oro\Component\ChainProcessor\ContextInterface;
 use Oro\Component\ChainProcessor\ContextInterface as ComponentContextInterface;
 use Oro\Component\ChainProcessor\Exception\ExecutionFailedException;
 use Oro\Component\ChainProcessor\ProcessorInterface;
+use Oro\Component\ChainProcessor\ProcessorIterator;
 
 /**
  * The main processor for "normalize_value" action.
  */
 class NormalizeValueProcessor extends ByStepActionProcessor
 {
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     protected function createContextObject(): NormalizeValueContext
     {
         return new NormalizeValueContext();
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     protected function executeProcessors(ComponentContextInterface $context): void
     {
         /** @var NormalizeValueContext $context */
 
-        $processors = $this->processorBag->getProcessors($context);
+        $processors = $this->getProcessors($context);
         /** @var ProcessorInterface $processor */
         foreach ($processors as $processor) {
             try {
@@ -45,5 +43,34 @@ class NormalizeValueProcessor extends ByStepActionProcessor
                 );
             }
         }
+    }
+
+    #[\Override]
+    protected function getProcessors(ContextInterface $context): ProcessorIterator
+    {
+        $action = $context->getAction();
+        $context->setAction($this->getInternalAction($context));
+        try {
+            $processorIterator = parent::getProcessors($context);
+        } finally {
+            $context->setAction($action);
+        }
+
+        return $processorIterator;
+    }
+
+    private function getInternalAction(ContextInterface $context): string
+    {
+        $firstGroup = $context->getFirstGroup();
+        if ($firstGroup === $context->getLastGroup()) {
+            return $context->getAction() . '.' . $firstGroup;
+        }
+
+        throw new \InvalidArgumentException(sprintf(
+            'Not possible to determine the internal action for the "%s" action. First group: %s. Last group: %s.',
+            $context->getAction(),
+            $firstGroup,
+            $context->getLastGroup()
+        ));
     }
 }

@@ -10,11 +10,12 @@ use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
+/**
+ * Typed address form type
+ */
 class TypedAddressType extends AbstractType
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         if ($options['single_form'] && $options['all_addresses_property_path']) {
@@ -31,7 +32,7 @@ class TypedAddressType extends AbstractType
                 'types',
                 TranslatableEntityType::class,
                 array(
-                    'class' => 'OroAddressBundle:AddressType',
+                    'class' => \Oro\Bundle\AddressBundle\Entity\AddressType::class,
                     'choice_label' => 'label',
                     'required' => false,
                     'multiple' => true,
@@ -47,9 +48,7 @@ class TypedAddressType extends AbstractType
             );
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults(
@@ -60,26 +59,19 @@ class TypedAddressType extends AbstractType
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getParent()
+    #[\Override]
+    public function getParent(): ?string
     {
         return AddressType::class;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getName()
     {
         return $this->getBlockPrefix();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return 'oro_typed_address';
     }

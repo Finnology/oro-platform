@@ -11,6 +11,7 @@ class ValidateRequestDataExistTest extends FormProcessorTestCase
     /** @var ValidateRequestDataExist */
     private $processor;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -21,7 +22,7 @@ class ValidateRequestDataExistTest extends FormProcessorTestCase
     {
         $this->processor->process($this->context);
         self::assertEquals(
-            [Error::createValidationError('request data constraint', 'The request data should not be empty')],
+            [Error::createValidationError('request data constraint', 'The request data should not be empty.')],
             $this->context->getErrors()
         );
     }
@@ -31,7 +32,7 @@ class ValidateRequestDataExistTest extends FormProcessorTestCase
         $this->context->setRequestData([]);
         $this->processor->process($this->context);
         self::assertEquals(
-            [Error::createValidationError('request data constraint', 'The request data should not be empty')],
+            [Error::createValidationError('request data constraint', 'The request data should not be empty.')],
             $this->context->getErrors()
         );
     }

@@ -2,7 +2,7 @@
 
 namespace Oro\Bundle\NotificationBundle\Tests\Unit\Provider;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Event\PostFlushEventArgs;
 use Doctrine\Persistence\Event\LifecycleEventArgs;
 use Oro\Bundle\NotificationBundle\Doctrine\EntityPool;
@@ -21,6 +21,7 @@ class DoctrineListenerTest extends \PHPUnit\Framework\TestCase
     /** @var DoctrineListener */
     private $listener;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->entityPool = $this->createMock(EntityPool::class);
@@ -33,10 +34,10 @@ class DoctrineListenerTest extends \PHPUnit\Framework\TestCase
     {
         $args = $this->createMock(PostFlushEventArgs::class);
 
-        $entityManager = $this->createMock(EntityManager::class);
+        $entityManager = $this->createMock(EntityManagerInterface::class);
 
         $args->expects($this->once())
-            ->method('getEntityManager')
+            ->method('getObjectManager')
             ->willReturn($entityManager);
 
         $this->entityPool->expects($this->once())
@@ -53,7 +54,7 @@ class DoctrineListenerTest extends \PHPUnit\Framework\TestCase
     {
         $args = $this->createMock(LifecycleEventArgs::class);
         $args->expects($this->once())
-            ->method('getEntity')
+            ->method('getObject')
             ->willReturn('something');
 
         $this->eventDispatcher->expects($this->once())

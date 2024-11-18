@@ -69,10 +69,10 @@ class FilterDateRangeConverter extends ConfigValueConverterAbstract
     }
 
     /**
-     * {@inheritdoc}
      * @SuppressWarnings(PHPMD.NPathComplexity)
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
+    #[\Override]
     public function getConvertedValue(array $widgetConfig, $value = null, array $config = [], array $options = [])
     {
         if ($value === null) {
@@ -163,9 +163,7 @@ class FilterDateRangeConverter extends ConfigValueConverterAbstract
         return $dateData;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getFormValue(array $converterAttributes, $value)
     {
         if ($value === null) {
@@ -176,10 +174,10 @@ class FilterDateRangeConverter extends ConfigValueConverterAbstract
     }
 
     /**
-     * {@inheritdoc}
      * @SuppressWarnings(PHPMD.NPathComplexity)
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
+    #[\Override]
     public function getViewValue($value)
     {
         $start = $this->getCompiledDate($value['start'] ?? '');
@@ -241,12 +239,6 @@ class FilterDateRangeConverter extends ConfigValueConverterAbstract
             : $startDate;
     }
 
-    /**
-     * @param array $value
-     * @param bool $saveOpenRange
-     *
-     * @return array
-     */
     protected function getPeriodValues(array $value, bool $saveOpenRange): array
     {
         $startValue = $value['value']['start'];
@@ -294,7 +286,7 @@ class FilterDateRangeConverter extends ConfigValueConverterAbstract
         $start = $end = $part = $prevStart = $prevEnd = $lastSecondModifier = null;
         $type = $value['type'] ?? AbstractDateFilterType::TYPE_BETWEEN;
         if (array_key_exists($value['type'], static::$valueTypesStartVarsMap)) {
-            /** @var \Carbon\Carbon $start */
+            /** @var Carbon $start */
             $start  = $this->dateCompiler->compile(
                 sprintf('{{%s}}', static::$valueTypesStartVarsMap[$value['type']]['var_start'])
             );

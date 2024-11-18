@@ -18,6 +18,7 @@ class RemoveManyToManyRelationQueryTest extends WebTestCase
     /** @var ArrayLogger */
     private $logger;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->initClient();
@@ -188,7 +189,7 @@ class RemoveManyToManyRelationQueryTest extends WebTestCase
                 WHERE e.class_name = ? 
                 LIMIT 1';
 
-        return $this->connection->fetchAssoc(
+        return $this->connection->fetchAssociative(
             $getEntitySql,
             [$entityClass]
         );
@@ -203,7 +204,7 @@ class RemoveManyToManyRelationQueryTest extends WebTestCase
             AND field_name = ?
             LIMIT 1';
 
-        return $this->connection->fetchAssoc(
+        return $this->connection->fetchAssociative(
             $getFieldSql,
             [
                 $entityClass,

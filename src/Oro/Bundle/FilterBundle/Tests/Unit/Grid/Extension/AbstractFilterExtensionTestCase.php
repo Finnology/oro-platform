@@ -6,7 +6,6 @@ use Oro\Bundle\DataGridBundle\Datagrid\Common\DatagridConfiguration;
 use Oro\Bundle\DataGridBundle\Datagrid\Common\MetadataObject;
 use Oro\Bundle\DataGridBundle\Datagrid\ParameterBag;
 use Oro\Bundle\DataGridBundle\Extension\Formatter\Property\PropertyInterface;
-use Oro\Bundle\DataGridBundle\Provider\RawConfigurationProvider;
 use Oro\Bundle\DataGridBundle\Provider\State\DatagridStateProviderInterface;
 use Oro\Bundle\FilterBundle\Filter\FilterInterface;
 use Oro\Bundle\FilterBundle\Filter\FilterUtility;
@@ -28,9 +27,6 @@ abstract class AbstractFilterExtensionTestCase extends \PHPUnit\Framework\TestCa
     protected const FILTER_LABEL = 'SampleFilterLabel1';
     protected const TRANSLATED_FILTER_LABEL = 'TranslatedFilterLabel1';
 
-    /** @var RawConfigurationProvider|\PHPUnit\Framework\MockObject\MockObject */
-    protected $configurationProvider;
-
     /** @var FilterBagStub */
     protected $filterBag;
 
@@ -49,9 +45,9 @@ abstract class AbstractFilterExtensionTestCase extends \PHPUnit\Framework\TestCa
     /** @var ParameterBag|\PHPUnit\Framework\MockObject\MockObject */
     protected $datagridParameters;
 
+    #[\Override]
     protected function setUp(): void
     {
-        $this->configurationProvider = $this->createMock(RawConfigurationProvider::class);
         $this->filterBag = new FilterBagStub();
         $this->filtersProvider = $this->createMock(DatagridFiltersProviderInterface::class);
         $this->filtersMetadataProvider = $this->createMock(FiltersMetadataProvider::class);
@@ -156,7 +152,7 @@ abstract class AbstractFilterExtensionTestCase extends \PHPUnit\Framework\TestCa
     {
         $this->filtersStateProvider
             ->expects(self::once())
-            ->method('getState')
+            ->method('getStateFromParameters')
             ->with(self::isInstanceOf(DatagridConfiguration::class), $this->datagridParameters)
             ->willReturn($filtersState);
 

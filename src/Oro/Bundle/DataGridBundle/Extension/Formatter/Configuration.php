@@ -33,10 +33,8 @@ class Configuration implements ConfigurationInterface
         $this->root  = $root;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function getConfigTreeBuilder()
+    #[\Override]
+    public function getConfigTreeBuilder(): TreeBuilder
     {
         $builder = new TreeBuilder($this->root);
 

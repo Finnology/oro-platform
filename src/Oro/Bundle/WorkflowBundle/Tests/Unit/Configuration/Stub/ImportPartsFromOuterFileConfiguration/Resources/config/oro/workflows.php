@@ -1,6 +1,9 @@
-<?php return [
+<?php
+
+return [
     'with_parts_from_file' => [
         'entity' => 'Some\\Entity',
+        'metadata' => [],
         'steps' => [
             'step_a' => [
                 'order' => 0,
@@ -14,6 +17,7 @@
         'transitions' => [
             'start' => [
                 'step_to' => 'step_a',
+                'conditional_steps_to' => [],
                 'is_start' => true,
                 'is_hidden' => false,
                 'is_unavailable_hidden' => false,

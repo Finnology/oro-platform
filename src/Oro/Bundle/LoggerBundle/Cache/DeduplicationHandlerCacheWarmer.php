@@ -18,9 +18,6 @@ class DeduplicationHandlerCacheWarmer implements CacheWarmerInterface
      */
     private $deduplicationHandler;
 
-    /**
-     * @param DeduplicationHandler $deduplicationHandler
-     */
     public function __construct(DeduplicationHandler $deduplicationHandler = null)
     {
         $this->deduplicationHandler = $deduplicationHandler;
@@ -29,17 +26,20 @@ class DeduplicationHandlerCacheWarmer implements CacheWarmerInterface
     /**
      * {inheritdoc}
      */
-    public function warmUp($cacheDir)
+    #[\Override]
+    public function warmUp($cacheDir): array
     {
         if ($this->deduplicationHandler) {
             $this->deduplicationHandler->flush();
         }
+        return [];
     }
 
     /**
      * {inheritdoc}
      */
-    public function isOptional()
+    #[\Override]
+    public function isOptional(): bool
     {
         return false;
     }

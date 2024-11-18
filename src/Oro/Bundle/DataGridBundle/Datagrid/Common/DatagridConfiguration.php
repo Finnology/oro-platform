@@ -7,15 +7,18 @@ use Oro\Bundle\DataGridBundle\Datasource\Orm\OrmDatasource;
 use Oro\Bundle\DataGridBundle\Datasource\Orm\OrmQueryConfiguration;
 use Oro\Bundle\DataGridBundle\Exception\LogicException;
 use Oro\Bundle\DataGridBundle\Provider\SystemAwareResolver;
-use Oro\Bundle\EntityExtendBundle\Tools\ExtendHelper;
+use Oro\Bundle\EntityExtendBundle\Entity\EnumOption;
 use Oro\Component\Config\Common\ConfigObject;
 
 /**
  * This class represents read & parsed datagrid configuration.
  * @SuppressWarnings(PHPMD.TooManyPublicMethods)
+ * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  */
 class DatagridConfiguration extends ConfigObject
 {
+    private const COLUMNS_PATH = '[columns]';
+    private const FILTERS_PATH = '[filters][columns]';
     const COLUMN_PATH = '[columns][%s]';
     const SORTER_PATH = '[sorters][columns][%s]';
     const FILTER_PATH = '[filters][columns][%s]';
@@ -42,6 +45,13 @@ class DatagridConfiguration extends ConfigObject
      * This option makes possible to skip apply of ACL adjustment to source query of datagrid.
      */
     const DATASOURCE_SKIP_ACL_APPLY_PATH = '[source][skip_acl_apply]';
+
+    /**
+     * This option allow to pass additional context to
+     * {@see \Oro\Bundle\SecurityBundle\ORM\Walker\OwnershipConditionDataBuilder} to make additional checks
+     * during getting the ACL condition data.
+     */
+    const ACL_CONDITION_DATA_BUILDER_CONTEXT = '[source][acl_condition_data_builder_context]';
 
     /**
      * This option sets what ACL permission will be applied to datasource if value is DATASOURCE_SKIP_ACL_APPLY_PATH
@@ -340,11 +350,12 @@ class DatagridConfiguration extends ConfigObject
         $this->addFilter(
             $columnName,
             [
-                'type'      => 'entity',
+                'type' => 'entity',
                 'data_name' => $dataName,
-                'options'   => [
+                'options' => [
                     'field_options' => [
-                        'class' => ExtendHelper::buildEnumValueClassName($enumCode),
+                        'class' => EnumOption::class,
+                        'enum_code' => $enumCode,
                         'choice_label' => 'name',
                         'query_builder' => function (EntityRepository $entityRepository) {
                             return $entityRepository->createQueryBuilder('c')
@@ -416,5 +427,73 @@ class DatagridConfiguration extends ConfigObject
             }
         }
         return false;
+    }
+
+    /**
+     * Changes a priority of a column by moving it before a specified target column.
+     */
+    public function moveColumnBefore(string $name, string $targetName): void
+    {
+        $this->moveBefore($name, $targetName, self::COLUMNS_PATH);
+    }
+
+    /**
+     * Changes a priority of a column by moving it after a specified target column.
+     */
+    public function moveColumnAfter(string $name, string $targetName): void
+    {
+        $this->moveAfter($name, $targetName, self::COLUMNS_PATH);
+    }
+
+    /**
+     * Changes a priority of a filter by moving it before a specified target filter.
+     */
+    public function moveFilterBefore(string $name, string $targetName): void
+    {
+        $this->moveBefore($name, $targetName, self::FILTERS_PATH);
+    }
+
+    /**
+     * Changes a priority of a filter by moving it after a specified target filter.
+     */
+    public function moveFilterAfter(string $name, string $targetName): void
+    {
+        $this->moveAfter($name, $targetName, self::FILTERS_PATH);
+    }
+
+    private function moveBefore(string $name, string $targetName, string $sectionPath): void
+    {
+        $section = $this->offsetGetByPath($sectionPath);
+        if (\array_key_exists($name, $section) && \array_key_exists($targetName, $section)) {
+            $updatedSection = [];
+            foreach ($section as $key => $value) {
+                if ($key === $name) {
+                    continue;
+                }
+                if ($key === $targetName) {
+                    $updatedSection[$name] = $section[$name];
+                }
+                $updatedSection[$key] = $value;
+            }
+            $this->offsetSetByPath($sectionPath, $updatedSection);
+        }
+    }
+
+    private function moveAfter(string $name, string $targetName, string $sectionPath): void
+    {
+        $section = $this->offsetGetByPath($sectionPath);
+        if (\array_key_exists($name, $section) && \array_key_exists($targetName, $section)) {
+            $updatedSection = [];
+            foreach ($section as $key => $value) {
+                if ($key === $name) {
+                    continue;
+                }
+                $updatedSection[$key] = $value;
+                if ($key === $targetName) {
+                    $updatedSection[$name] = $section[$name];
+                }
+            }
+            $this->offsetSetByPath($sectionPath, $updatedSection);
+        }
     }
 }

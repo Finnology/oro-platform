@@ -1,8 +1,10 @@
 <?php
+
 return [
     'workflow_with_config_reuse' => [
         'entity' => 'Some\Another\Entity',
         'start_step' => 'step_a',
+        'metadata' => [],
         'steps' => [
             'step_a' => [
                 'allowed_transitions' => ['transition_one'],
@@ -40,6 +42,7 @@ return [
         'transitions' => [
             'transition_one' => [
                 'step_to' => 'step_b',
+                'conditional_steps_to' => [],
                 'is_start' => false,
                 'is_hidden' => false,
                 'is_unavailable_hidden' => false,

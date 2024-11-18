@@ -244,7 +244,7 @@ class FeatureContext extends OroFeatureContext implements OroPageObjectAware
     protected function getPageTransitionCount(EntityManager $em)
     {
         /** @var HistoryItemRepository $repository */
-        $repository = $em->getRepository('OroNavigationBundle:NavigationHistoryItem');
+        $repository = $em->getRepository(NavigationHistoryItem::class);
 
         return array_sum(array_map(function (NavigationHistoryItem $item) use ($em) {
             $em->detach($item);
@@ -262,7 +262,7 @@ class FeatureContext extends OroFeatureContext implements OroPageObjectAware
     protected function getLastPersistedPage(EntityManager $em)
     {
         /** @var HistoryItemRepository $repository */
-        $repository = $em->getRepository('OroNavigationBundle:NavigationHistoryItem');
+        $repository = $em->getRepository(NavigationHistoryItem::class);
         $lastAddedPage = $repository->findOneBy([], ['visitedAt' => 'DESC']);
 
         return $lastAddedPage;
@@ -510,6 +510,20 @@ class FeatureContext extends OroFeatureContext implements OroPageObjectAware
         $menuTree = $this->createElement('Sidebar Menu Tree');
         self::assertTrue($menuTree->isValid());
         $menuTree->clickLink($record);
+    }
+
+    /**
+     * Checks that menu item (not) exists at side bar menu
+     *
+     * Example: And I should see commerce_main_menu in sidebar menu tree
+     *
+     * @Given /^(?:|I )should(?P<neg>(\s| not ))see (?P<link>[\w\s]+) in sidebar menu tree$/
+     */
+    public function iShouldSeeOrNotItemInSidebarMenuTree(string $link, string $neg = ''): void
+    {
+        $menuTree = $this->createElement('Sidebar Menu Tree');
+        self::assertTrue($menuTree->isValid());
+        self::assertSame(empty(trim($neg)), $menuTree->hasLink($link));
     }
 
     /**

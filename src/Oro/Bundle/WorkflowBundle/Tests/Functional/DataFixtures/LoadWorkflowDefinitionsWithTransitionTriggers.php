@@ -6,8 +6,9 @@ use Symfony\Component\Yaml\Yaml;
 
 class LoadWorkflowDefinitionsWithTransitionTriggers extends LoadWorkflowDefinitions
 {
+    #[\Override]
     protected function getWorkflowConfiguration(): array
     {
-        return Yaml::parse(file_get_contents(__DIR__ . '/config/oro/workflows_with_transition_triggers.yml')) ? : [];
+        return Yaml::parse(file_get_contents(__DIR__ . '/config/oro/workflows_with_transition_triggers.yml')) ?: [];
     }
 }

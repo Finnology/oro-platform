@@ -8,6 +8,7 @@
 
 namespace Oro\Bundle\PlatformBundle\Validator\Constraints;
 
+use Attribute;
 use Symfony\Component\Validator\Constraint;
 
 /**
@@ -19,23 +20,20 @@ use Symfony\Component\Validator\Constraint;
  *
  * @Annotation
  */
+#[Attribute]
 class ValidLoadedItems extends Constraint
 {
     /** @var array|null */
     public $constraints;
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getTargets()
+    #[\Override]
+    public function getTargets(): string|array
     {
         return self::PROPERTY_CONSTRAINT;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getDefaultOption()
+    #[\Override]
+    public function getDefaultOption(): ?string
     {
         return 'constraints';
     }

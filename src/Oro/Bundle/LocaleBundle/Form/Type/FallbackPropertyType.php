@@ -28,33 +28,24 @@ class FallbackPropertyType extends AbstractType
         $this->translator = $translator;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function getName()
     {
         return $this->getBlockPrefix();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return self::NAME;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function getParent()
+    #[\Override]
+    public function getParent(): ?string
     {
         return ChoiceType::class;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults(
@@ -106,9 +97,7 @@ class FallbackPropertyType extends AbstractType
         );
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function finishView(FormView $view, FormInterface $form, array $options)
     {
         if ($options['localization']) {

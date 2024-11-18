@@ -55,17 +55,13 @@ class MarkdownApiDocParser implements ResourceDocParserInterface
         $this->fileLocator = $fileLocator;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getActionDocumentation(string $className, string $actionName): ?string
     {
         return $this->getDocumentation($className, ConfigUtil::ACTIONS, $actionName);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getFieldDocumentation(
         string $className,
         string $fieldName,
@@ -74,17 +70,13 @@ class MarkdownApiDocParser implements ResourceDocParserInterface
         return $this->getDocumentation($className, ConfigUtil::FIELDS, $fieldName, $actionName ?: 'common');
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getFilterDocumentation(string $className, string $filterName): ?string
     {
         return $this->getDocumentation($className, ConfigUtil::FILTERS, $filterName);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getSubresourceDocumentation(
         string $className,
         string $subresourceName,
@@ -93,19 +85,16 @@ class MarkdownApiDocParser implements ResourceDocParserInterface
         return $this->getDocumentation($className, ConfigUtil::SUBRESOURCES, $subresourceName, $actionName);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function registerDocumentationResource(string $resource): bool
     {
-        $pos = strrpos($resource, '.md');
-        if (false === $pos) {
+        if (!str_ends_with($resource, '.md')) {
             // unsupported resource
             return false;
         }
 
         /** @var string $filePath */
-        $filePath = $this->fileLocator->locate(substr($resource, 0, $pos + 3));
+        $filePath = $this->fileLocator->locate($resource);
         if (!isset($this->parsedFiles[$filePath])) {
             $existingData = $this->loadedData;
             $this->loadedData = [];

@@ -7,22 +7,19 @@ use Doctrine\Persistence\ObjectManager;
 use Oro\Bundle\ActivityListBundle\Migrations\Data\ORM\AddActivityListsData;
 use Oro\Bundle\NoteBundle\Entity\Note;
 
+/**
+ * Adds activity lists for Note entity.
+ */
 class AddNoteActivityLists extends AddActivityListsData implements DependentFixtureInterface
 {
-    /**
-     * {@inheritdoc}
-     */
-    public function getDependencies()
+    #[\Override]
+    public function getDependencies(): array
     {
-        return [
-            'Oro\Bundle\NoteBundle\Migrations\Data\ORM\UpdateNotesWithOrganization'
-        ];
+        return [UpdateNotesWithOrganization::class];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function load(ObjectManager $manager)
+    #[\Override]
+    public function load(ObjectManager $manager): void
     {
         $this->addActivityListsForActivityClass(
             $manager,

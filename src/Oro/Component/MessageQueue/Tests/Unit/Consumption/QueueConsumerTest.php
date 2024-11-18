@@ -43,6 +43,7 @@ class QueueConsumerTest extends \PHPUnit\Framework\TestCase
 
     private Message $message;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->messageConsumer = $this->createMock(MessageConsumerInterface::class);
@@ -576,7 +577,6 @@ class QueueConsumerTest extends \PHPUnit\Framework\TestCase
                 $this->assertTrue($context->isExecutionInterrupted());
             });
 
-
         $this
             ->createQueueConsumer(null, new ChainExtension([$extension, new BreakCycleExtension(1)]))
             ->bind(self::QUEUE_NAME, self::MESSAGE_PROCESSOR_NAME)
@@ -615,7 +615,6 @@ class QueueConsumerTest extends \PHPUnit\Framework\TestCase
                 $this->assertSame(MessageProcessorInterface::ACK, $context->getStatus());
                 $this->assertTrue($context->isExecutionInterrupted());
             });
-
 
         $this
             ->createQueueConsumer(null, new ChainExtension([$extension, new BreakCycleExtension(1)]))

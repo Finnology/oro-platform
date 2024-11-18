@@ -3,12 +3,12 @@
 namespace Oro\Bundle\UserBundle\Entity;
 
 use Doctrine\Persistence\ManagerRegistry;
-use Oro\Bundle\EntityExtendBundle\Provider\EnumValueProvider;
+use Oro\Bundle\EntityExtendBundle\Provider\EnumOptionsProvider;
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
 use Oro\Bundle\UserBundle\Mailer\Processor;
 use Oro\Bundle\UserBundle\Security\UserLoaderInterface;
 use Oro\Component\DependencyInjection\ServiceLink;
-use Symfony\Component\Security\Core\Encoder\EncoderFactoryInterface;
+use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 
 /**
  * Provides a set of methods to simplify manage of the User entity.
@@ -17,11 +17,10 @@ class UserManager extends BaseUserManager
 {
     public const STATUS_ACTIVE  = 'active';
     public const STATUS_RESET = 'reset';
+    public const AUTH_STATUS_ENUM_CODE = 'auth_status';
 
-    private const AUTH_STATUS_ENUM_CODE = 'auth_status';
-
-    /** @var EnumValueProvider */
-    private $enumValueProvider;
+    /** @var EnumOptionsProvider */
+    private $enumOptionsProvider;
 
     /** @var ServiceLink */
     private $emailProcessorLink;
@@ -29,12 +28,12 @@ class UserManager extends BaseUserManager
     public function __construct(
         UserLoaderInterface $userLoader,
         ManagerRegistry $doctrine,
-        EncoderFactoryInterface $encoderFactory,
-        EnumValueProvider $enumValueProvider,
+        PasswordHasherFactoryInterface $passwordHasherFactory,
+        EnumOptionsProvider $enumOptionsProvider,
         ServiceLink $emailProcessor
     ) {
-        parent::__construct($userLoader, $doctrine, $encoderFactory);
-        $this->enumValueProvider = $enumValueProvider;
+        parent::__construct($userLoader, $doctrine, $passwordHasherFactory);
+        $this->enumOptionsProvider = $enumOptionsProvider;
         $this->emailProcessorLink = $emailProcessor;
     }
 
@@ -51,17 +50,15 @@ class UserManager extends BaseUserManager
      */
     public function setAuthStatus(User $user, string $authStatus): void
     {
-        $user->setAuthStatus($this->enumValueProvider->getEnumValueByCode(self::AUTH_STATUS_ENUM_CODE, $authStatus));
+        $user->setAuthStatus($this->enumOptionsProvider->getEnumOptionByCode(self::AUTH_STATUS_ENUM_CODE, $authStatus));
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function updateUser(UserInterface $user, bool $flush = true): void
     {
         // make sure user has a default status
         if ($user instanceof User && null === $user->getAuthStatus()) {
-            $defaultStatus = $this->enumValueProvider->getDefaultEnumValueByCode(self::AUTH_STATUS_ENUM_CODE);
+            $defaultStatus = $this->enumOptionsProvider->getDefaultEnumOptionByCode(self::AUTH_STATUS_ENUM_CODE);
             if (null !== $defaultStatus) {
                 $user->setAuthStatus($defaultStatus);
             }

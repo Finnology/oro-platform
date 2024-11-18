@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\InstallerBundle\Command;
@@ -7,6 +8,7 @@ use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Tools\SchemaTool;
 use Doctrine\Persistence\ManagerRegistry;
 use Oro\Bundle\ConfigBundle\Config\ConfigManager;
+use Oro\Bundle\CurrencyBundle\DependencyInjection\Configuration as CurrencyConfig;
 use Oro\Bundle\DistributionBundle\Handler\ApplicationState;
 use Oro\Bundle\InstallerBundle\Command\Provider\InputOptionProvider;
 use Oro\Bundle\InstallerBundle\CommandExecutor;
@@ -21,6 +23,7 @@ use Oro\Bundle\MigrationBundle\Command\LoadDataFixturesCommand;
 use Oro\Bundle\SecurityBundle\Command\LoadPermissionConfigurationCommand;
 use Oro\Bundle\TranslationBundle\Command\OroTranslationUpdateCommand;
 use Oro\Bundle\UserBundle\Migrations\Data\ORM\LoadAdminUserData;
+use Symfony\Component\Console\Event\ConsoleEvent;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -30,6 +33,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Validator\Constraints\Url;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
  * Application installer.
@@ -49,13 +53,16 @@ class InstallCommand extends AbstractCommand implements InstallCommandInterface
     private ScriptManager $scriptManager;
     private ManagerRegistry $doctrine;
     private EventDispatcherInterface $eventDispatcher;
+    private InputInterface $input;
+    private ValidatorInterface $validator;
 
     public function __construct(
         ContainerInterface $container,
         ManagerRegistry $doctrine,
         EventDispatcherInterface $eventDispatcher,
         ApplicationState $applicationState,
-        ScriptManager $scriptManager
+        ScriptManager $scriptManager,
+        ValidatorInterface $validator
     ) {
         parent::__construct($container);
 
@@ -63,9 +70,11 @@ class InstallCommand extends AbstractCommand implements InstallCommandInterface
         $this->eventDispatcher = $eventDispatcher;
         $this->applicationState = $applicationState;
         $this->scriptManager = $scriptManager;
+        $this->validator = $validator;
     }
 
     /** @SuppressWarnings(PHPMD.ExcessiveMethodLength) */
+    #[\Override]
     protected function configure()
     {
         $this
@@ -76,13 +85,13 @@ class InstallCommand extends AbstractCommand implements InstallCommandInterface
             ->addOption('user-firstname', null, InputOption::VALUE_OPTIONAL, 'Admin user first name')
             ->addOption('user-lastname', null, InputOption::VALUE_OPTIONAL, 'Admin user last name')
             ->addOption('user-password', null, InputOption::VALUE_OPTIONAL, 'Admin user password')
-            ->addOption('sample-data', null, InputOption::VALUE_OPTIONAL, 'Load sample data')
-        ;
+            ->addOption('sample-data', null, InputOption::VALUE_OPTIONAL, 'Load sample data');
         $this->addLocalizationOptions();
         $this
             ->addOption('skip-download-translations', null, InputOption::VALUE_NONE, 'Skip downloading translations')
             ->addOption('skip-translations', null, InputOption::VALUE_NONE, 'Skip applying translations')
             ->addOption('drop-database', null, InputOption::VALUE_NONE, 'Delete all existing data')
+            ->addOption('default-currency', null, InputOption::VALUE_OPTIONAL, 'Oro default currency')
             ->setDescription('Application installer.')
             // @codingStandardsIgnoreStart
             ->setHelp(
@@ -176,20 +185,18 @@ HELP
         parent::configure();
     }
 
-    /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     */
+    #[\Override]
     protected function initialize(InputInterface $input, OutputInterface $output)
     {
-        if ($this->isTestEnvironment()) {
-            $this->presetTestEnvironmentOptions($input, $output);
-        }
+        $event = new ConsoleEvent($this, $input, $output);
+        $this->eventDispatcher->dispatch($event, InstallerEvents::INITIALIZE);
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    #[\Override]
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $this->input = $input;
         $this->inputOptionProvider = new InputOptionProvider($output, $input, $this->getHelperSet()->get('question'));
 
         $this->validateApplicationUrl($input->getOption('application-url'));
@@ -227,11 +234,11 @@ HELP
             $this->eventDispatcher->dispatch($event, InstallerEvents::INSTALLER_AFTER_DATABASE_PREPARATION);
 
             $this->finalStep($commandExecutor, $output, $input);
+            $this->eventDispatcher->dispatch($event, InstallerEvents::FINISH);
+
             // cache clear must be done after assets build process finished,
             // otherwise, it could lead to unpredictable errors
             $this->clearCache($commandExecutor, $input);
-
-            $this->eventDispatcher->dispatch($event, InstallerEvents::FINISH);
         } catch (\Exception $exception) {
             $output->writeln(sprintf('<error>%s</error>', $exception->getMessage()));
             // Exceptions may originate in the command executor and in InstallCommand code itself
@@ -240,7 +247,7 @@ HELP
 
         $this->successfullyInstalledMessageShow($input, $output);
 
-        return $buildAssetsProcessExitCode ?? 0;
+        return $buildAssetsProcessExitCode ?? self::SUCCESS;
     }
 
     private function alreadyInstalledMessageShow(InputInterface $input, OutputInterface $output): void
@@ -495,7 +502,18 @@ HELP
                 $configManager->set($configKey, $value);
             }
         }
+        $currency = $this->input->getOption('default-currency');
+        if (null !== $currency) {
+            /** @var ConfigManager $configManager */
+            $configManager = $this->getContainer()->get('oro_config.global');
+            $currencyConfigKey = CurrencyConfig::getConfigKeyByName(CurrencyConfig::KEY_DEFAULT_CURRENCY);
 
+            $currentCurrency = $configManager->get($currencyConfigKey);
+
+            if ($currentCurrency !== $currency) {
+                $configManager->set($currencyConfigKey, $currency);
+            }
+        }
         $configManager->flush();
     }
 
@@ -588,6 +606,7 @@ HELP
             $cacheClearOptions['--env'] = $input->getOption('env');
         }
         $commandExecutor->runCommand('cache:clear', $cacheClearOptions);
+        $commandExecutor->runCommand('router:cache:clear', ['--process-isolation' => true]);
     }
 
     protected function processInstallerScripts(OutputInterface $output, CommandExecutor $commandExecutor): void
@@ -642,9 +661,7 @@ HELP
             return;
         }
 
-        $violations = $this->getContainer()
-            ->get('validator')
-            ->validate($applicationUrl, new Url());
+        $violations = $this->validator->validate($applicationUrl, new Url());
 
         if (!$violations->count()) {
             return;
@@ -653,42 +670,5 @@ HELP
         throw new \InvalidArgumentException(
             'The value of the "application-url" parameter is invalid. ' . $violations->get(0)->getMessage()
         );
-    }
-
-    /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     */
-    private function presetTestEnvironmentOptions(InputInterface $input, OutputInterface $output): void
-    {
-        $testEnvDefaultOptionValuesMap = [
-            'user-name'         => 'admin',
-            'user-email'        => 'admin@example.com',
-            'user-firstname'    => 'John',
-            'user-lastname'     => 'Doe',
-            'user-password'     => 'admin',
-            'sample-data'       => 'n',
-            'organization-name' => 'OroInc',
-            'application-url'   => 'http://localhost/',
-            'skip-translations' => true,
-            'timeout'           => '600',
-            'language'          => 'en',
-            'formatting-code'   => 'en_US'
-        ];
-
-        foreach ($testEnvDefaultOptionValuesMap as $optionName => $optionValue) {
-            if ($input->hasParameterOption('--' . $optionName)) {
-                continue;
-            }
-
-            $input->setOption($optionName, $optionValue);
-        }
-
-        $input->setInteractive(false);
-    }
-
-    protected function isTestEnvironment(): bool
-    {
-        return $this->getContainer()->getParameter('kernel.environment') === 'test';
     }
 }

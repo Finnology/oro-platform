@@ -34,9 +34,7 @@ class EntityVariablesProvider implements EntityVariablesProviderInterface
     ) {
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getVariableDefinitions(): array
     {
         $result = [];
@@ -52,9 +50,7 @@ class EntityVariablesProvider implements EntityVariablesProviderInterface
         return $result;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getVariableGetters(): array
     {
         $result = [];
@@ -70,9 +66,7 @@ class EntityVariablesProvider implements EntityVariablesProviderInterface
         return $result;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getVariableProcessors(string $entityClass): array
     {
         return [];
@@ -182,7 +176,7 @@ class EntityVariablesProvider implements EntityVariablesProviderInterface
     protected function getExtendGetterMethods(string $entityClass): array
     {
         if (!isset($this->extendGetterMethods[$entityClass])) {
-            $extendEntityMethods = array_keys(EntityPropertyInfo::getExtendedMethods($entityClass));
+            $extendEntityMethods = EntityPropertyInfo::getExtendedMethods($entityClass);
             $extendEntityMethods = array_filter($extendEntityMethods, function (string $methodName) {
                 return str_starts_with($methodName, 'get') || str_starts_with($methodName, 'is');
             });

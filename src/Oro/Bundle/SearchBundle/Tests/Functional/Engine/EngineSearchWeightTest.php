@@ -21,6 +21,7 @@ class EngineSearchWeightTest extends SearchBundleWebTestCase
     /** @var callable */
     private $listener;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -28,6 +29,7 @@ class EngineSearchWeightTest extends SearchBundleWebTestCase
         $this->initClient([], $this->generateBasicAuthHeader());
     }
 
+    #[\Override]
     protected function tearDown(): void
     {
         if ($this->listener) {
@@ -84,7 +86,7 @@ class EngineSearchWeightTest extends SearchBundleWebTestCase
         $actualIds = [];
         /** @var \Oro\Bundle\SearchBundle\Query\Result\Item $resultItem */
         foreach ($actualItems as $resultItem) {
-            $actualIds[] = (integer)$resultItem->getRecordId();
+            $actualIds[] = (int)$resultItem->getRecordId();
         }
 
         $this->assertEquals($expectedIds, $actualIds);

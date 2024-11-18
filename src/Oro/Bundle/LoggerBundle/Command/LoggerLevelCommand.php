@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\LoggerBundle\Command;
@@ -54,6 +55,7 @@ class LoggerLevelCommand extends Command
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     protected function configure()
     {
         $this
@@ -80,7 +82,8 @@ HELP
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    #[\Override]
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $level = $this->getLogLevel($input->getArgument('level'));
         $disableAfter = $this->getDisableAfterDateTime($input->getArgument('disable-after'));
@@ -121,7 +124,7 @@ HELP
 
         $output->writeln($message);
 
-        return 0;
+        return Command::SUCCESS;
     }
 
     /**
@@ -146,13 +149,18 @@ HELP
         $now = new \DateTime('now', new \DateTimeZone('UTC'));
         $disableAfter = clone $now;
 
-        /** @noinspection PhpUsageOfSilenceOperatorInspection */
-        $interval = @\DateInterval::createFromDateString($value);
-        if ($interval instanceof \DateInterval) {
-            $disableAfter->add($interval);
-        }
+        try {
+            $interval = \DateInterval::createFromDateString($value);
+            if ($interval instanceof \DateInterval) {
+                $disableAfter->add($interval);
+            }
 
-        if ($disableAfter <= $now) {
+            if ($disableAfter <= $now) {
+                throw new \DateMalformedStringException(
+                    \sprintf("Interval string '%s' should not be negative", $value)
+                );
+            }
+        } catch (\DateException $e) {
             throw new \InvalidArgumentException(
                 \sprintf("Value '%s' for '%s' argument should be valid date interval", $value, 'disable-after')
             );

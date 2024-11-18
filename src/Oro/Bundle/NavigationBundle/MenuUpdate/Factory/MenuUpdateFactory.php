@@ -35,10 +35,11 @@ class MenuUpdateFactory implements MenuUpdateFactoryInterface
      *
      * @return MenuUpdateInterface
      */
+    #[\Override]
     public function createMenuUpdate(string $menuName, Scope $scope, array $options = []): MenuUpdateInterface
     {
         /** @var MenuUpdateInterface $menuUpdate */
-        $menuUpdate = new $this->menuUpdateClass;
+        $menuUpdate = new $this->menuUpdateClass();
         $menuUpdate->setMenu($menuName);
         $menuUpdate->setScope($scope);
 

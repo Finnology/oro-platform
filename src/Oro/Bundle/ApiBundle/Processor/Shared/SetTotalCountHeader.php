@@ -3,10 +3,14 @@
 namespace Oro\Bundle\ApiBundle\Processor\Shared;
 
 use Doctrine\ORM\Query;
+use Doctrine\ORM\Query\Expr;
 use Doctrine\ORM\QueryBuilder;
 use Oro\Bundle\ApiBundle\Config\EntityDefinitionConfig;
 use Oro\Bundle\ApiBundle\Processor\Context;
 use Oro\Bundle\ApiBundle\Processor\ListContext;
+use Oro\Bundle\ApiBundle\Processor\Subresource\GetRelationship\GetRelationshipContext;
+use Oro\Bundle\ApiBundle\Processor\Subresource\GetSubresource\GetSubresourceContext;
+use Oro\Bundle\ApiBundle\Request\ApiAction;
 use Oro\Bundle\BatchBundle\ORM\Query\QueryCountCalculator;
 use Oro\Bundle\BatchBundle\ORM\QueryBuilder\CountQueryBuilderOptimizer;
 use Oro\Component\ChainProcessor\ContextInterface;
@@ -37,12 +41,10 @@ class SetTotalCountHeader implements ProcessorInterface
         $this->queryResolver = $queryResolver;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function process(ContextInterface $context): void
     {
-        /** @var ListContext $context */
+        /** @var ListContext|GetRelationshipContext|GetSubresourceContext $context */
 
         if ($context->getResponseHeaders()->has(self::RESPONSE_HEADER_NAME)) {
             // total count header is already set
@@ -55,26 +57,29 @@ class SetTotalCountHeader implements ProcessorInterface
             return;
         }
 
-        $totalCount = null;
-
-        $totalCountCallback = $context->getTotalCountCallback();
-        if (null !== $totalCountCallback) {
-            $totalCount = $this->executeTotalCountCallback($totalCountCallback);
-        } else {
-            $query = $context->getQuery();
-            if (null !== $query) {
-                $totalCount = $this->calculateTotalCount($query, $context->getConfig());
-            } else {
-                $data = $context->getResult();
-                if (\is_array($data)) {
-                    $totalCount = \count($data);
-                }
-            }
-        }
-
+        $totalCount = $this->getTotalCount($context, $context->getTotalCountCallback());
         if (null !== $totalCount) {
             $context->getResponseHeaders()->set(self::RESPONSE_HEADER_NAME, $totalCount);
         }
+    }
+
+    private function getTotalCount(Context $context, ?callable $totalCountCallback): ?int
+    {
+        if (null !== $totalCountCallback) {
+            return $this->executeTotalCountCallback($totalCountCallback);
+        }
+
+        if ($context->getAction() !== ApiAction::DELETE_LIST && $context->getConfig()?->getPageSize() === -1) {
+            // the paging is disabled, no need to execute a separate DB query to calculate total count
+            return $this->calculateResultCount($context);
+        }
+
+        $query = $context->getQuery();
+        if (null !== $query) {
+            return $this->calculateTotalCount($query, $context->getConfig());
+        }
+
+        return $this->calculateResultCount($context);
     }
 
     private function executeTotalCountCallback(callable $callback): int
@@ -90,9 +95,25 @@ class SetTotalCountHeader implements ProcessorInterface
         return $totalCount;
     }
 
+    private function calculateResultCount(Context $context): ?int
+    {
+        if (!$context->hasResult()) {
+            return null;
+        }
+
+        $data = $context->getResult();
+        if (!\is_array($data)) {
+            return null;
+        }
+
+        return \count($data);
+    }
+
     private function calculateTotalCount(mixed $query, ?EntityDefinitionConfig $config): int
     {
+        $useCountDistinct = false;
         if ($query instanceof QueryBuilder) {
+            $useCountDistinct = !$this->hasComputedFields($query);
             $countQuery = $this->countQueryBuilderOptimizer
                 ->getCountQueryBuilder($query)
                 ->getQuery()
@@ -100,6 +121,7 @@ class SetTotalCountHeader implements ProcessorInterface
                 ->setFirstResult(null);
             $this->resolveQuery($countQuery, $config);
         } elseif ($query instanceof Query) {
+            $useCountDistinct = true;
             $countQuery = QueryUtil::cloneQuery($query)
                 ->setMaxResults(null)
                 ->setFirstResult(null);
@@ -125,7 +147,7 @@ class SetTotalCountHeader implements ProcessorInterface
             ));
         }
 
-        if ($countQuery instanceof Query) {
+        if ($useCountDistinct) {
             return QueryCountCalculator::calculateCountDistinct($countQuery);
         }
 
@@ -137,5 +159,20 @@ class SetTotalCountHeader implements ProcessorInterface
         if (null !== $config) {
             $this->queryResolver->resolveQuery($query, $config);
         }
+    }
+
+    private function hasComputedFields(QueryBuilder $query): bool
+    {
+        /** @var Expr\Select[] $selectPart */
+        $selectPart = $query->getDQLPart('select');
+        foreach ($selectPart as $select) {
+            foreach ($select->getParts() as $part) {
+                if (preg_match('/.+ AS [\w\-]+$/i', $part) === 1) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }

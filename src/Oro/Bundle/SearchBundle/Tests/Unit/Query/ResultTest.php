@@ -1,4 +1,5 @@
 <?php
+
 namespace Oro\Bundle\SearchBundle\Tests\Unit\Query;
 
 use Oro\Bundle\SearchBundle\Query\Criteria\Comparison;
@@ -27,6 +28,7 @@ class ResultTest extends \PHPUnit\Framework\TestCase
         ]
     ];
 
+    #[\Override]
     protected function setUp(): void
     {
         $product = new Product();

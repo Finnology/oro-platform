@@ -1,4 +1,5 @@
 <?php
+
 namespace Oro\Bundle\SearchBundle\Tests\Unit\Entity;
 
 use Oro\Bundle\SearchBundle\Entity\IndexText;
@@ -11,6 +12,7 @@ class IndexTextTest extends \PHPUnit\Framework\TestCase
      */
     private $index;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->index = new IndexText();

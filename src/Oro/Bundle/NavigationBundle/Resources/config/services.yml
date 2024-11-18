@@ -205,7 +205,7 @@ services:
             - [ addExcludedRoute, ['oro_rest_api_doc_resource']]
         tags:
             - { name: kernel.event_listener, event: kernel.response, method: onResponse }
-            - { name: container.service_subscriber, id: oro_navigation.navigation_history_logger }
+            - { name: container.service_subscriber, id: oro_navigation.navigation_history_logger, key: Oro\Bundle\NavigationBundle\Utils\NavigationHistoryLogger }
 
     oro_navigation.event.master_request_route_listener:
         class: Oro\Bundle\NavigationBundle\Event\AddMasterRequestRouteListener
@@ -217,7 +217,7 @@ services:
         arguments:
             - '@oro_ui.dynamic_asset_version_manager'
         tags:
-            - { name: kernel.event_listener, event: console.command, method: onConsoleCommand }
+            - { name: kernel.event_listener, event: console.terminate, method: onConsoleTerminate, priority: -10 }
 
     oro_navigation.listener.js_routing_route_collection_listener:
         class: Oro\Bundle\NavigationBundle\EventListener\JsRoutingRouteCollectionListener
@@ -256,17 +256,17 @@ services:
         arguments:
           - !tagged_iterator oro_navigation.title_reader
 
-    oro_navigation.title_annotations_reader:
-        class: Oro\Bundle\NavigationBundle\Title\TitleReader\AnnotationsReader
+    oro_navigation.title_attribute_reader:
+        class: Oro\Bundle\NavigationBundle\Title\TitleReader\TitleAttributeReader
         public: false
         parent: oro.static_config_provider.abstract
         arguments:
-            - '%kernel.cache_dir%/oro/title_annotations.php'
+            - '%kernel.cache_dir%/oro/title_attributes.php'
             - '%kernel.debug%'
             - '@oro_ui.controller_class_provider'
-            - '@annotation_reader'
+            - '@oro_platform.attribute_reader'
         tags:
-            - { name: oro_navigation.title_reader, priority: 10}
+            - { name: oro_navigation.title_reader, priority: 10 }
 
     oro_navigation.title_config_reader:
         class: Oro\Bundle\NavigationBundle\Title\TitleReader\ConfigReader
@@ -341,9 +341,10 @@ services:
 
     oro_navigation.twig.hash_nav_extension:
         class: Oro\Bundle\NavigationBundle\Twig\HashNavExtension
+        arguments:
+            - '@oro_platform.twig.service_locator'
         tags:
             - { name: twig.extension }
-            - { name: kernel.event_listener, event: kernel.request, method: onKernelRequest }
 
     oro_navigation.breadcrumb_manager.default:
         class: Oro\Bundle\NavigationBundle\Menu\BreadcrumbManager
@@ -632,3 +633,11 @@ services:
         class: Oro\Bundle\NavigationBundle\Provider\MenuNamesProvider
         arguments:
             - '@oro_navigation.configuration.provider'
+
+    oro_navigation.provider.route_title:
+        class: Oro\Bundle\NavigationBundle\Provider\RouteTitleProvider
+        arguments:
+            - '@oro_navigation.title_reader.registry'
+            - '@oro_navigation.title_translator'
+            - '@oro_navigation.title_service'
+

@@ -4,6 +4,7 @@ namespace Oro\Bundle\DataAuditBundle\Filter;
 
 use Doctrine\ORM\Query\Expr;
 use Doctrine\Persistence\ManagerRegistry;
+use Oro\Bundle\DataAuditBundle\Entity\Audit;
 use Oro\Bundle\DataAuditBundle\Form\Type\FilterType;
 use Oro\Bundle\DataAuditBundle\Model\AuditFieldTypeRegistry;
 use Oro\Bundle\FilterBundle\Datasource\FilterDatasourceAdapterInterface;
@@ -54,17 +55,13 @@ class AuditFilter extends EntityFilter
         $this->queryDesignerManager = $queryDesignerManager;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getMetadata()
     {
         return [];
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function apply(FilterDatasourceAdapterInterface $ds, $data)
     {
         if (!$ds instanceof OrmFilterDatasourceAdapter) {
@@ -91,7 +88,7 @@ class AuditFilter extends EntityFilter
 
         $auditQb = $qb
             ->getEntityManager()
-            ->getRepository('OroDataAuditBundle:Audit')
+            ->getRepository(Audit::class)
             ->createQueryBuilder($this->auditAlias);
 
         $auditQb
@@ -215,17 +212,13 @@ class AuditFilter extends EntityFilter
         return $matches[0];
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     protected function getFormType()
     {
         return FilterType::class;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     protected function createForm(): FormInterface
     {
         return $this->formFactory->create($this->getFormType());

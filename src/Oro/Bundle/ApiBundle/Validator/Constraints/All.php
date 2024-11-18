@@ -8,6 +8,7 @@
 
 namespace Oro\Bundle\ApiBundle\Validator\Constraints;
 
+use Attribute;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\Constraints\Composite;
 
@@ -20,39 +21,32 @@ use Symfony\Component\Validator\Constraints\Composite;
  *
  * @Annotation
  */
+#[Attribute]
 class All extends Composite
 {
     /** @var Constraint|Constraint[] */
     public $constraints = [];
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getTargets()
+    #[\Override]
+    public function getTargets(): string|array
     {
         return self::PROPERTY_CONSTRAINT;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getDefaultOption()
+    #[\Override]
+    public function getDefaultOption(): ?string
     {
         return 'constraints';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getRequiredOptions()
+    #[\Override]
+    public function getRequiredOptions(): array
     {
         return ['constraints'];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function getCompositeOption()
+    #[\Override]
+    protected function getCompositeOption(): string
     {
         return 'constraints';
     }

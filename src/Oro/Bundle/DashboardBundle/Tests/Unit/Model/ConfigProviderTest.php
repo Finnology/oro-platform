@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\DashboardBundle\Tests\Unit\Model;
@@ -22,6 +23,7 @@ class ConfigProviderTest extends \PHPUnit\Framework\TestCase
     private array $expectedDashboardConfigs;
     private array $expectedWidgetConfigs;
 
+    #[\Override]
     protected function setUp(): void
     {
         $cacheFile = $this->getTempFile('DashboardConfigurationProvider');

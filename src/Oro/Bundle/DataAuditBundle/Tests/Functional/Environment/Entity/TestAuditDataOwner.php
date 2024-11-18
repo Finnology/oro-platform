@@ -4,25 +4,26 @@ namespace Oro\Bundle\DataAuditBundle\Tests\Functional\Environment\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Oro\Bundle\DataAuditBundle\Entity\AuditAdditionalFieldsInterface;
-use Oro\Bundle\EntityConfigBundle\Metadata\Annotation\Config;
-use Oro\Bundle\EntityConfigBundle\Metadata\Annotation\ConfigField;
+use Oro\Bundle\EntityConfigBundle\Metadata\Attribute\Config;
+use Oro\Bundle\EntityConfigBundle\Metadata\Attribute\ConfigField;
 use Oro\Bundle\EntityExtendBundle\Entity\ExtendEntityInterface;
 use Oro\Bundle\EntityExtendBundle\Entity\ExtendEntityTrait;
 use Oro\Bundle\TestFrameworkBundle\Entity\TestFrameworkEntityInterface;
 use Oro\Component\Config\Common\ConfigObject;
 
 /**
- * @ORM\Table(name="oro_test_dataaudit_owner")
- * @ORM\Entity
- * @Config(defaultValues={"dataaudit"={"auditable"=true}})
  *
  * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  * @SuppressWarnings(PHPMD.ExcessivePublicCount)
  * @SuppressWarnings(PHPMD.TooManyFields)
  * @SuppressWarnings(PHPMD.ExcessiveClassLength)
  */
+#[ORM\Entity]
+#[ORM\Table(name: 'oro_test_dataaudit_owner')]
+#[Config(defaultValues: ['dataaudit' => ['auditable' => true]])]
 class TestAuditDataOwner implements
     TestFrameworkEntityInterface,
     AuditAdditionalFieldsInterface,
@@ -30,338 +31,266 @@ class TestAuditDataOwner implements
 {
     use ExtendEntityTrait;
 
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
-    private $id;
+    #[ORM\Column(name: 'id', type: Types::INTEGER)]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
+    private ?int $id = null;
+
+    #[ORM\Column(name: 'not_auditable_property', type: Types::TEXT, nullable: true)]
+    private ?string $notAuditableProperty = null;
+
+    #[ORM\OneToOne(inversedBy: 'owner', targetEntity: TestAuditDataChild::class)]
+    #[ORM\JoinColumn(name: 'child_id', referencedColumnName: 'id')]
+    #[ConfigField(defaultValues: ['dataaudit' => ['auditable' => true, 'propagate' => true]])]
+    private ?TestAuditDataChild $child = null;
+
+    #[ORM\OneToOne(inversedBy: 'ownerCascade', targetEntity: TestAuditDataChild::class, cascade: ['remove'])]
+    #[ORM\JoinColumn(name: 'child_cascade_id', referencedColumnName: 'id', onDelete: 'SET NULL')]
+    #[ConfigField(defaultValues: ['dataaudit' => ['auditable' => true, 'propagate' => true]])]
+    private ?TestAuditDataChild $childCascade = null;
+
+    #[ORM\OneToOne(inversedBy: 'ownerOrphanRemoval', targetEntity: TestAuditDataChild::class, orphanRemoval: true)]
+    #[ORM\JoinColumn(name: 'child_orphan_id', referencedColumnName: 'id', onDelete: 'SET NULL')]
+    #[ConfigField(defaultValues: ['dataaudit' => ['auditable' => true, 'propagate' => true]])]
+    private ?TestAuditDataChild $childOrphanRemoval = null;
+
+    #[ORM\OneToOne(targetEntity: TestAuditDataChild::class)]
+    #[ORM\JoinColumn(name: 'child_unidirectional_id', referencedColumnName: 'id')]
+    #[ConfigField(defaultValues: ['dataaudit' => ['auditable' => true, 'propagate' => true]])]
+    private ?TestAuditDataChild $childUnidirectional = null;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(name="not_auditable_property", type="text", nullable=true)
+     * @var Collection<int, TestAuditDataChild>
      */
-    private $notAuditableProperty;
+    #[ORM\ManyToMany(targetEntity: TestAuditDataChild::class, inversedBy: 'owners')]
+    #[ORM\JoinTable(name: 'oro_test_dataaudit_many2many')]
+    #[ORM\JoinColumn(name: 'owner_id', referencedColumnName: 'id')]
+    #[ORM\InverseJoinColumn(name: 'child_id', referencedColumnName: 'id', unique: true)]
+    #[ConfigField(defaultValues: ['dataaudit' => ['auditable' => true, 'propagate' => true]])]
+    private ?Collection $childrenManyToMany = null;
 
     /**
-     * @ORM\OneToOne(targetEntity="TestAuditDataChild", inversedBy="owner")
-     * @ORM\JoinColumn(name="child_id", referencedColumnName="id")
-     * @ConfigField(defaultValues={"dataaudit"={"auditable"=true, "propagate"=true}})
+     * @var Collection<int, TestAuditDataChild>
      */
-    private $child;
+    #[ORM\ManyToMany(targetEntity: TestAuditDataChild::class)]
+    #[ORM\JoinTable(name: 'oro_test_dataaudit_many2many_u')]
+    #[ORM\JoinColumn(name: 'owner_id', referencedColumnName: 'id')]
+    #[ORM\InverseJoinColumn(name: 'child_id', referencedColumnName: 'id', unique: true)]
+    #[ConfigField(defaultValues: ['dataaudit' => ['auditable' => true, 'propagate' => true]])]
+    private ?Collection $childrenManyToManyUnidirectional = null;
 
     /**
-     * @var TestAuditDataChild
-     *
-     * @ORM\OneToOne(targetEntity="TestAuditDataChild", inversedBy="ownerCascade", cascade={"remove"})
-     * @ORM\JoinColumn(name="child_cascade_id", referencedColumnName="id", onDelete="SET NULL")
-     * @ConfigField(defaultValues={"dataaudit"={"auditable"=true, "propagate"=true}})
+     * @var Collection<int, TestAuditDataChild>
      */
-    private $childCascade;
-
-    /**
-     * @var TestAuditDataChild
-     *
-     * @ORM\OneToOne(targetEntity="TestAuditDataChild", inversedBy="ownerOrphanRemoval", orphanRemoval=true)
-     * @ORM\JoinColumn(name="child_orphan_id", referencedColumnName="id", onDelete="SET NULL")
-     * @ConfigField(defaultValues={"dataaudit"={"auditable"=true, "propagate"=true}})
-     */
-    private $childOrphanRemoval;
-
-    /**
-     * @var TestAuditDataChild
-     *
-     * @ORM\OneToOne(targetEntity="TestAuditDataChild")
-     * @ORM\JoinColumn(name="child_unidirectional_id", referencedColumnName="id")
-     * @ConfigField(defaultValues={"dataaudit"={"auditable"=true, "propagate"=true}})
-     */
-    private $childUnidirectional;
-
-    /**
-     * @ORM\ManyToMany(targetEntity="TestAuditDataChild", inversedBy="owners")
-     * @ORM\JoinTable(name="oro_test_dataaudit_many2many",
-     *      joinColumns={@ORM\JoinColumn(name="owner_id", referencedColumnName="id")},
-     *      inverseJoinColumns={@ORM\JoinColumn(name="child_id", referencedColumnName="id", unique=true)}
-     * )
-     * @ConfigField(defaultValues={"dataaudit"={"auditable"=true, "propagate"=true}})
-     */
-    private $childrenManyToMany;
-
-    /**
-     * @var TestAuditDataChild[]|Collection
-     *
-     * @ORM\ManyToMany(targetEntity="TestAuditDataChild")
-     * @ORM\JoinTable(name="oro_test_dataaudit_many2many_u",
-     *      joinColumns={@ORM\JoinColumn(name="owner_id", referencedColumnName="id")},
-     *      inverseJoinColumns={@ORM\JoinColumn(name="child_id", referencedColumnName="id", unique=true)}
-     * )
-     * @ConfigField(defaultValues={"dataaudit"={"auditable"=true, "propagate"=true}})
-     */
-    private $childrenManyToManyUnidirectional;
-
-    /**
-     * @ORM\OneToMany(targetEntity="TestAuditDataChild", mappedBy="ownerManyToOne")
-     * @ConfigField(defaultValues={"dataaudit"={"auditable"=true, "propagate"=true}})
-     */
-    private $childrenOneToMany;
+    #[ORM\OneToMany(mappedBy: 'ownerManyToOne', targetEntity: TestAuditDataChild::class)]
+    #[ConfigField(defaultValues: ['dataaudit' => ['auditable' => true, 'propagate' => true]])]
+    private ?Collection $childrenOneToMany = null;
 
     /**
      * @var array
-     *
-     * @ORM\Column(name="array_property", type="array", nullable=true)
-     * @ConfigField(defaultValues={"dataaudit"={"auditable"=true}})
      */
+    #[ORM\Column(name: 'array_property', type: Types::ARRAY, nullable: true)]
+    #[ConfigField(defaultValues: ['dataaudit' => ['auditable' => true]])]
     private $arrayProperty;
 
     /**
-     * @var int
-     *
-     * @ORM\Column(name="bigint_property", type="bigint", nullable=true)
-     * @ConfigField(defaultValues={"dataaudit"={"auditable"=true}})
+     * @var int|null
      */
+    #[ORM\Column(name: 'bigint_property', type: Types::BIGINT, nullable: true)]
+    #[ConfigField(defaultValues: ['dataaudit' => ['auditable' => true]])]
     private $bigintProperty;
 
     /**
      * @var resource
-     *
-     * @ORM\Column(name="binary_property", type="binary", nullable=true)
-     * @ConfigField(defaultValues={"dataaudit"={"auditable"=true}})
      */
+    #[ORM\Column(name: 'binary_property', type: Types::BINARY, nullable: true)]
+    #[ConfigField(defaultValues: ['dataaudit' => ['auditable' => true]])]
     private $binaryProperty;
 
     /**
      * @var resource
-     *
-     * @ORM\Column(name="blob_property", type="blob", nullable=true)
-     * @ConfigField(defaultValues={"dataaudit"={"auditable"=true}})
      */
+    #[ORM\Column(name: 'blob_property', type: Types::BLOB, nullable: true)]
+    #[ConfigField(defaultValues: ['dataaudit' => ['auditable' => true]])]
     private $blobProperty;
 
-    /**
-     * @var bool
-     *
-     * @ORM\Column(name="boolean_property", type="boolean", nullable=true)
-     * @ConfigField(defaultValues={"dataaudit"={"auditable"=true}})
-     */
-    private $booleanProperty;
+    #[ORM\Column(name: 'boolean_property', type: Types::BOOLEAN, nullable: true)]
+    #[ConfigField(defaultValues: ['dataaudit' => ['auditable' => true]])]
+    private ?bool $booleanProperty = null;
 
     /**
      * @var ConfigObject
-     *
-     * @ORM\Column(name="config_object_property", type="config_object", nullable=true)
-     * @ConfigField(defaultValues={"dataaudit"={"auditable"=true}})
      */
+    #[ORM\Column(name: 'config_object_property', type: 'config_object', nullable: true)]
+    #[ConfigField(defaultValues: ['dataaudit' => ['auditable' => true]])]
     private $configObjectProperty;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="crypted_string_property", type="crypted_string", nullable=true)
-     * @ConfigField(defaultValues={"dataaudit"={"auditable"=true}})
      */
+    #[ORM\Column(name: 'crypted_string_property', type: 'crypted_string', nullable: true)]
+    #[ConfigField(defaultValues: ['dataaudit' => ['auditable' => true]])]
     private $cryptedStringProperty;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="currency_property", type="currency", nullable=true)
-     * @ConfigField(defaultValues={"dataaudit"={"auditable"=true}})
      */
+    #[ORM\Column(name: 'crypted_text_property', type: 'crypted_text', nullable: true)]
+    #[ConfigField(defaultValues: ['dataaudit' => ['auditable' => true]])]
+    private $cryptedTextProperty;
+
+    /**
+     * @var string
+     */
+    #[ORM\Column(name: 'currency_property', type: 'currency', nullable: true)]
+    #[ConfigField(defaultValues: ['dataaudit' => ['auditable' => true]])]
     private $currencyProperty;
 
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="date_property", type="date", nullable=true)
-     * @ConfigField(defaultValues={"dataaudit"={"auditable"=true}})
-     */
-    private $dateProperty;
+    #[ORM\Column(name: 'date_property', type: Types::DATE_MUTABLE, nullable: true)]
+    #[ConfigField(defaultValues: ['dataaudit' => ['auditable' => true]])]
+    private ?\DateTimeInterface $dateProperty = null;
+
+    #[ORM\Column(name: 'date_time_property', type: Types::DATETIME_MUTABLE, nullable: true)]
+    #[ConfigField(defaultValues: ['dataaudit' => ['auditable' => true]])]
+    private ?\DateTimeInterface $dateTimeProperty = null;
 
     /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="date_time_property", type="datetime", nullable=true)
-     * @ConfigField(defaultValues={"dataaudit"={"auditable"=true}})
+     * @var \DateTimeInterface
      */
-    private $dateTimeProperty;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="date_time_tz_property", type="datetimetz", nullable=true)
-     * @ConfigField(defaultValues={"dataaudit"={"auditable"=true}})
-     */
+    #[ORM\Column(name: 'date_time_tz_property', type: Types::DATETIMETZ_MUTABLE, nullable: true)]
+    #[ConfigField(defaultValues: ['dataaudit' => ['auditable' => true]])]
     private $dateTimeTzProperty;
 
     /**
-     * @var float
-     *
-     * @ORM\Column(name="decimal_property", type="decimal", nullable=true, precision=19, scale=4)
-     * @ConfigField(defaultValues={"dataaudit"={"auditable"=true}})
+     * @var float|null
      */
+    #[ORM\Column(name: 'decimal_property', type: Types::DECIMAL, precision: 19, scale: 4, nullable: true)]
+    #[ConfigField(defaultValues: ['dataaudit' => ['auditable' => true]])]
     private $decimalProperty;
 
     /**
-     * @var int
-     *
-     * @ORM\Column(name="duration_property", type="duration", nullable=true)
-     * @ConfigField(defaultValues={"dataaudit"={"auditable"=true}})
+     * @var int|null
      */
+    #[ORM\Column(name: 'duration_property', type: 'duration', nullable: true)]
+    #[ConfigField(defaultValues: ['dataaudit' => ['auditable' => true]])]
     private $durationProperty;
 
     /**
-     * @var float
-     *
-     * @ORM\Column(name="float_property", type="float", nullable=true)
-     * @ConfigField(defaultValues={"dataaudit"={"auditable"=true}})
+     * @var float|null
      */
+    #[ORM\Column(name: 'float_property', type: Types::FLOAT, nullable: true)]
+    #[ConfigField(defaultValues: ['dataaudit' => ['auditable' => true]])]
     private $floatProperty;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="guid_property", type="guid", nullable=true)
-     * @ConfigField(defaultValues={"dataaudit"={"auditable"=true}})
      */
+    #[ORM\Column(name: 'guid_property', type: Types::GUID, nullable: true)]
+    #[ConfigField(defaultValues: ['dataaudit' => ['auditable' => true]])]
     private $guidProperty;
 
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="integer_property", type="integer", nullable=true)
-     * @ConfigField(defaultValues={"dataaudit"={"auditable"=true}})
-     */
-    private $integerProperty;
+    #[ORM\Column(name: 'integer_property', type: Types::INTEGER, nullable: true)]
+    #[ConfigField(defaultValues: ['dataaudit' => ['auditable' => true]])]
+    private ?int $integerProperty = null;
 
     /**
      * @var array
-     *
-     * @ORM\Column(name="json_array_property", type="json_array", nullable=true)
-     * @ConfigField(defaultValues={"dataaudit"={"auditable"=true}})
      */
+    #[ORM\Column(name: 'json_array_property', type: 'json_array', nullable: true)]
+    #[ConfigField(defaultValues: ['dataaudit' => ['auditable' => true]])]
     private $jsonArrayProperty;
 
     /**
      * @var float
-     *
-     * @ORM\Column(name="money_property", type="money", nullable=true)
-     * @ConfigField(defaultValues={"dataaudit"={"auditable"=true}})
      */
+    #[ORM\Column(name: 'money_property', type: 'money', nullable: true)]
+    #[ConfigField(defaultValues: ['dataaudit' => ['auditable' => true]])]
     private $moneyProperty;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="money_value_property", type="money_value", nullable=true)
-     * @ConfigField(defaultValues={"dataaudit"={"auditable"=true}})
      */
+    #[ORM\Column(name: 'money_value_property', type: 'money_value', nullable: true)]
+    #[ConfigField(defaultValues: ['dataaudit' => ['auditable' => true]])]
     private $moneyValueProperty;
 
     /**
      * @var mixed
-     *
-     * @ORM\Column(name="object_property", type="object", nullable=true)
-     * @ConfigField(defaultValues={"dataaudit"={"auditable"=true}})
      */
+    #[ORM\Column(name: 'object_property', type: Types::OBJECT, nullable: true)]
+    #[ConfigField(defaultValues: ['dataaudit' => ['auditable' => true]])]
     private $objectProperty;
 
     /**
      * @var float
-     *
-     * @ORM\Column(name="percent_property", type="percent", nullable=true)
-     * @ConfigField(defaultValues={"dataaudit"={"auditable"=true}})
      */
+    #[ORM\Column(name: 'percent_property', type: 'percent', nullable: true)]
+    #[ConfigField(defaultValues: ['dataaudit' => ['auditable' => true]])]
     private $percentProperty;
 
     /**
      * @var array
-     *
-     * @ORM\Column(name="simple_array_property", type="simple_array", nullable=true)
-     * @ConfigField(defaultValues={"dataaudit"={"auditable"=true}})
      */
+    #[ORM\Column(name: 'simple_array_property', type: Types::SIMPLE_ARRAY, nullable: true)]
+    #[ConfigField(defaultValues: ['dataaudit' => ['auditable' => true]])]
     private $simpleArrayProperty;
 
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="smallint_property", type="smallint", nullable=true)
-     * @ConfigField(defaultValues={"dataaudit"={"auditable"=true}})
-     */
-    private $smallintProperty;
+    #[ORM\Column(name: 'smallint_property', type: Types::SMALLINT, nullable: true)]
+    #[ConfigField(defaultValues: ['dataaudit' => ['auditable' => true]])]
+    private ?int $smallintProperty = null;
 
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="string_property", type="text", nullable=true)
-     * @ConfigField(defaultValues={"dataaudit"={"auditable"=true}})
-     */
-    private $stringProperty;
+    #[ORM\Column(name: 'string_property', type: Types::TEXT, nullable: true)]
+    #[ConfigField(defaultValues: ['dataaudit' => ['auditable' => true]])]
+    private ?string $stringProperty = null;
 
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="text_property", type="text", nullable=true)
-     * @ConfigField(defaultValues={"dataaudit"={"auditable"=true}})
-     */
-    private $textProperty;
+    #[ORM\Column(name: 'text_property', type: Types::TEXT, nullable: true)]
+    #[ConfigField(defaultValues: ['dataaudit' => ['auditable' => true]])]
+    private ?string $textProperty = null;
 
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="time_property", type="time", nullable=true)
-     * @ConfigField(defaultValues={"dataaudit"={"auditable"=true}})
-     */
-    private $timeProperty;
+    #[ORM\Column(name: 'time_property', type: Types::TIME_MUTABLE, nullable: true)]
+    #[ConfigField(defaultValues: ['dataaudit' => ['auditable' => true]])]
+    private ?\DateTimeInterface $timeProperty = null;
 
     /**
      * @var \DateTimeImmutable
-     *
-     * @ORM\Column(name="date_immutable_property", type="date_immutable", nullable=true)
-     * @ConfigField(defaultValues={"dataaudit"={"auditable"=true}})
      */
+    #[ORM\Column(name: 'date_immutable_property', type: Types::DATE_IMMUTABLE, nullable: true)]
+    #[ConfigField(defaultValues: ['dataaudit' => ['auditable' => true]])]
     private $dateImmutable;
 
     /**
      * @var \DateInterval
-     *
-     * @ORM\Column(name="dateinterval_property", type="dateinterval", nullable=true)
-     * @ConfigField(defaultValues={"dataaudit"={"auditable"=true}})
      */
+    #[ORM\Column(name: 'dateinterval_property', type: Types::DATEINTERVAL, nullable: true)]
+    #[ConfigField(defaultValues: ['dataaudit' => ['auditable' => true]])]
     private $dateInterval;
 
     /**
      * @var \DateTimeImmutable
-     *
-     * @ORM\Column(name="datetime_immutable_property", type="datetime_immutable", nullable=true)
-     * @ConfigField(defaultValues={"dataaudit"={"auditable"=true}})
      */
+    #[ORM\Column(name: 'datetime_immutable_property', type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    #[ConfigField(defaultValues: ['dataaudit' => ['auditable' => true]])]
     private $datetimeImmutable;
 
     /**
      * @var \DateTimeImmutable
-     *
-     * @ORM\Column(name="datetimetz_immutable_property", type="datetimetz_immutable", nullable=true)
-     * @ConfigField(defaultValues={"dataaudit"={"auditable"=true}})
      */
+    #[ORM\Column(name: 'datetimetz_immutable_property', type: Types::DATETIMETZ_IMMUTABLE, nullable: true)]
+    #[ConfigField(defaultValues: ['dataaudit' => ['auditable' => true]])]
     private $datetimetzImmutable;
 
     /**
      * @var array
-     *
-     * @ORM\Column(name="json_property", type="json", nullable=true)
-     * @ConfigField(defaultValues={"dataaudit"={"auditable"=true}})
      */
+    #[ORM\Column(name: 'json_property', type: Types::JSON, nullable: true)]
+    #[ConfigField(defaultValues: ['dataaudit' => ['auditable' => true]])]
     private $json;
 
     /**
      * @var \DateTimeImmutable
-     *
-     * @ORM\Column(name="time_immutable_property", type="time_immutable", nullable=true)
-     * @ConfigField(defaultValues={"dataaudit"={"auditable"=true}})
      */
+    #[ORM\Column(name: 'time_immutable_property', type: Types::TIME_IMMUTABLE, nullable: true)]
+    #[ConfigField(defaultValues: ['dataaudit' => ['auditable' => true]])]
     private $timeImmutable;
 
     /**
@@ -450,6 +379,7 @@ class TestAuditDataOwner implements
         $this->childrenManyToMany->removeElement($testAuditDataChild);
     }
 
+    #[\Override]
     public function __toString()
     {
         return 'ToStringTestAuditDataOwner';
@@ -507,9 +437,7 @@ class TestAuditDataOwner implements
         $this->additionalFields = $fields;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getAdditionalFields()
     {
         return $this->additionalFields;
@@ -651,9 +579,6 @@ class TestAuditDataOwner implements
         return $this->configObjectProperty;
     }
 
-    /**
-     * @param ConfigObject $configObjectProperty
-     */
     public function setConfigObjectProperty(ConfigObject $configObjectProperty = null)
     {
         $this->configObjectProperty = $configObjectProperty;
@@ -673,6 +598,22 @@ class TestAuditDataOwner implements
     public function setCryptedStringProperty($cryptedStringProperty)
     {
         $this->cryptedStringProperty = $cryptedStringProperty;
+    }
+
+    /**
+     * @return string
+     */
+    public function getCryptedTextProperty()
+    {
+        return $this->cryptedTextProperty;
+    }
+
+    /**
+     * @param string $cryptedTextProperty
+     */
+    public function setCryptedTextProperty($cryptedTextProperty)
+    {
+        $this->cryptedTextProperty = $cryptedTextProperty;
     }
 
     /**
@@ -699,9 +640,6 @@ class TestAuditDataOwner implements
         return $this->dateProperty;
     }
 
-    /**
-     * @param \DateTime $dateProperty
-     */
     public function setDateProperty(\DateTime $dateProperty = null)
     {
         $this->dateProperty = $dateProperty;
@@ -715,9 +653,6 @@ class TestAuditDataOwner implements
         return $this->dateTimeProperty;
     }
 
-    /**
-     * @param \DateTime $dateTimeProperty
-     */
     public function setDateTimeProperty(\DateTime $dateTimeProperty = null)
     {
         $this->dateTimeProperty = $dateTimeProperty;
@@ -731,9 +666,6 @@ class TestAuditDataOwner implements
         return $this->dateTimeTzProperty;
     }
 
-    /**
-     * @param \DateTime $dateTimeTzProperty
-     */
     public function setDateTimeTzProperty(\DateTime $dateTimeTzProperty = null)
     {
         $this->dateTimeTzProperty = $dateTimeTzProperty;
@@ -914,9 +846,6 @@ class TestAuditDataOwner implements
         return $this->childUnidirectional;
     }
 
-    /**
-     * @param TestAuditDataChild $childUnidirectional
-     */
     public function setChildUnidirectional(TestAuditDataChild $childUnidirectional = null)
     {
         $this->childUnidirectional = $childUnidirectional;
@@ -962,9 +891,6 @@ class TestAuditDataOwner implements
         return $this->timeProperty;
     }
 
-    /**
-     * @param \DateTime $timeProperty
-     */
     public function setTimeProperty(\DateTime $timeProperty = null)
     {
         $this->timeProperty = $timeProperty;
@@ -978,9 +904,6 @@ class TestAuditDataOwner implements
         return $this->childCascade;
     }
 
-    /**
-     * @param TestAuditDataChild $childCascade
-     */
     public function setChildCascade(TestAuditDataChild $childCascade = null)
     {
         $this->childCascade = $childCascade;
@@ -994,9 +917,6 @@ class TestAuditDataOwner implements
         return $this->childOrphanRemoval;
     }
 
-    /**
-     * @param TestAuditDataChild $childOrphanRemoval
-     */
     public function setChildOrphanRemoval(TestAuditDataChild $childOrphanRemoval = null)
     {
         $this->childOrphanRemoval = $childOrphanRemoval;
@@ -1010,9 +930,6 @@ class TestAuditDataOwner implements
         return $this->dateImmutable;
     }
 
-    /**
-     * @param \DateTimeImmutable $dateImmutable
-     */
     public function setDateImmutable(\DateTimeImmutable $dateImmutable = null)
     {
         $this->dateImmutable = $dateImmutable;
@@ -1026,9 +943,6 @@ class TestAuditDataOwner implements
         return $this->dateInterval;
     }
 
-    /**
-     * @param \DateInterval $dateInterval
-     */
     public function setDateInterval(\DateInterval $dateInterval = null)
     {
         $this->dateInterval = $dateInterval;
@@ -1042,9 +956,6 @@ class TestAuditDataOwner implements
         return $this->datetimeImmutable;
     }
 
-    /**
-     * @param \DateTimeImmutable $datetimeImmutable
-     */
     public function setDatetimeImmutable(\DateTimeImmutable $datetimeImmutable = null)
     {
         $this->datetimeImmutable = $datetimeImmutable;
@@ -1058,9 +969,6 @@ class TestAuditDataOwner implements
         return $this->datetimetzImmutable;
     }
 
-    /**
-     * @param \DateTimeImmutable $datetimetzImmutable
-     */
     public function setDatetimetzImmutable(\DateTimeImmutable $datetimetzImmutable = null)
     {
         $this->datetimetzImmutable = $datetimetzImmutable;
@@ -1087,9 +995,6 @@ class TestAuditDataOwner implements
         return $this->timeImmutable;
     }
 
-    /**
-     * @param \DateTimeImmutable $timeImmutable
-     */
     public function setTimeImmutable(\DateTimeImmutable $timeImmutable = null)
     {
         $this->timeImmutable = $timeImmutable;

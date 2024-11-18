@@ -9,6 +9,7 @@ use Oro\Bundle\TestFrameworkBundle\Test\WebTestCase;
 
 class ClearNavigationHistoryCommandTest extends WebTestCase
 {
+    #[\Override]
     protected function setUp(): void
     {
         $this->initClient();
@@ -20,6 +21,14 @@ class ClearNavigationHistoryCommandTest extends WebTestCase
         self::assertStringContainsString(
             "Value 'invalid' should be valid date interval",
             $this->runCommand('oro:navigation:history:clear', ['--interval' => 'invalid'])
+        );
+    }
+
+    public function testExecuteWithPositiveInterval()
+    {
+        self::assertStringContainsString(
+            "Value '-1 day' should be valid date interval",
+            $this->runCommand('oro:navigation:history:clear', ['--interval=-1 day'])
         );
     }
 
@@ -46,7 +55,7 @@ class ClearNavigationHistoryCommandTest extends WebTestCase
                 NavigationHistoryItemData::NAVIGATION_HISTORY_ITEM_3,
                 NavigationHistoryItemData::NAVIGATION_HISTORY_ITEM_4,
                 NavigationHistoryItemData::NAVIGATION_HISTORY_ITEM_5,
-            ]));
+            ], true));
         }
     }
 }

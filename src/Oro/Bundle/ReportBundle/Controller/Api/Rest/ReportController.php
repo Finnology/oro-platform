@@ -3,7 +3,8 @@
 namespace Oro\Bundle\ReportBundle\Controller\Api\Rest;
 
 use Nelmio\ApiDocBundle\Annotation\ApiDoc;
-use Oro\Bundle\SecurityBundle\Annotation\Acl;
+use Oro\Bundle\ReportBundle\Entity\Report;
+use Oro\Bundle\SecurityBundle\Attribute\Acl;
 use Oro\Bundle\SoapBundle\Controller\Api\Rest\RestController;
 use Oro\Bundle\SoapBundle\Entity\Manager\ApiEntityManager;
 use Oro\Bundle\SoapBundle\Form\Handler\ApiFormHandler;
@@ -24,14 +25,9 @@ class ReportController extends RestController
      *      description="Delete Report",
      *      resource=true
      * )
-     * @Acl(
-     *      id="oro_report_delete",
-     *      type="entity",
-     *      permission="DELETE",
-     *      class="OroReportBundle:Report"
-     * )
      * @return Response
      */
+    #[Acl(id: 'oro_report_delete', type: 'entity', class: Report::class, permission: 'DELETE')]
     public function deleteAction(int $id)
     {
         return $this->handleDeleteRequest($id);
@@ -42,15 +38,17 @@ class ReportController extends RestController
      *
      * @return ApiEntityManager
      */
+    #[\Override]
     public function getManager()
     {
-        return $this->get('oro_report.report.manager.api');
+        return $this->container->get('oro_report.report.manager.api');
     }
 
     /**
      * @return FormInterface
      * @throws \RuntimeException
      */
+    #[\Override]
     public function getForm()
     {
         throw new \RuntimeException('This method is not implemented yet.');
@@ -60,6 +58,7 @@ class ReportController extends RestController
      * @return ApiFormHandler
      * @throws \RuntimeException
      */
+    #[\Override]
     public function getFormHandler()
     {
         throw new \RuntimeException('This method is not implemented yet.');

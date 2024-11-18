@@ -21,7 +21,7 @@ class DatagridTest extends \PHPUnit\Framework\TestCase
     /** @var Acceptor|\PHPUnit\Framework\MockObject\MockObject */
     private $acceptor;
 
-    /** @var \PHPUnit\Framework\MockObject\MockObject */
+    /** @var ParameterBag */
     private $parameters;
 
     /** @var MemoryCacheProviderInterface|\PHPUnit\Framework\MockObject\MockObject */
@@ -30,6 +30,7 @@ class DatagridTest extends \PHPUnit\Framework\TestCase
     /** @var Datagrid */
     private $grid;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->acceptor = $this->createMock(Acceptor::class);

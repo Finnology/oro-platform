@@ -22,9 +22,7 @@ class GetImportExportConfigurationExtension extends AbstractExtension implements
         $this->container = $container;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getFunctions()
     {
         return [
@@ -42,10 +40,8 @@ class GetImportExportConfigurationExtension extends AbstractExtension implements
         return $this->getImportExportConfigurationRegistry()->getConfigurations($alias);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedServices()
+    #[\Override]
+    public static function getSubscribedServices(): array
     {
         return [
             'oro_importexport.configuration.registry' => ImportExportConfigurationRegistryInterface::class,

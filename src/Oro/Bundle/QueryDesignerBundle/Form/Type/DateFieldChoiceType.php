@@ -8,9 +8,7 @@ class DateFieldChoiceType extends FieldChoiceType
 {
     const NAME = 'oro_date_field_choice';
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         parent::configureOptions($resolver);
@@ -22,10 +20,8 @@ class DateFieldChoiceType extends FieldChoiceType
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return self::NAME;
     }

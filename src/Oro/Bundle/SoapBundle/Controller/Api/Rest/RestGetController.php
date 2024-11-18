@@ -6,11 +6,13 @@ use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\Proxy\Proxy;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\UnitOfWork;
+use Doctrine\Persistence\ManagerRegistry;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use FOS\RestBundle\Request\ParamFetcherInterface;
 use FOS\RestBundle\View\View;
 use Nelmio\ApiDocBundle\Annotation\ApiDoc;
 use Oro\Bundle\ApiBundle\Request\RequestQueryStringNormalizer;
+use Oro\Bundle\EntityExtendBundle\Tools\ExtendHelper;
 use Oro\Bundle\SearchBundle\Event\PrepareResultItemEvent;
 use Oro\Bundle\SearchBundle\Query\Query as SearchQuery;
 use Oro\Bundle\SearchBundle\Query\Result\Item as SearchResultItem;
@@ -33,9 +35,7 @@ abstract class RestGetController extends AbstractFOSRestController implements
 {
     const ITEMS_PER_PAGE = 10;
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function handleGetListRequest($page = 1, $limit = self::ITEMS_PER_PAGE, $filters = [], $joins = [])
     {
         $manager    = $this->getManager();
@@ -46,13 +46,14 @@ abstract class RestGetController extends AbstractFOSRestController implements
             if ($manager->isSerializerConfigured()) {
                 $result = $manager->serialize($qb);
             } elseif ($qb instanceof QueryBuilder) {
-                $result = $this->getPreparedItems($this->get('oro_security.acl_helper')->apply($qb)->getResult());
+                $result = $this->getPreparedItems($this->container->get('oro_security.acl_helper')->apply($qb)
+                    ->getResult());
             } elseif ($qb instanceof SqlQueryBuilder) {
                 $result = $this->getPreparedItems($qb->getQuery()->getResult());
             } elseif ($qb instanceof SearchQuery) {
                 $searchResult = $this->container->get('oro_search.index')->query($qb);
 
-                $dispatcher = $this->get('event_dispatcher');
+                $dispatcher = $this->container->get('event_dispatcher');
                 foreach ($searchResult->getElements() as $item) {
                     $dispatcher->dispatch(new PrepareResultItemEvent($item), PrepareResultItemEvent::EVENT_NAME);
                 }
@@ -81,9 +82,7 @@ abstract class RestGetController extends AbstractFOSRestController implements
         return $this->buildResponse($result, self::ACTION_LIST, $responseContext);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function handleGetRequest($id)
     {
         $manager = $this->getManager();
@@ -116,7 +115,7 @@ abstract class RestGetController extends AbstractFOSRestController implements
      */
     public function optionsAction()
     {
-        $metadata = $this->get('oro_soap.provider.metadata')->getMetadataFor($this);
+        $metadata = $this->container->get('oro_soap.provider.metadata')->getMetadataFor($this);
 
         return $this->handleView(
             $this->view($metadata, Response::HTTP_OK)
@@ -177,7 +176,8 @@ abstract class RestGetController extends AbstractFOSRestController implements
         $result = [];
         if ($entity) {
             if (is_array($entity)) {
-                $voteObject = $this->get('oro_entity.doctrine_helper')->createEntityInstance($entity['entity']);
+                $voteObject = $this->container->get('oro_entity.doctrine_helper')
+                    ->createEntityInstance($entity['entity']);
 
                 foreach ($entity as $field => $value) {
                     if (!$this->isGranted('VIEW', new FieldVote($voteObject, $field))) {
@@ -195,8 +195,12 @@ abstract class RestGetController extends AbstractFOSRestController implements
             } else {
                 $entityClass = get_class($entity);
                 /** @var UnitOfWork $uow */
-                $uow = $this->getDoctrine()->getManager()->getUnitOfWork();
-                foreach ($uow->getOriginalEntityData($entity) as $field => $value) {
+                $uow = $this->container->get('doctrine')->getManager()->getUnitOfWork();
+                $targetFields = array_merge(
+                    $uow->getOriginalEntityData($entity),
+                    $this->getEnumerableFields($entityClass)
+                );
+                foreach ($targetFields as $field => $value) {
                     if ($resultFields && !in_array($field, $resultFields)) {
                         continue;
                     }
@@ -221,7 +225,7 @@ abstract class RestGetController extends AbstractFOSRestController implements
      */
     protected function getDataAccessor()
     {
-        return $this->get('oro_soap.entity_serializer.entity_accessor');
+        return $this->container->get('oro_soap.entity_serializer.entity_accessor');
     }
 
     /**
@@ -300,7 +304,7 @@ abstract class RestGetController extends AbstractFOSRestController implements
      */
     protected function filterQueryParameters(array $supportedParameters)
     {
-        $queryString = $this->get('request_stack')->getCurrentRequest()->server->get('QUERY_STRING');
+        $queryString = $this->container->get('request_stack')->getCurrentRequest()->server->get('QUERY_STRING');
         $queryString = RequestQueryStringNormalizer::normalizeQueryString($queryString);
 
         if (false === preg_match_all(
@@ -378,7 +382,7 @@ abstract class RestGetController extends AbstractFOSRestController implements
      */
     protected function transformEntityField($field, &$value)
     {
-        $doctrineHelper = $this->get('oro_entity.doctrine_helper');
+        $doctrineHelper = $this->container->get('oro_entity.doctrine_helper');
         if ($value instanceof Proxy && method_exists($value, '__toString')) {
             $value = (string)$value;
         } elseif ($value instanceof \DateTime) {
@@ -408,10 +412,10 @@ abstract class RestGetController extends AbstractFOSRestController implements
             $response = new JsonResponse($data, $status, $headers);
         }
 
-        $includeHandler = $this->get('oro_soap.handler.include');
+        $includeHandler = $this->container->get('oro_soap.handler.include');
         $includeHandler->handle(new Context(
             $this,
-            $this->get('request_stack')->getCurrentRequest(),
+            $this->container->get('request_stack')->getCurrentRequest(),
             $response,
             $action,
             $contextValues
@@ -426,5 +430,29 @@ abstract class RestGetController extends AbstractFOSRestController implements
     protected function buildNotFoundResponse()
     {
         return $this->buildResponse('', self::ACTION_READ, ['result' => null], Response::HTTP_NOT_FOUND);
+    }
+
+    protected function getEnumerableFields(string $entityClass): array
+    {
+        $configManager = $this->container->get('oro_entity_config.config_manager');
+        $fieldConfigIds = $configManager->getIds('enum', $entityClass, true);
+        $enumFields = [];
+        foreach ($fieldConfigIds as $fieldConfigId) {
+            if (!ExtendHelper::isEnumerableType($fieldConfigId->getFieldType())) {
+                continue;
+            }
+            $enumFields[$fieldConfigId->getFieldName()] = $fieldConfigId->getFieldType();
+        }
+
+        return $enumFields;
+    }
+
+    #[\Override]
+    public static function getSubscribedServices(): array
+    {
+        return array_merge(
+            parent::getSubscribedServices(),
+            ['doctrine' => ManagerRegistry::class]
+        );
     }
 }

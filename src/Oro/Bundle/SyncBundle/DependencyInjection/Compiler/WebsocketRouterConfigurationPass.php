@@ -6,6 +6,7 @@ use Oro\Bundle\SyncBundle\Loader\YamlFileLoader;
 use Oro\Component\Config\Loader\ContainerBuilderAdapter;
 use Oro\Component\Config\Loader\CumulativeConfigLoader;
 use Oro\Component\Config\Loader\NullCumulativeFileLoader;
+use Oro\Component\Config\Loader\NullFolderYamlCumulativeFileLoader;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
@@ -16,14 +17,17 @@ class WebsocketRouterConfigurationPass implements CompilerPassInterface
 {
     private const WEBSOCKET_ROUTING_CONFIG_PATH = 'Resources/config/oro/websocket_routing.yml';
 
-    /**
-     * {@inheritdoc}
-     */
+    private const WEBSOCKET_APP_ROUTING_CONFIG_PATH = '../config/oro/websocket_routing';
+
+    #[\Override]
     public function process(ContainerBuilder $container)
     {
         $configLoader = new CumulativeConfigLoader(
             'oro_sync_websocket_resources',
-            new NullCumulativeFileLoader(self::WEBSOCKET_ROUTING_CONFIG_PATH)
+            [
+                new NullCumulativeFileLoader(self::WEBSOCKET_ROUTING_CONFIG_PATH),
+                new NullFolderYamlCumulativeFileLoader($this->getAppConfigPath()),
+            ]
         );
         $resources = $configLoader->load(new ContainerBuilderAdapter($container));
         $registeredResource = $container->getParameter('gos_web_socket.router_resources');
@@ -36,5 +40,10 @@ class WebsocketRouterConfigurationPass implements CompilerPassInterface
         }
 
         $container->setParameter('gos_web_socket.router_resources', $registeredResource);
+    }
+
+    protected function getAppConfigPath(): string
+    {
+        return self::WEBSOCKET_APP_ROUTING_CONFIG_PATH;
     }
 }

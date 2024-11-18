@@ -24,24 +24,20 @@ class UpdateIntegrationChannelSettingFieldsValue extends ParametrizedMigrationQu
 
     protected $newObjectClassNameReplacement = 'O:40:"Oro\Component\Config\Common\ConfigObject"';
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getDescription()
     {
         return 'Convert columns "synchronization_settings" and "mapping_settings" ' .
         'from the type "object" to the type "config_object" ';
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function execute(LoggerInterface $logger, $dryRun = false)
     {
         $query = 'SELECT * FROM oro_integration_channel';
 
         $this->logQuery($logger, $query);
-        $result = $this->connection->fetchAll($query);
+        $result = $this->connection->fetchAllAssociative($query);
 
         $oldType = Type::getType(Types::OBJECT);
         $newType = Type::getType(ConfigObjectType::TYPE);

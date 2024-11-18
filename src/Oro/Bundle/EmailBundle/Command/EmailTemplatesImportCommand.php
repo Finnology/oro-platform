@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\EmailBundle\Command;
@@ -29,9 +30,9 @@ class EmailTemplatesImportCommand extends Command
 
     private DoctrineHelper $doctrineHelper;
 
-    private Organization $organization;
+    private ?Organization $organization = null;
 
-    private User $adminUser;
+    private ?User $adminUser = null;
 
     public function __construct(DoctrineHelper $doctrineHelper)
     {
@@ -40,27 +41,23 @@ class EmailTemplatesImportCommand extends Command
         $this->doctrineHelper = $doctrineHelper;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function configure()
+    #[\Override]
+    protected function configure(): void
     {
         $this
-            ->addArgument('source', InputArgument::REQUIRED, "Folder or File to import")
-            ->addOption('force', null, InputOption::VALUE_NONE, "Force update");
+            ->addArgument('source', InputArgument::REQUIRED, 'Folder or file to import')
+            ->addOption('force', null, InputOption::VALUE_NONE, 'Force update');
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    #[\Override]
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $source = $input->getArgument('source');
 
         if ((!is_dir($source) && !is_file($source)) || !is_readable($source)) {
             $output->writeln(sprintf('<error>Source path "%s" should exist and be readable</error>', $source));
 
-            return 1;
+            return Command::FAILURE;
         }
 
         $templates = $this->getRawTemplates($source);
@@ -86,7 +83,7 @@ class EmailTemplatesImportCommand extends Command
 
         $this->doctrineHelper->getEntityManagerForClass(EmailTemplate::class)->flush();
 
-        return 0;
+        return Command::SUCCESS;
     }
 
     /**
@@ -117,17 +114,16 @@ class EmailTemplatesImportCommand extends Command
         }
 
         $templates = [];
-        /** @var SplFileInfo $file */
-        foreach ($sources as $source) {
-            $fileName = str_replace(['.html.twig', '.html', '.txt.twig', '.txt'], '', $source->getFilename());
+        foreach ($sources as $eachSource) {
+            $fileName = str_replace(['.html.twig', '.html', '.txt.twig', '.txt'], '', $eachSource->getFilename());
 
             $format = 'html';
-            if (preg_match('#\.(html|txt)(\.twig)?#', $source->getFilename(), $match)) {
+            if (preg_match('#\.(html|txt)(\.twig)?#', $eachSource->getFilename(), $match)) {
                 $format = $match[1];
             }
 
             $templates[$fileName] = [
-                'path' => $source->getPath() . DIRECTORY_SEPARATOR . $source->getFilename(),
+                'path' => $eachSource->getPath() . DIRECTORY_SEPARATOR . $eachSource->getFilename(),
                 'format' => $format,
             ];
         }
@@ -148,10 +144,6 @@ class EmailTemplatesImportCommand extends Command
         $this->doctrineHelper->getEntityManagerForClass(EmailTemplate::class)->persist($emailTemplate);
     }
 
-    /**
-     * @param EmailTemplate $emailTemplate
-     * @param array $template
-     */
     protected function updateExistingTemplate(EmailTemplate $emailTemplate, array $template)
     {
         $emailTemplate->setContent($template['content']);

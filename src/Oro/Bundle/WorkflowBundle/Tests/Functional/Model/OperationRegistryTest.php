@@ -25,6 +25,7 @@ class OperationRegistryTest extends WebTestCase
     /** @var OperationRegistry */
     private $operationRegistry;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->initClient([], $this->generateBasicAuthHeader());
@@ -38,6 +39,7 @@ class OperationRegistryTest extends WebTestCase
         $this->operationRegistry = $this->getContainer()->get('oro_action.operation_registry');
     }
 
+    #[\Override]
     protected function tearDown(): void
     {
         $this->configModifier->resetCache();
@@ -59,7 +61,7 @@ class OperationRegistryTest extends WebTestCase
 
     private function setUpTokenStorage()
     {
-        $token = new UsernamePasswordToken(new User(), self::AUTH_PW, 'user');
+        $token = new UsernamePasswordToken(new User(), 'user');
 
         $this->getContainer()->get('security.token_storage')->setToken($token);
     }

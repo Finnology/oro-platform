@@ -8,23 +8,10 @@ use Oro\Bundle\MigrationBundle\Migration\QueryBag;
 
 class OroUserBundle implements Migration
 {
-    /**
-     * {@inheritdoc}
-     */
-    public function up(Schema $schema, QueryBag $queries)
+    #[\Override]
+    public function up(Schema $schema, QueryBag $queries): void
     {
-        self::addPasswordChangedColumn($schema);
-    }
-
-    public static function addPasswordChangedColumn(Schema $schema)
-    {
-        $userTable = $schema->getTable('oro_user');
-        $userTable->addColumn(
-            'password_changed',
-            'datetime',
-            [
-                'notnull' => false,
-            ]
-        );
+        $schema->getTable('oro_user')
+            ->addColumn('password_changed', 'datetime', ['notnull' => false]);
     }
 }

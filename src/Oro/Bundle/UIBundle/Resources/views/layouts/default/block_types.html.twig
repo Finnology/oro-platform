@@ -20,16 +20,25 @@
 {% endblock %}
 
 {% block page_subtitle_widget %}
-    {% set attr = layout_attr_defaults(attr, {'~class': ' page-subtitle'}) %}
+    {% import '@OroUI/layouts/renderIcon.html.twig' as renderIcon %}
+    {% set attr = layout_attr_defaults(attr, {'~class': ' customer-profile__title'}) %}
     <h2 {{ block('block_attributes') }}>
         {% if icon %}
-            <span class="badge {{ badge ? 'badge--' ~ badge }}" aria-hidden="true">
-                <span class="fa-{{ icon }}"></span>
-            </span>
+            {{ renderIcon.icon({name: icon, extraClass: 'theme-icon--lg'}) }}
         {% endif %}
-        <span class="page-subtitle__text">{{ text|block_text(translation_domain) }}</span>
+        <span class="customer-profile__title--text">{{ text|block_text(translation_domain) }}</span>
         {{ block('container_widget') }}
     </h2>
+{% endblock %}
+
+{% block _page_subtitle_container_widget %}
+    {% set attr = layout_attr_defaults(attr, {
+        '~class': " customer-profile__title-wrapper"
+    }) %}
+
+    <div {{ block('block_attributes') }}>
+        {{ block_widget(block) }}
+    </div>
 {% endblock %}
 
 {% block breadcrumbs_widget %}
@@ -38,10 +47,13 @@
     {% endif %}
 
     {% set attr = layout_attr_defaults(attr, {
-        '~class': ' breadcrumbs'
+        '~class': ' breadcrumbs scrollable-container start-scroll-from-end invisible-scrollbar horizontal-scrolling'
     }) %}
+    {% import '@OroUI/layouts/renderIcon.html.twig' as renderIcon %}
     <nav aria-label="{{ 'oro.ui.breadcrumb.aria_label'|trans }}">
-        <ol {{ block('block_attributes') }}>
+        <ol {{ block('block_attributes') }}
+            data-page-component-view="orofrontend/js/app/views/scroll-shadow-view"
+            data-scroll-target>
             {% if breadcrumbs is not iterable %}
                 <li class="breadcrumbs__item">
                     <a href="" class="breadcrumbs__link" aria-current="location">{{ breadcrumbs }}</a>
@@ -58,13 +70,13 @@
 
                             {% if url and not loop.last %}
                                 <a href="{{ url  }}" class="breadcrumbs__link">{{ breadcrumb.label|trans }}</a>
-                                <span aria-hidden="true">/</span>
+                                <span aria-hidden="true" class="breadcrumbs-separator">{{ renderIcon.icon({name: 'chevron-right', extraClass: 'theme-icon--small'}) }}</span>
                             {% else %}
                                 <a href="{{ url  }}" class="breadcrumbs__link" aria-current="location">{{ breadcrumb.label|trans }}</a>
                             {% endif %}
                         {%  else %}
                             {% if not loop.first %}
-                                <span aria-hidden="true">/</span>
+                                <span aria-hidden="true" class="breadcrumbs-separator">{{ renderIcon.icon({name: 'chevron-right', extraClass: 'theme-icon--small'}) }}</span>
                             {% endif %}
                             <a href="" class="breadcrumbs__link" aria-current="location">{{ breadcrumb }}</a>
                         {%  endif %}
@@ -78,11 +90,20 @@
 
 {% block logo_widget %}
     {% import '@OroUI/macros.html.twig' as UI %}
+    {% set searchType = oro_theme_configuration_value('header__search_on_smaller_screens') %}
     {% set attr = layout_attr_defaults(attr, {
         '~class': ' logo'
     }) %}
 
     {% set src = src|default(asset('bundles/orofrontend/default/images/logo/demob2b-logo.svg')) %}
+    {% set srcSmall = logo_small|default(asset('bundles/orofrontend/default/images/logo/demob2b-logo-small.svg')) %}
+
+    {% set attr_img_small = attr_img|default({}) %}
+    {% set attr_img_small = layout_attr_defaults(attr_img_small, {
+        'srcset': srcSmall,
+        'type': 'image/svg+xml',
+        'media': '(max-width: 767px)'
+    }) %}
 
     {% set attr_img = attr_img|default({}) %}
     {% set attr_img = layout_attr_defaults(attr_img, {
@@ -105,11 +126,21 @@
 
     {% if renderLink and app.request.attributes.get('_route') != route %}
         <a href="{{ path(route) }}" {{ block('block_attributes') }} aria-label="{{ 'oro_frontend.logo.aria_label'|trans }}">
-            <img {{ UI.attributes(attr_img) }}>
+            <picture>
+                {% if searchType == 'integrated' %}
+                    <source {{ UI.attributes(attr_img_small) }}>
+                {% endif %}
+                <img {{ UI.attributes(attr_img) }}>
+            </picture>
         </a>
     {% else %}
         <div {{ block('block_attributes') }}>
-            <img {{ UI.attributes(attr_img) }}>
+            <picture>
+                {% if searchType == 'integrated' %}
+                    <source {{ UI.attributes(attr_img_small) }}>
+                {% endif %}
+                <img {{ UI.attributes(attr_img) }}>
+            </picture>
         </div>
     {% endif %}
 {% endblock %}

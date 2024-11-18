@@ -22,17 +22,13 @@ abstract class RemoveRelationQuery extends RemoveFieldQuery
      */
     abstract public function getRelationType();
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getDescription()
     {
         return 'Remove config for relation ' . $this->entityField . ' of entity ' . $this->entityClass;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function execute(LoggerInterface $logger)
     {
         $entityRow = $this->getEntityRow($this->entityClass);
@@ -141,7 +137,7 @@ abstract class RemoveRelationQuery extends RemoveFieldQuery
                 WHERE e.class_name = ? 
                 LIMIT 1';
 
-        return $this->connection->fetchAssoc(
+        return $this->connection->fetchAssociative(
             $getEntitySql,
             [$entityClass]
         );

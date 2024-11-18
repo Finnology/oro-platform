@@ -20,7 +20,6 @@ use Symfony\Contracts\Service\ServiceSubscriberInterface;
  */
 class FileVoter extends AbstractEntityVoter implements ServiceSubscriberInterface
 {
-    /** {@inheritDoc} */
     protected $supportedAttributes = [BasicPermission::VIEW, BasicPermission::EDIT, BasicPermission::DELETE];
 
     private AuthorizationCheckerInterface $authorizationChecker;
@@ -38,10 +37,8 @@ class FileVoter extends AbstractEntityVoter implements ServiceSubscriberInterfac
         $this->container = $container;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public static function getSubscribedServices()
+    #[\Override]
+    public static function getSubscribedServices(): array
     {
         return [
             'oro_attachment.acl.file_access_control_checker' => FileAccessControlChecker::class,
@@ -50,10 +47,8 @@ class FileVoter extends AbstractEntityVoter implements ServiceSubscriberInterfac
         ];
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function vote(TokenInterface $token, $object, array $attributes)
+    #[\Override]
+    public function vote(TokenInterface $token, $object, array $attributes): int
     {
         $this->token = $token;
         try {
@@ -63,9 +58,7 @@ class FileVoter extends AbstractEntityVoter implements ServiceSubscriberInterfac
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     protected function getPermissionForAttribute($class, $identifier, $attribute)
     {
         /** @var File $file */

@@ -2,55 +2,58 @@
 
 namespace Oro\Bundle\ConfigBundle\Config;
 
+use Doctrine\Common\Util\ClassUtils;
 use Oro\Bundle\UserBundle\Entity\User;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 /**
- * User config scope
+ * The manager for configuration on user level.
  */
 class UserScopeManager extends AbstractScopeManager
 {
     protected TokenStorageInterface $securityContext;
-    protected ?int $scopeId = null;
+    protected int $scopeId = 0;
 
-    /**
-     * Sets the security context
-     */
     public function setSecurityContext(TokenStorageInterface $securityContext): void
     {
         $this->securityContext = $securityContext;
     }
 
+    #[\Override]
     public function getScopedEntityName(): string
     {
         return 'user';
     }
 
-    public function getScopeId(): ?int
+    #[\Override]
+    public function getScopeId(): int
     {
         $this->ensureScopeIdInitialized();
 
         return $this->scopeId;
     }
 
-    public function setScopeId(int $scopeId): void
+    #[\Override]
+    public function setScopeId(?int $scopeId): void
     {
         $this->dispatchScopeIdChangeEvent();
 
-        $this->scopeId = $scopeId;
+        $this->scopeId = $scopeId ?? 0;
     }
 
-    protected function isSupportedScopeEntity($entity): bool
+    #[\Override]
+    protected function isSupportedScopeEntity(object $entity): bool
     {
         return $entity instanceof User;
     }
 
-    protected function getScopeEntityIdValue($entity): mixed
+    #[\Override]
+    protected function getScopeEntityIdValue(object $entity): int
     {
         if ($entity instanceof User) {
-            return $entity->getId();
+            return (int)$entity->getId();
         }
-        throw new \LogicException(sprintf('"%s" is not supported.', \get_class($entity)));
+        throw new \LogicException(sprintf('"%s" is not supported.', ClassUtils::getClass($entity)));
     }
 
     /**
@@ -58,18 +61,14 @@ class UserScopeManager extends AbstractScopeManager
      */
     protected function ensureScopeIdInitialized(): void
     {
-        if (!$this->scopeId) {
-            $scopeId = 0;
-
+        if (0 === $this->scopeId) {
             $token = $this->securityContext->getToken();
-            if ($token) {
+            if (null !== $token) {
                 $user = $token->getUser();
                 if ($user instanceof User && $user->getId()) {
-                    $scopeId = $user->getId();
+                    $this->scopeId = $user->getId();
                 }
             }
-
-            $this->scopeId = $scopeId;
         }
     }
 }

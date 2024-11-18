@@ -11,10 +11,8 @@ class EmailRecipients extends Constraint
 {
     public string $message = 'Recipient can not be empty';
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getTargets()
+    #[\Override]
+    public function getTargets(): string|array
     {
         return self::CLASS_CONSTRAINT;
     }

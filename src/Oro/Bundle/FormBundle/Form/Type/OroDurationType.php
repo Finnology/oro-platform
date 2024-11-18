@@ -31,9 +31,7 @@ class OroDurationType extends AbstractType
                                     ((\d{1,3}:)?\d{1,3}:)?\d{1,3}
                                     $/ix';
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder->addModelTransformer(new DurationToStringTransformer());
@@ -64,9 +62,7 @@ class OroDurationType extends AbstractType
                preg_match(self::VALIDATION_REGEX_COLUMN, $value);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults(
@@ -77,26 +73,19 @@ class OroDurationType extends AbstractType
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getName()
     {
         return $this->getBlockPrefix();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return self::NAME;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getParent()
+    #[\Override]
+    public function getParent(): ?string
     {
         return TextType::class;
     }

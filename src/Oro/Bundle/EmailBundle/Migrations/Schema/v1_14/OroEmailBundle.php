@@ -8,17 +8,10 @@ use Oro\Bundle\MigrationBundle\Migration\QueryBag;
 
 class OroEmailBundle implements Migration
 {
-    /**
-     * {@inheritdoc}
-     */
-    public function up(Schema $schema, QueryBag $queries)
+    #[\Override]
+    public function up(Schema $schema, QueryBag $queries): void
     {
-        self::addEmbeddedContentIdField($schema);
-    }
-
-    public static function addEmbeddedContentIdField(Schema $schema)
-    {
-        $table = $schema->getTable('oro_email_attachment');
-        $table->addColumn('embedded_content_id', 'string', ['length' => 255, 'notnull' => false]);
+        $schema->getTable('oro_email_attachment')
+            ->addColumn('embedded_content_id', 'string', ['length' => 255, 'notnull' => false]);
     }
 }

@@ -61,7 +61,7 @@ class OroElementFactory implements SuiteAwareInterface
 
     /**
      * @param string $name Element name
-     * @param NodeElement $context
+     * @param NodeElement|null $context
      *
      * @return Element
      */
@@ -284,9 +284,7 @@ class OroElementFactory implements SuiteAwareInterface
         return new Element($this->mink->getSession(), $this, ['type' => 'xpath', 'locator' => '/html/body']);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function setSuite(Suite $suite)
     {
         $this->suite = $suite;

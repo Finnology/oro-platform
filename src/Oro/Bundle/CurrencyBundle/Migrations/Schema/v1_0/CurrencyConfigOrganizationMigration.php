@@ -9,15 +9,8 @@ use Oro\Bundle\MigrationBundle\Migration\QueryBag;
 
 class CurrencyConfigOrganizationMigration implements Migration
 {
-    /**
-     * {@inheritdoc}
-     */
-    public function up(Schema $schema, QueryBag $queries)
-    {
-        self::migrateOrganizationCurrencyConfig($queries);
-    }
-
-    public static function migrateOrganizationCurrencyConfig(QueryBag $queries)
+    #[\Override]
+    public function up(Schema $schema, QueryBag $queries): void
     {
         $queries->addPreQuery(
             new RenameConfigNameQuery('currency', 'default_currency', 'oro_locale', 'oro_currency')

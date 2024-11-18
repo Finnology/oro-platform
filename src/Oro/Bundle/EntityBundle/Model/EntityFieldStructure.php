@@ -11,15 +11,18 @@ class EntityFieldStructure
     private $name;
 
     /** @var string */
+    private $normalizedName;
+
+    /** @var string */
     private $type;
 
     /** @var string */
     private $label;
 
-    /** @var string */
+    /** @var string|null */
     private $relationType;
 
-    /** @var string */
+    /** @var string|null */
     private $relatedEntityName;
 
     /** @var array */
@@ -39,6 +42,22 @@ class EntityFieldStructure
     public function setName($name)
     {
         $this->name = $name;
+    }
+
+    /**
+     * @return string
+     */
+    public function getNormalizedName()
+    {
+        return $this->normalizedName;
+    }
+
+    /**
+     * @param string $name
+     */
+    public function setNormalizedName($normalizedName)
+    {
+        $this->normalizedName = $normalizedName;
     }
 
     /**
@@ -74,7 +93,7 @@ class EntityFieldStructure
     }
 
     /**
-     * @return string
+     * @return string|null
      */
     public function getRelationType()
     {
@@ -82,7 +101,7 @@ class EntityFieldStructure
     }
 
     /**
-     * @param string $relationType
+     * @param string|null $relationType
      */
     public function setRelationType($relationType)
     {
@@ -90,7 +109,7 @@ class EntityFieldStructure
     }
 
     /**
-     * @return string
+     * @return string|null
      */
     public function getRelatedEntityName()
     {
@@ -98,7 +117,7 @@ class EntityFieldStructure
     }
 
     /**
-     * @param string $relatedEntityName
+     * @param string|null $relatedEntityName
      */
     public function setRelatedEntityName($relatedEntityName)
     {
@@ -150,6 +169,7 @@ class EntityFieldStructure
     {
         return [
             $this->name,
+            $this->normalizedName,
             $this->type,
             $this->label,
             $this->relationType,
@@ -162,6 +182,7 @@ class EntityFieldStructure
     {
         [
             $this->name,
+            $this->normalizedName,
             $this->type,
             $this->label,
             $this->relationType,

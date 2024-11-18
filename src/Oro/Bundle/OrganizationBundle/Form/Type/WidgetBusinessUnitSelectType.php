@@ -14,9 +14,7 @@ class WidgetBusinessUnitSelectType extends WidgetEntityJquerySelect2HiddenType
 {
     const NAME = 'oro_type_widget_business_unit_select';
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         parent::configureOptions($resolver);
@@ -41,6 +39,7 @@ class WidgetBusinessUnitSelectType extends WidgetEntityJquerySelect2HiddenType
      *
      * @return array
      */
+    #[\Override]
     protected function getEntitiesByIdentifiers($entityClass, array $ids)
     {
         $ids = array_filter($ids);
@@ -64,18 +63,14 @@ class WidgetBusinessUnitSelectType extends WidgetEntityJquerySelect2HiddenType
         return $result;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getName()
     {
         return $this->getBlockPrefix();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return self::NAME;
     }

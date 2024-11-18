@@ -6,7 +6,6 @@ use Oro\Bundle\ApiBundle\Form\DataTransformer\NullTransformer;
 use Oro\Bundle\ApiBundle\Form\DataTransformer\NullValueTransformer;
 use Symfony\Component\Form\DataTransformerInterface;
 use Symfony\Component\Form\FormBuilder;
-use Symfony\Component\Form\FormConfigBuilderInterface;
 
 /**
  * A builder for creating API Form instances.
@@ -17,13 +16,11 @@ class ApiFormBuilder extends FormBuilder
 {
     private ?array $emptyViewTransformers = null;
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function addViewTransformer(
         DataTransformerInterface $viewTransformer,
         bool $forcePrepend = false
-    ): FormConfigBuilderInterface {
+    ): static {
         $this->emptyViewTransformers = null;
 
         if (!$viewTransformer instanceof NullValueTransformer) {
@@ -33,19 +30,15 @@ class ApiFormBuilder extends FormBuilder
         return parent::addViewTransformer($viewTransformer, $forcePrepend);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function resetViewTransformers(): FormConfigBuilderInterface
+    #[\Override]
+    public function resetViewTransformers(): static
     {
         $this->emptyViewTransformers = null;
 
         return parent::resetViewTransformers();
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getViewTransformers(): array
     {
         $viewTransformers = parent::getViewTransformers();

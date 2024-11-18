@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\TranslationBundle\Migration;
@@ -22,17 +23,13 @@ class DeleteTranslationsByDomainAndKeyPrefixQuery extends ParametrizedMigrationQ
         $this->keyPrefix = $keyPrefix;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getDescription(): string
     {
         return 'Remove unused translations by domain and key prefix.';
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function execute(LoggerInterface $logger): void
     {
         $params = ['domain' => $this->domain, 'key_prefix' => $this->keyPrefix . '%'];

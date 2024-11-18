@@ -3,43 +3,41 @@
 namespace Oro\Bundle\EntityConfigBundle\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Oro\Bundle\EntityConfigBundle\Tools\ConfigHelper;
 
 /**
- * @ORM\Entity()
- * @ORM\Table(name="oro_entity_config",
- *      uniqueConstraints={@ORM\UniqueConstraint(name="oro_entity_config_uq", columns={"class_name"})})
- */
+* Entity that represents Entity Config Model
+*
+*/
+#[ORM\Entity]
+#[ORM\Table(name: 'oro_entity_config')]
+#[ORM\UniqueConstraint(name: 'oro_entity_config_uq', columns: ['class_name'])]
 class EntityConfigModel extends ConfigModel
 {
-    /**
-     * @var integer
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
-     */
-    protected $id;
+    #[ORM\Column(name: 'id', type: Types::INTEGER)]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
+    protected ?int $id = null;
 
     /**
      * IMPORTANT: do not modify this collection manually. addToIndex and removeFromIndex should be used
      *
-     * @var ArrayCollection|ConfigModelIndexValue[]
-     * @ORM\OneToMany(targetEntity="ConfigModelIndexValue", mappedBy="entity", cascade={"all"})
+     * @var Collection<int, ConfigModelIndexValue>
      */
-    protected $indexedValues;
+    #[ORM\OneToMany(mappedBy: 'entity', targetEntity: ConfigModelIndexValue::class, cascade: ['all'])]
+    protected ?Collection $indexedValues = null;
 
     /**
-     * @var ArrayCollection|FieldConfigModel[]
-     * @ORM\OneToMany(targetEntity="FieldConfigModel", mappedBy="entity")
+     * @var Collection<int, FieldConfigModel>
      */
-    protected $fields;
+    #[ORM\OneToMany(mappedBy: 'entity', targetEntity: FieldConfigModel::class)]
+    protected ?Collection $fields = null;
 
-    /**
-     * @var string
-     * @ORM\Column(name="class_name", type="string", length=255)
-     */
-    protected $className;
+    #[ORM\Column(name: 'class_name', type: Types::STRING, length: 255)]
+    protected ?string $className = null;
 
     /**
      * @param string|null $className
@@ -57,6 +55,7 @@ class EntityConfigModel extends ConfigModel
     /**
      * @return int
      */
+    #[\Override]
     public function getId()
     {
         return $this->id;
@@ -109,7 +108,7 @@ class EntityConfigModel extends ConfigModel
     }
 
     /**
-     * @param  callable $filter function (FieldConfigModel $model)
+     * @param \Closure|null $filter function (FieldConfigModel $model)
      * @return ArrayCollection|FieldConfigModel[]
      */
     public function getFields(\Closure $filter = null)
@@ -132,17 +131,13 @@ class EntityConfigModel extends ConfigModel
         return $fields->first();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getIndexedValues()
     {
         return $this->indexedValues;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function createIndexedValue($scope, $code, $value)
     {
         $result = new ConfigModelIndexValue($scope, $code, $value);

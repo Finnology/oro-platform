@@ -5,7 +5,6 @@ namespace Oro\Bundle\WorkflowBundle\Migrations\Data\Demo\ORM;
 use Doctrine\Common\DataFixtures\AbstractFixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
-use Oro\Bundle\OrganizationBundle\Entity\Organization;
 use Oro\Bundle\SecurityBundle\Authentication\Token\UsernamePasswordOrganizationToken;
 use Oro\Bundle\UserBundle\Entity\AbstractUser;
 use Oro\Bundle\WorkflowBundle\Entity\WorkflowItem;
@@ -54,9 +53,7 @@ abstract class AbstractLoadEntityWorkflowDemoData extends AbstractFixture implem
         return [];
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function load(ObjectManager $manager)
     {
         //Backup Original Token
@@ -111,7 +108,7 @@ abstract class AbstractLoadEntityWorkflowDemoData extends AbstractFixture implem
     }
 
     /**
-     * @param $workflowItem
+     * @param WorkflowItem $workflowItem
      * @param int $deepLevel
      */
     protected function randomTransitionWalk(WorkflowItem $workflowItem, $deepLevel)
@@ -145,12 +142,13 @@ abstract class AbstractLoadEntityWorkflowDemoData extends AbstractFixture implem
         }
     }
 
-    private function setUserToken(AbstractUser $user)
+    private function setUserToken(AbstractUser $user): void
     {
-        /** @var Organization $organization */
-        $organization = $user->getOrganization();
-
-        $token = new UsernamePasswordOrganizationToken($user, false, 'main', $organization, $user->getUserRoles());
-        $this->container->get('security.token_storage')->setToken($token);
+        $this->container->get('security.token_storage')->setToken(new UsernamePasswordOrganizationToken(
+            $user,
+            'main',
+            $user->getOrganization(),
+            $user->getUserRoles()
+        ));
     }
 }

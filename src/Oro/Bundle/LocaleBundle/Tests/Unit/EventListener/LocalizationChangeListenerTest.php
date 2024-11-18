@@ -22,6 +22,7 @@ class LocalizationChangeListenerTest extends \PHPUnit\Framework\TestCase
     /** @var LocalizationChangeListener */
     private $listener;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->configManager = $this->createMock(ConfigManager::class);
@@ -73,7 +74,8 @@ class LocalizationChangeListenerTest extends \PHPUnit\Framework\TestCase
                     'old' => [$value1->getValue(), $value2->getValue()]
                 ]
             ],
-            'global'
+            'global',
+            0
         );
 
         $this->listener->onConfigUpdate($event);
@@ -89,7 +91,7 @@ class LocalizationChangeListenerTest extends \PHPUnit\Framework\TestCase
         $this->configManager->expects($this->never())
             ->method('flush');
 
-        $event = new ConfigUpdateEvent(['oro_locale.default_localization' => ['new' => 43, 'old' => 42]], 'global');
+        $event = new ConfigUpdateEvent(['oro_locale.default_localization' => ['new' => 43, 'old' => 42]], 'global', 0);
 
         $this->listener->onConfigUpdate($event);
     }
@@ -111,7 +113,8 @@ class LocalizationChangeListenerTest extends \PHPUnit\Framework\TestCase
                     'old' => [42, 43]
                 ]
             ],
-            'user'
+            'user',
+            1
         );
 
         $this->listener->onConfigUpdate($event);

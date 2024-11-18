@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\AttachmentBundle\Command;
@@ -36,6 +37,7 @@ class MigrateImagesCommand extends Command
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     protected function configure()
     {
         $this
@@ -57,7 +59,8 @@ HELP
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      * @noinspection PhpMissingParentCallCommonInspection
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    #[\Override]
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $output->writeln('Starting attachments migration');
         $manager = $this->registry->getManagerForClass(File::class);
@@ -65,6 +68,6 @@ HELP
         $this->migrationService->migrate($this->prefix, $this->prefix);
         $output->writeln('Attachments migration finished');
 
-        return 0;
+        return Command::SUCCESS;
     }
 }

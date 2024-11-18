@@ -16,10 +16,8 @@ class TestServiceLocatorInjectionDecorator extends TestServiceLocatorInjection
         $this->innerService = $innerService;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public static function getSubscribedServices()
+    #[\Override]
+    public static function getSubscribedServices(): array
     {
         return array_merge(parent::getSubscribedServices(), [
             'router' => RouterInterface::class

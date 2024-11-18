@@ -71,18 +71,14 @@ abstract class CumulativeFileLoader implements CumulativeResourceLoader
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getResource()
     {
         return $this->resource;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function load($bundleClass, $bundleDir, $bundleAppDir = '')
+    #[\Override]
+    public function load($bundleClass, $bundleDir, $bundleAppDir = '', $folderPlaceholder = '')
     {
         $realPath = $this->getResourcePath($bundleAppDir, $bundleDir);
 
@@ -94,7 +90,8 @@ abstract class CumulativeFileLoader implements CumulativeResourceLoader
             $bundleClass,
             $this->resourceName,
             $realPath,
-            $this->doLoad($realPath)
+            $this->doLoad($realPath),
+            $folderPlaceholder
         );
     }
 
@@ -170,9 +167,7 @@ abstract class CumulativeFileLoader implements CumulativeResourceLoader
             : null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function registerFoundResource($bundleClass, $bundleDir, $bundleAppDir, CumulativeResource $resource)
     {
         $path = $this->getBundleAppResourcePath($bundleAppDir);
@@ -186,9 +181,7 @@ abstract class CumulativeFileLoader implements CumulativeResourceLoader
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function isResourceFresh($bundleClass, $bundleDir, $bundleAppDir, CumulativeResource $resource, $timestamp)
     {
         if (CumulativeResourceManager::getInstance()->isDir($bundleAppDir)) {
@@ -215,12 +208,18 @@ abstract class CumulativeFileLoader implements CumulativeResourceLoader
 
     public function __serialize(): array
     {
-        return [$this->relativeFilePath];
+        return [$this->relativeFilePath, $this->resource, $this->resourceName];
     }
 
     public function __unserialize(array $serialized): void
     {
         $this->relativeFilePath = $serialized[0];
+        if (isset($serialized[1])) {
+            $this->resource = $serialized[1];
+        }
+        if (isset($serialized[2])) {
+            $this->resourceName = $serialized[2];
+        }
     }
 
     /**

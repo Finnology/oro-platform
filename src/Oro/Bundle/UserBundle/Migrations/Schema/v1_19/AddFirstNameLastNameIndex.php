@@ -8,21 +8,10 @@ use Oro\Bundle\MigrationBundle\Migration\QueryBag;
 
 class AddFirstNameLastNameIndex implements Migration
 {
-    /**
-     * {@inheritdoc}
-     */
-    public function up(Schema $schema, QueryBag $queries)
+    #[\Override]
+    public function up(Schema $schema, QueryBag $queries): void
     {
-        self::addFirstNameLastNameIndex($schema);
-    }
-
-    /**
-     * @throws \Doctrine\DBAL\Schema\SchemaException
-     */
-    public static function addFirstNameLastNameIndex(Schema $schema)
-    {
-        // Adding these index due to issue with mysql 5.6 version @see CRM-5117
-        $table = $schema->getTable('oro_user');
-        $table->addIndex(['first_name', 'last_name'], 'user_first_name_last_name_idx');
+        $schema->getTable('oro_user')
+            ->addIndex(['first_name', 'last_name'], 'user_first_name_last_name_idx');
     }
 }

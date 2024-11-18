@@ -4,25 +4,24 @@ namespace Oro\Bundle\NoteBundle\Migrations\Data\ORM;
 
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
+use Oro\Bundle\NoteBundle\Entity\Note;
+use Oro\Bundle\OrganizationBundle\Migrations\Data\ORM\LoadOrganizationAndBusinessUnitData;
 use Oro\Bundle\OrganizationBundle\Migrations\Data\ORM\UpdateWithOrganization;
 
+/**
+ * Sets a default organization to Note entity.
+ */
 class UpdateNotesWithOrganization extends UpdateWithOrganization implements DependentFixtureInterface
 {
-    /**
-     * {@inheritdoc}
-     */
-    public function getDependencies()
+    #[\Override]
+    public function getDependencies(): array
     {
-        return [
-            'Oro\Bundle\OrganizationBundle\Migrations\Data\ORM\LoadOrganizationAndBusinessUnitData'
-        ];
+        return [LoadOrganizationAndBusinessUnitData::class];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function load(ObjectManager $manager)
+    #[\Override]
+    public function load(ObjectManager $manager): void
     {
-        $this->update($manager, 'OroNoteBundle:Note', 'organization', true);
+        $this->update($manager, Note::class, 'organization', true);
     }
 }

@@ -1,4 +1,5 @@
 <?php
+
 namespace Oro\Bundle\MigrationBundle\Tests\Unit\Fixture\TestPackage\Test3Bundle\Migrations\Data\ORM;
 
 use Doctrine\Common\DataFixtures\AbstractFixture;
@@ -12,32 +13,24 @@ class LoadTest3BundleData1 extends AbstractFixture implements
     OrderedFixtureInterface,
     RenamedFixtureInterface
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getVersion()
     {
         return '1.0';
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function load(ObjectManager $manager)
     {
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getOrder()
     {
         return 1;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getPreviousClassNames(): array
     {
         return [

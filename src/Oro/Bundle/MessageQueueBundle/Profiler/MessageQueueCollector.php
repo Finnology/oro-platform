@@ -1,4 +1,5 @@
 <?php
+
 namespace Oro\Bundle\MessageQueueBundle\Profiler;
 
 use Oro\Component\MessageQueue\Client\MessagePriority;
@@ -24,9 +25,7 @@ class MessageQueueCollector extends DataCollector
         $this->reset();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function collect(Request $request, Response $response, \Throwable $exception = null)
     {
         if ($this->messageProducer instanceof TraceableMessageProducer) {
@@ -76,17 +75,13 @@ class MessageQueueCollector extends DataCollector
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getName()
+    #[\Override]
+    public function getName(): string
     {
         return 'message_queue';
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function reset()
     {
         $this->data = [

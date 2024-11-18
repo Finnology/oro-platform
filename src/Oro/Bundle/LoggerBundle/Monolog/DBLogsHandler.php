@@ -20,14 +20,12 @@ class DBLogsHandler extends AbstractProcessingHandler
     /** @var string */
     private $dateTimeFormatString;
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function write(array $record): void
     {
         $formatted = $record['formatted'];
 
-        $this->getPreparedStatement()->execute([
+        $this->getPreparedStatement()->executeQuery([
             'message' => $formatted['message'],
             'context' => \json_encode($formatted['context']),
             'level' => $record['level'],

@@ -21,10 +21,8 @@ class CommandWatcher implements EventSubscriberInterface
         $this->producer = $producer;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedEvents()
+    #[\Override]
+    public static function getSubscribedEvents(): array
     {
         return [
             ConsoleEvents::COMMAND   => ['onCommandStart', -250],

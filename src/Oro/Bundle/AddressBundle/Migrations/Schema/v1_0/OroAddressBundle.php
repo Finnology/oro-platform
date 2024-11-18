@@ -8,9 +8,7 @@ use Oro\Bundle\MigrationBundle\Migration\QueryBag;
 
 class OroAddressBundle implements Migration
 {
-    /**
-     * @inheritdoc
-     */
+    #[\Override]
     public function up(Schema $schema, QueryBag $queries)
     {
         self::oroAddressTable($schema);
@@ -104,7 +102,7 @@ class OroAddressBundle implements Migration
     public static function oroDictionaryCountryTranslationTable(Schema $schema, $tableName = null)
     {
         /** Generate table oro_dictionary_country_translation **/
-        $table = $schema->createTable($tableName ? : 'oro_dictionary_country_translation');
+        $table = $schema->createTable($tableName ?: 'oro_dictionary_country_translation');
         $table->addColumn('id', 'integer', ['autoincrement' => true]);
         $table->addColumn('foreign_key', 'string', ['length' => 2]);
         $table->addColumn('content', 'string', ['length' => 255]);
@@ -133,7 +131,7 @@ class OroAddressBundle implements Migration
     public static function oroDictionaryRegionTranslationTable(Schema $schema, $tableName = null)
     {
         /** Generate table oro_dictionary_region_translation **/
-        $table = $schema->createTable($tableName ? : 'oro_dictionary_region_translation');
+        $table = $schema->createTable($tableName ?: 'oro_dictionary_region_translation');
         $table->addColumn('id', 'integer', ['autoincrement' => true]);
         $table->addColumn('foreign_key', 'string', ['length' => 16]);
         $table->addColumn('content', 'string', ['length' => 255]);

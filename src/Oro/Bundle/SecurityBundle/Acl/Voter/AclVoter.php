@@ -70,6 +70,7 @@ class AclVoter extends BaseAclVoter implements AclVoterInterface
     /**
      * Adds an observer is used to inform a caller about IsGranted operation details
      */
+    #[\Override]
     public function addOneShotIsGrantedObserver(OneShotIsGrantedObserver $observer): void
     {
         if (null !== $this->oneShotIsGrantedObserver) {
@@ -82,10 +83,8 @@ class AclVoter extends BaseAclVoter implements AclVoterInterface
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function vote(TokenInterface $token, $object, array $attributes)
+    #[\Override]
+    public function vote(TokenInterface $token, $object, array $attributes): int
     {
         $extension = $this->extensionSelector->select($object, false);
         if (null === $extension) {
@@ -111,33 +110,25 @@ class AclVoter extends BaseAclVoter implements AclVoterInterface
         return $result;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getObject()
     {
         return $this->object;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getSecurityToken()
     {
         return $this->securityToken;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getAclExtension()
     {
         return $this->extension;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function setTriggeredMask($mask, $accessLevel)
     {
         if (null !== $this->oneShotIsGrantedObserver) {

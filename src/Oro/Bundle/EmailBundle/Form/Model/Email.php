@@ -11,13 +11,11 @@ use Oro\Bundle\OrganizationBundle\Entity\OrganizationAwareInterface;
 use Oro\Bundle\OrganizationBundle\Entity\OrganizationInterface;
 
 /**
- * Email model.
  * Contains data required to create and send email message.
  *
  * @SuppressWarnings(PHPMD.TooManyFields)
+ * @SuppressWarnings(PHPMD.ExcessivePublicCount)
  * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
- *
- * @package Oro\Bundle\EmailBundle\Form\Model
  */
 class Email implements OrganizationAwareInterface
 {
@@ -85,9 +83,8 @@ class Email implements OrganizationAwareInterface
     /** @var  Organization */
     protected $organization;
 
-    /**
-     * Constructor
-     */
+    private bool $allowToUpdateEmptyContexts = true;
+
     public function __construct()
     {
         $this->attachments = new ArrayCollection();
@@ -394,8 +391,6 @@ class Email implements OrganizationAwareInterface
 
     /**
      * Get email body
-     *
-     * @return string|null
      */
     public function getBody(): ?string
     {
@@ -568,10 +563,27 @@ class Email implements OrganizationAwareInterface
     }
 
     /**
+     * Indicates whether empty contexts can be updated for an email created based on this model.
+     */
+    public function isUpdateEmptyContextsAllowed(): bool
+    {
+        return $this->allowToUpdateEmptyContexts;
+    }
+
+    /**
+     * Setas a flag indicates whether empty contexts can be updated for an email created based on this model.
+     */
+    public function setAllowToUpdateEmptyContexts(bool $allowToUpdateEmptyContexts): void
+    {
+        $this->allowToUpdateEmptyContexts = $allowToUpdateEmptyContexts;
+    }
+
+    /**
      * Get organization
      *
      * @return OrganizationInterface
      */
+    #[\Override]
     public function getOrganization()
     {
         return $this->organization;
@@ -583,6 +595,7 @@ class Email implements OrganizationAwareInterface
      * @param OrganizationInterface $organization
      * @return $this
      */
+    #[\Override]
     public function setOrganization(OrganizationInterface $organization)
     {
         $this->organization = $organization;

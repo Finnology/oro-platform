@@ -12,6 +12,7 @@ class LoadBasePermissionsQueryTest extends \PHPUnit\Framework\TestCase
     /** @var \PHPUnit\Framework\MockObject\MockObject|Connection */
     protected $connection;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->connection = $this->createMock(Connection::class);
@@ -46,7 +47,7 @@ class LoadBasePermissionsQueryTest extends \PHPUnit\Framework\TestCase
         );
 
         $this->connection->expects($this->once())
-            ->method('fetchAll')
+            ->method('fetchAllAssociative')
             ->with('SELECT name FROM oro_security_permission')
             ->willReturn([['name' => 'ASSIGN']]);
 

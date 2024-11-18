@@ -48,6 +48,7 @@ class AttributeImportStrategyTest extends \PHPUnit\Framework\TestCase
     /** @var \PHPUnit\Framework\MockObject\MockObject|ContextInterface */
     private $context;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->fieldTypeProvider = $this->createMock(FieldTypeProvider::class);
@@ -94,7 +95,7 @@ class AttributeImportStrategyTest extends \PHPUnit\Framework\TestCase
         $this->validationHelper->expects($this->once())
             ->method('findFieldConfig')
             ->with($className, $fieldName)
-            ->willReturn($isNew ? null: new Config(new FieldConfigId('extend', $className, $fieldName), []));
+            ->willReturn($isNew ? null : new Config(new FieldConfigId('extend', $className, $fieldName), []));
 
         $this->fieldTypeProvider->expects($this->once())
             ->method('getSupportedFieldTypes')

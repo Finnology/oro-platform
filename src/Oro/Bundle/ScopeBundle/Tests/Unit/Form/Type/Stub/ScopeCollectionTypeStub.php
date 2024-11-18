@@ -9,9 +9,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class ScopeCollectionTypeStub extends ScopeCollectionType
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults(
@@ -21,10 +19,8 @@ class ScopeCollectionTypeStub extends ScopeCollectionType
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getParent()
+    #[\Override]
+    public function getParent(): ?string
     {
         return CollectionType::class;
     }

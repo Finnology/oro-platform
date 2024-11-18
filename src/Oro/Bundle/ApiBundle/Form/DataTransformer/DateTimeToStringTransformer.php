@@ -32,9 +32,7 @@ class DateTimeToStringTransformer implements DataTransformerInterface
         $this->withDate = $withDate;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function transform($value)
     {
         if (null === $value) {
@@ -48,9 +46,7 @@ class DateTimeToStringTransformer implements DataTransformerInterface
         return $this->transformValue($value);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function reverseTransform($value)
     {
         if (!\is_string($value)) {
@@ -74,11 +70,7 @@ class DateTimeToStringTransformer implements DataTransformerInterface
             return $value->format('H:i:s');
         }
 
-        $result = $value->format('Y-m-d\TH:i:s.vP');
-        $result = preg_replace('/\.000([\+\-]\d{2}:\d{2})$/', '$1', $result);
-        $result = preg_replace('/\+00:00$/', 'Z', $result);
-
-        return $result;
+        return preg_replace('/\+00:00$/', 'Z', $value->format('Y-m-d\TH:i:sP'));
     }
 
     /**

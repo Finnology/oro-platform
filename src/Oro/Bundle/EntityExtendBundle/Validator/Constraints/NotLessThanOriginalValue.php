@@ -19,18 +19,14 @@ class NotLessThanOriginalValue extends Constraint
     /** @var string */
     public $option;
 
-    /**
-     * {@inheritDoc}
-     */
-    public function getTargets()
+    #[\Override]
+    public function getTargets(): string|array
     {
         return static::PROPERTY_CONSTRAINT;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function getRequiredOptions()
+    #[\Override]
+    public function getRequiredOptions(): array
     {
         return ['scope', 'option'];
     }

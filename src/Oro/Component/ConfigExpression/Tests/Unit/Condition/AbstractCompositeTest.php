@@ -13,6 +13,7 @@ class AbstractCompositeTest extends \PHPUnit\Framework\TestCase
     /** @var AbstractComposite */
     private $condition;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->condition = new class() extends AbstractComposite {
@@ -61,6 +62,6 @@ class AbstractCompositeTest extends \PHPUnit\Framework\TestCase
             ExpressionInterface::class
         ));
 
-        $this->condition->initialize([new \stdClass]);
+        $this->condition->initialize([new \stdClass()]);
     }
 }

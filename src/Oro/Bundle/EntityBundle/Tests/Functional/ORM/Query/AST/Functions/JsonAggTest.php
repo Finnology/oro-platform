@@ -12,6 +12,7 @@ class JsonAggTest extends WebTestCase
 {
     private EntityManager $entityManager;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->entityManager = self::getContainer()->get('doctrine')->getManagerForClass(TestDecimalEntity::class);
@@ -28,7 +29,7 @@ class JsonAggTest extends WebTestCase
         $query = new Query($this->entityManager);
         $query->setDQL($dql);
 
-        self::assertEquals($sql, $query->getSQL(), \sprintf('Unexpected SQL for "%s"', $dql));
+        self::assertEquals($sql, $query->getSQL(), sprintf('Unexpected SQL for "%s"', $dql));
     }
 
     public function getDqlFunctionDataProvider(): array

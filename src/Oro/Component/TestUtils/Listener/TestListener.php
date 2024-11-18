@@ -2,6 +2,7 @@
 
 namespace Oro\Component\TestUtils\Listener;
 
+use Doctrine\Common\Annotations\AnnotationReader;
 use PHPUnit\Framework\Test;
 use PHPUnit\Framework\TestListener as BaseListener;
 use PHPUnit\Framework\TestListenerDefaultImplementation;
@@ -16,6 +17,7 @@ class TestListener implements BaseListener
     /**
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
+    #[\Override]
     public function endTest(Test $test, float $time): void
     {
         $reflection = new \ReflectionClass($test);
@@ -43,5 +45,11 @@ class TestListener implements BaseListener
                 $reflection->getName()
             )($propertyNames);
         }
+    }
+
+    #[\Override]
+    public function startTest(Test $test): void
+    {
+        AnnotationReader::addGlobalIgnoredName('mixin');
     }
 }

@@ -17,9 +17,7 @@ class LoadOptionSetsQuery extends ParametrizedMigrationQuery
         $this->storage = $storage;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getDescription()
     {
         $logger = new ArrayLogger();
@@ -29,9 +27,7 @@ class LoadOptionSetsQuery extends ParametrizedMigrationQuery
         return $logger->getMessages();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function execute(LoggerInterface $logger)
     {
         $optionSets      = $this->loadOptionSets($logger);
@@ -70,7 +66,7 @@ class LoadOptionSetsQuery extends ParametrizedMigrationQuery
         $params = ['optionSet'];
 
         $this->logQuery($logger, $query, $params);
-        $rows = $this->connection->fetchAll($query, $params);
+        $rows = $this->connection->fetchAllAssociative($query, $params);
 
         foreach ($rows as &$row) {
             $row['config_id'] = (int)$row['config_id'];
@@ -91,7 +87,7 @@ class LoadOptionSetsQuery extends ParametrizedMigrationQuery
             . 'FROM oro_entity_config_optionset o';
 
         $this->logQuery($logger, $query);
-        $rows = $this->connection->fetchAll($query);
+        $rows = $this->connection->fetchAllAssociative($query);
 
         $result = [];
         foreach ($rows as $row) {
@@ -117,7 +113,7 @@ class LoadOptionSetsQuery extends ParametrizedMigrationQuery
             . 'FROM oro_entity_config_optset_rel rel';
 
         $this->logQuery($logger, $query);
-        $rows = $this->connection->fetchAll($query);
+        $rows = $this->connection->fetchAllAssociative($query);
 
         $result = [];
         foreach ($rows as $row) {

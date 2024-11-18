@@ -5,6 +5,7 @@ namespace Oro\Bundle\EntityExtendBundle\Cache;
 use Oro\Bundle\EntityBundle\Tools\CheckDatabaseStateManager;
 use Oro\Bundle\InstallerBundle\CommandExecutor;
 use Oro\Component\DependencyInjection\ServiceLink;
+use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\HttpKernel\CacheWarmer\CacheWarmerAggregate as SymfonyCacheWarmerAggregate;
 
 /**
@@ -39,7 +40,8 @@ class CacheWarmerAggregate extends SymfonyCacheWarmerAggregate
     /**
      * @see \Symfony\Component\HttpKernel\CacheWarmer\CacheWarmerAggregate::enableOptionalWarmers
      */
-    public function enableOptionalWarmers()
+    #[\Override]
+    public function enableOptionalWarmers(): void
     {
         $this->optionalsEnabled = true;
     }
@@ -47,24 +49,25 @@ class CacheWarmerAggregate extends SymfonyCacheWarmerAggregate
     /**
      * @see \Symfony\Component\HttpKernel\CacheWarmer\CacheWarmerAggregate::enableOnlyOptionalWarmers
      */
-    public function enableOnlyOptionalWarmers()
+    #[\Override]
+    public function enableOnlyOptionalWarmers(): void
     {
         $this->optionalsEnabled = true;
         $this->onlyOptionalsEnabled = true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function isOptional(): bool
     {
         return false;
     }
 
     /**
-     * {@inheritdoc}
+     * @param string $cacheDir
+     * @param SymfonyStyle|null $io
      */
-    public function warmUp($cacheDir): array
+    #[\Override]
+    public function warmUp(string $cacheDir, string|SymfonyStyle $buildDir = null, SymfonyStyle $io = null): array
     {
         $cacheWarmerLink = $this->cacheWarmerLink;
         if (CommandExecutor::isCurrentCommand('oro:entity-extend:cache:', true)

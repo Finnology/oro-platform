@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Component\PhpUtils;
@@ -99,6 +100,7 @@ final class ClassGenerator
     /**
      * Returns the generated class code.
      */
+    #[\Override]
     public function __toString(): string
     {
         return $this->print();

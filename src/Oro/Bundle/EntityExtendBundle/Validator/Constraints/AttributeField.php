@@ -14,18 +14,14 @@ class AttributeField extends Constraint
      */
     public $message = 'oro.entity_extend.attribute_field.message';
 
-    /**
-     * {@inheritdoc}
-     */
-    public function validatedBy()
+    #[\Override]
+    public function validatedBy(): string
     {
         return AttributeFieldValidator::ALIAS;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getTargets()
+    #[\Override]
+    public function getTargets(): string|array
     {
         return self::CLASS_CONSTRAINT;
     }

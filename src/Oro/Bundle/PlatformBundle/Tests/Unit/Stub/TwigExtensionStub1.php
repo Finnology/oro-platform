@@ -8,10 +8,8 @@ use Twig\Extension\AbstractExtension;
 
 class TwigExtensionStub1 extends AbstractExtension implements ServiceSubscriberInterface
 {
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedServices()
+    #[\Override]
+    public static function getSubscribedServices(): array
     {
         return [
             'translator' => TranslatorInterface::class

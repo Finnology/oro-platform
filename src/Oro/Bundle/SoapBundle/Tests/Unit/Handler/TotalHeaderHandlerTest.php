@@ -6,7 +6,7 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Query\QueryBuilder;
 use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\Configuration;
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query;
 use Doctrine\ORM\Query\ResultSetMapping;
@@ -31,9 +31,10 @@ class TotalHeaderHandlerTest extends \PHPUnit\Framework\TestCase
     /** @var TotalHeaderHandler|\PHPUnit\Framework\MockObject\MockObject */
     private $handler;
 
-    /** @var EntityManager|\PHPUnit\Framework\MockObject\MockObject */
+    /** @var EntityManagerInterface|\PHPUnit\Framework\MockObject\MockObject */
     private $em;
 
+    #[\Override]
     protected function setUp(): void
     {
         $optimizer = $this->createMock(CountQueryBuilderOptimizer::class);
@@ -55,7 +56,7 @@ class TotalHeaderHandlerTest extends \PHPUnit\Framework\TestCase
             ->method('isSecondLevelCacheEnabled')
             ->willReturn(false);
 
-        $this->em = $this->createMock(EntityManager::class);
+        $this->em = $this->createMock(EntityManagerInterface::class);
         $this->em->expects($this->any())
             ->method('getConfiguration')
             ->willReturn($configuration);
@@ -201,7 +202,7 @@ class TotalHeaderHandlerTest extends \PHPUnit\Framework\TestCase
             ->method('isSecondLevelCacheEnabled')
             ->willReturn(false);
 
-        $em = $this->createMock(EntityManager::class);
+        $em = $this->createMock(EntityManagerInterface::class);
         $em->expects($this->any())
             ->method('getConfiguration')
             ->willReturn($configuration);
@@ -250,7 +251,7 @@ class TotalHeaderHandlerTest extends \PHPUnit\Framework\TestCase
             ->method('isSecondLevelCacheEnabled')
             ->willReturn(false);
 
-        $em = $this->createMock(EntityManager::class);
+        $em = $this->createMock(EntityManagerInterface::class);
         $em->expects($this->any())
             ->method('getConfiguration')
             ->willReturn($configuration);

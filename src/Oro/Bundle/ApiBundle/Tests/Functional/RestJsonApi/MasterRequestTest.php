@@ -2,6 +2,9 @@
 
 namespace Oro\Bundle\ApiBundle\Tests\Functional\RestJsonApi;
 
+use Oro\Bundle\ApiBundle\Model\EntityIdentifier;
+use Oro\Bundle\ApiBundle\Tests\Functional\Environment\Entity\TestDepartment;
+use Oro\Bundle\ApiBundle\Tests\Functional\Environment\Entity\TestEmployee;
 use Oro\Bundle\ApiBundle\Tests\Functional\RestJsonApiTestCase;
 use Oro\Bundle\TestFrameworkBundle\Entity\TestProduct;
 use Oro\Bundle\TestFrameworkBundle\Entity\TestProductType;
@@ -13,30 +16,33 @@ use Oro\Bundle\TestFrameworkBundle\Entity\TestProductType;
  */
 class MasterRequestTest extends RestJsonApiTestCase
 {
-    private function createProduct(): int
+    #[\Override]
+    protected function setUp(): void
     {
-        $product = new TestProduct();
-        $product->setName('New Product');
-        $em = $this->getEntityManager();
-        $em->persist($product);
-        $em->flush();
-        $productId = $product->getId();
-        $em->clear();
-
-        return $productId;
+        parent::setUp();
+        $this->loadFixtures([
+            '@OroApiBundle/Tests/Functional/DataFixtures/master_request.yml'
+        ]);
     }
 
-    private function createProductType(): string
+    private function getProductId(): int
     {
-        $productType = new TestProductType();
-        $productType->setName('new_product_type');
-        $em = $this->getEntityManager();
-        $em->persist($productType);
-        $em->flush();
-        $productTypeId = $productType->getName();
-        $em->clear();
+        return $this->getReference('product')->getId();
+    }
 
-        return $productTypeId;
+    private function getProductTypeId(int $number): string
+    {
+        return $this->getReference('product_type_' . $number)->getName();
+    }
+
+    private function getDepartmentId(): int
+    {
+        return $this->getReference('department')->getId();
+    }
+
+    private function getEmployeeId(int $number): string
+    {
+        return $this->getReference('employee_' . $number)->getId();
     }
 
     public function testOptionsRequest()
@@ -46,7 +52,7 @@ class MasterRequestTest extends RestJsonApiTestCase
 
         self::assertEquals(
             [
-                sprintf('Process "options" action for "%s" (MASTER_REQUEST)', TestProduct::class)
+                sprintf('Process "options" action for "%s" (MAIN_REQUEST)', TestProduct::class)
             ],
             $this->getRequestTypeLogMessages()
         );
@@ -55,12 +61,11 @@ class MasterRequestTest extends RestJsonApiTestCase
     public function testGetListRequest()
     {
         $entityType = $this->getEntityType(TestProduct::class);
-        $this->createProduct();
         $this->cget(['entity' => $entityType]);
 
         self::assertEquals(
             [
-                sprintf('Process "get_list" action for "%s" (MASTER_REQUEST)', TestProduct::class)
+                sprintf('Process "get_list" action for "%s" (MAIN_REQUEST)', TestProduct::class)
             ],
             $this->getRequestTypeLogMessages()
         );
@@ -69,12 +74,12 @@ class MasterRequestTest extends RestJsonApiTestCase
     public function testGetRequest()
     {
         $entityType = $this->getEntityType(TestProduct::class);
-        $entityId = $this->createProduct();
+        $entityId = $this->getProductId();
         $this->get(['entity' => $entityType, 'id' => (string)$entityId]);
 
         self::assertEquals(
             [
-                sprintf('Process "get" action for "%s" (MASTER_REQUEST)', TestProduct::class)
+                sprintf('Process "get" action for "%s" (MAIN_REQUEST)', TestProduct::class)
             ],
             $this->getRequestTypeLogMessages()
         );
@@ -85,7 +90,7 @@ class MasterRequestTest extends RestJsonApiTestCase
         $entityType = $this->getEntityType(TestProduct::class);
         $data = [
             'data' => [
-                'type'       => $entityType,
+                'type' => $entityType,
                 'attributes' => [
                     'name' => 'test'
                 ]
@@ -95,7 +100,7 @@ class MasterRequestTest extends RestJsonApiTestCase
 
         self::assertEquals(
             [
-                sprintf('Process "create" action for "%s" (MASTER_REQUEST)', TestProduct::class),
+                sprintf('Process "create" action for "%s" (MAIN_REQUEST)', TestProduct::class),
                 sprintf('Process "get" action for "%s" (SUB_REQUEST)', TestProduct::class)
             ],
             $this->getRequestTypeLogMessages()
@@ -107,9 +112,9 @@ class MasterRequestTest extends RestJsonApiTestCase
         $entityType = $this->getEntityType(TestProduct::class);
         $includedEntityType = $this->getEntityType(TestProductType::class);
         $data = [
-            'data'     => [
-                'type'          => $entityType,
-                'attributes'    => [
+            'data' => [
+                'type' => $entityType,
+                'attributes' => [
                     'name' => 'test'
                 ],
                 'relationships' => [
@@ -121,7 +126,7 @@ class MasterRequestTest extends RestJsonApiTestCase
             'included' => [
                 [
                     'type' => $includedEntityType,
-                    'id'   => 'new_product_type'
+                    'id' => 'new_product_type'
                 ]
             ]
         ];
@@ -129,7 +134,7 @@ class MasterRequestTest extends RestJsonApiTestCase
 
         self::assertEquals(
             [
-                sprintf('Process "create" action for "%s" (MASTER_REQUEST)', TestProduct::class),
+                sprintf('Process "create" action for "%s" (MAIN_REQUEST)', TestProduct::class),
                 sprintf('Process "create" action for "%s" (SUB_REQUEST)', TestProductType::class),
                 sprintf('Process "get" action for "%s" (SUB_REQUEST)', TestProduct::class),
                 sprintf('Process "get" action for "%s" (SUB_REQUEST)', TestProductType::class)
@@ -141,11 +146,11 @@ class MasterRequestTest extends RestJsonApiTestCase
     public function testUpdateRequest()
     {
         $entityType = $this->getEntityType(TestProduct::class);
-        $entityId = $this->createProduct();
+        $entityId = $this->getProductId();
         $data = [
             'data' => [
-                'type'       => $entityType,
-                'id'         => (string)$entityId,
+                'type' => $entityType,
+                'id' => (string)$entityId,
                 'attributes' => [
                     'name' => 'test'
                 ]
@@ -155,7 +160,7 @@ class MasterRequestTest extends RestJsonApiTestCase
 
         self::assertEquals(
             [
-                sprintf('Process "update" action for "%s" (MASTER_REQUEST)', TestProduct::class),
+                sprintf('Process "update" action for "%s" (MAIN_REQUEST)', TestProduct::class),
                 sprintf('Process "get" action for "%s" (SUB_REQUEST)', TestProduct::class)
             ],
             $this->getRequestTypeLogMessages()
@@ -165,13 +170,13 @@ class MasterRequestTest extends RestJsonApiTestCase
     public function testUpdateRequestWithIncludedEntities()
     {
         $entityType = $this->getEntityType(TestProduct::class);
-        $entityId = $this->createProduct();
+        $entityId = $this->getProductId();
         $includedEntityType = $this->getEntityType(TestProductType::class);
         $data = [
-            'data'     => [
-                'type'          => $entityType,
-                'id'            => (string)$entityId,
-                'attributes'    => [
+            'data' => [
+                'type' => $entityType,
+                'id' => (string)$entityId,
+                'attributes' => [
                     'name' => 'test'
                 ],
                 'relationships' => [
@@ -183,7 +188,7 @@ class MasterRequestTest extends RestJsonApiTestCase
             'included' => [
                 [
                     'type' => $includedEntityType,
-                    'id'   => 'new_product_type'
+                    'id' => 'new_product_type'
                 ]
             ]
         ];
@@ -191,7 +196,7 @@ class MasterRequestTest extends RestJsonApiTestCase
 
         self::assertEquals(
             [
-                sprintf('Process "update" action for "%s" (MASTER_REQUEST)', TestProduct::class),
+                sprintf('Process "update" action for "%s" (MAIN_REQUEST)', TestProduct::class),
                 sprintf('Process "create" action for "%s" (SUB_REQUEST)', TestProductType::class),
                 sprintf('Process "get" action for "%s" (SUB_REQUEST)', TestProduct::class),
                 sprintf('Process "get" action for "%s" (SUB_REQUEST)', TestProductType::class)
@@ -203,12 +208,12 @@ class MasterRequestTest extends RestJsonApiTestCase
     public function testDeleteRequest()
     {
         $entityType = $this->getEntityType(TestProduct::class);
-        $entityId = $this->createProduct();
+        $entityId = $this->getProductId();
         $this->delete(['entity' => $entityType, 'id' => (string)$entityId]);
 
         self::assertEquals(
             [
-                sprintf('Process "delete" action for "%s" (MASTER_REQUEST)', TestProduct::class)
+                sprintf('Process "delete" action for "%s" (MAIN_REQUEST)', TestProduct::class)
             ],
             $this->getRequestTypeLogMessages()
         );
@@ -217,60 +222,57 @@ class MasterRequestTest extends RestJsonApiTestCase
     public function testDeleteListRequest()
     {
         $entityType = $this->getEntityType(TestProduct::class);
-        $entityId = $this->createProduct();
+        $entityId = $this->getProductId();
         $this->cdelete(['entity' => $entityType], ['filter[id]' => (string)$entityId]);
 
         self::assertEquals(
             [
-                sprintf('Process "delete_list" action for "%s" (MASTER_REQUEST)', TestProduct::class)
+                sprintf('Process "delete_list" action for "%s" (MAIN_REQUEST)', TestProduct::class)
             ],
             $this->getRequestTypeLogMessages()
         );
     }
 
-    public function testGetSubresourceRequest()
+    public function testGetSubresourceRequestForToOneAssociation()
     {
         $entityType = $this->getEntityType(TestProduct::class);
-        $entityId = $this->createProduct();
+        $entityId = $this->getProductId();
         $this->getSubresource(
             ['entity' => $entityType, 'id' => (string)$entityId, 'association' => 'productType']
         );
 
         self::assertEquals(
             [
-                sprintf('Process "get_subresource" action for "%s" (MASTER_REQUEST)', TestProductType::class)
+                sprintf('Process "get_subresource" action for "%s" (MAIN_REQUEST)', TestProductType::class)
             ],
             $this->getRequestTypeLogMessages()
         );
     }
 
-    public function testGetRelationshipRequest()
+    public function testGetRelationshipRequestForToOneAssociation()
     {
         $entityType = $this->getEntityType(TestProduct::class);
-        $entityId = $this->createProduct();
+        $entityId = $this->getProductId();
         $this->getRelationship(
             ['entity' => $entityType, 'id' => (string)$entityId, 'association' => 'productType']
         );
 
         self::assertEquals(
             [
-                sprintf('Process "get_relationship" action for "%s" (MASTER_REQUEST)', TestProductType::class)
+                sprintf('Process "get_relationship" action for "%s" (MAIN_REQUEST)', TestProductType::class)
             ],
             $this->getRequestTypeLogMessages()
         );
     }
 
-    public function testUpdateRelationshipRequest()
+    public function testUpdateRelationshipRequestForToOneAssociation()
     {
         $entityType = $this->getEntityType(TestProduct::class);
-        $entityId = $this->createProduct();
+        $entityId = $this->getProductId();
         $associatedEntityType = $this->getEntityType(TestProductType::class);
-        $associatedEntityId = $this->createProductType();
+        $associatedEntityId = $this->getProductTypeId(2);
         $data = [
-            'data' => [
-                'type' => $associatedEntityType,
-                'id'   => $associatedEntityId
-            ]
+            'data' => ['type' => $associatedEntityType, 'id' => $associatedEntityId]
         ];
         $this->patchRelationship(
             ['entity' => $entityType, 'id' => (string)$entityId, 'association' => 'productType'],
@@ -279,7 +281,111 @@ class MasterRequestTest extends RestJsonApiTestCase
 
         self::assertEquals(
             [
-                sprintf('Process "update_relationship" action for "%s" (MASTER_REQUEST)', TestProductType::class)
+                sprintf('Process "update_relationship" action for "%s" (MAIN_REQUEST)', TestProductType::class)
+            ],
+            $this->getRequestTypeLogMessages()
+        );
+    }
+
+    public function testGetSubresourceRequestForToManyAssociation()
+    {
+        $entityType = $this->getEntityType(TestDepartment::class);
+        $entityId = $this->getDepartmentId();
+        $this->getSubresource(
+            ['entity' => $entityType, 'id' => (string)$entityId, 'association' => 'staff']
+        );
+
+        self::assertEquals(
+            [
+                sprintf('Process "get_subresource" action for "%s" (MAIN_REQUEST)', EntityIdentifier::class)
+            ],
+            $this->getRequestTypeLogMessages()
+        );
+    }
+
+    public function testGetRelationshipRequestForToManyAssociation()
+    {
+        $entityType = $this->getEntityType(TestDepartment::class);
+        $entityId = $this->getDepartmentId();
+        $this->getRelationship(
+            ['entity' => $entityType, 'id' => (string)$entityId, 'association' => 'staff']
+        );
+
+        self::assertEquals(
+            [
+                sprintf('Process "get_relationship" action for "%s" (MAIN_REQUEST)', EntityIdentifier::class)
+            ],
+            $this->getRequestTypeLogMessages()
+        );
+    }
+
+    public function testUpdateRelationshipRequestForToManyAssociation()
+    {
+        $entityType = $this->getEntityType(TestDepartment::class);
+        $entityId = $this->getDepartmentId();
+        $associatedEntityType = $this->getEntityType(TestEmployee::class);
+        $associatedEntityId = $this->getEmployeeId(2);
+        $data = [
+            'data' => [
+                ['type' => $associatedEntityType, 'id' => $associatedEntityId]
+            ]
+        ];
+        $this->patchRelationship(
+            ['entity' => $entityType, 'id' => (string)$entityId, 'association' => 'staff'],
+            $data
+        );
+
+        self::assertEquals(
+            [
+                sprintf('Process "update_relationship" action for "%s" (MAIN_REQUEST)', EntityIdentifier::class)
+            ],
+            $this->getRequestTypeLogMessages()
+        );
+    }
+
+    public function testAddRelationshipRequestForToManyAssociation()
+    {
+        $entityType = $this->getEntityType(TestDepartment::class);
+        $entityId = $this->getDepartmentId();
+        $associatedEntityType = $this->getEntityType(TestEmployee::class);
+        $associatedEntityId = $this->getEmployeeId(2);
+        $data = [
+            'data' => [
+                ['type' => $associatedEntityType, 'id' => $associatedEntityId]
+            ]
+        ];
+        $this->postRelationship(
+            ['entity' => $entityType, 'id' => (string)$entityId, 'association' => 'staff'],
+            $data
+        );
+
+        self::assertEquals(
+            [
+                sprintf('Process "add_relationship" action for "%s" (MAIN_REQUEST)', EntityIdentifier::class)
+            ],
+            $this->getRequestTypeLogMessages()
+        );
+    }
+
+    public function testDeleteRelationshipRequestForToManyAssociation()
+    {
+        $entityType = $this->getEntityType(TestDepartment::class);
+        $entityId = $this->getDepartmentId();
+        $associatedEntityType = $this->getEntityType(TestEmployee::class);
+        $associatedEntityId = $this->getEmployeeId(1);
+        $data = [
+            'data' => [
+                ['type' => $associatedEntityType, 'id' => $associatedEntityId]
+            ]
+        ];
+        $this->deleteRelationship(
+            ['entity' => $entityType, 'id' => (string)$entityId, 'association' => 'staff'],
+            $data
+        );
+
+        self::assertEquals(
+            [
+                sprintf('Process "delete_relationship" action for "%s" (MAIN_REQUEST)', EntityIdentifier::class)
             ],
             $this->getRequestTypeLogMessages()
         );

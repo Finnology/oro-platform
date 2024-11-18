@@ -25,6 +25,7 @@ class LayoutDataCollectorTest extends \PHPUnit\Framework\TestCase
 
     private LayoutDataCollector $dataCollector;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->layoutNameProvider = $this->createMock(DataCollectorLayoutNameProviderInterface::class);
@@ -245,7 +246,7 @@ class LayoutDataCollectorTest extends \PHPUnit\Framework\TestCase
     /**
      * @param BlockView $rootBlock
      * @param array $tree
-     * @param BlockView[] $blockViews
+     * @param BlockView[]|null $blockViews
      *
      * @return BlockView[]
      */

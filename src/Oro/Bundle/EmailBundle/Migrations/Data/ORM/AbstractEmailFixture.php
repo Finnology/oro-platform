@@ -7,53 +7,39 @@ use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Oro\Bundle\EmailBundle\Entity\EmailTemplate;
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
+use Oro\Bundle\UserBundle\Entity\Role;
 use Oro\Bundle\UserBundle\Entity\User;
+use Oro\Bundle\UserBundle\Migrations\Data\ORM\LoadAdminUserData;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\DependencyInjection\ContainerAwareTrait;
 use Symfony\Component\Finder\Finder;
+use Symfony\Component\Finder\SplFileInfo;
 
+/**
+ * The base class for fixtures that load email templates.
+ */
 abstract class AbstractEmailFixture extends AbstractFixture implements
     DependentFixtureInterface,
     ContainerAwareInterface
 {
-    /** @var ContainerInterface */
-    protected $container;
+    use ContainerAwareTrait;
 
-    /** @var User|null */
-    protected $adminUser;
+    private ?User $adminUser = null;
+    private ?Organization $organization = null;
 
-    /** @var Organization|null */
-    protected $organization;
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setContainer(ContainerInterface $container = null)
-    {
-        $this->container = $container;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getDependencies()
     {
-        return [
-            'Oro\Bundle\UserBundle\Migrations\Data\ORM\LoadAdminUserData',
-        ];
+        return [LoadAdminUserData::class];
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function load(ObjectManager $manager)
     {
         $emailTemplates = $this->getEmailTemplatesList($this->getEmailsDir());
-
         foreach ($emailTemplates as $fileName => $file) {
             $this->loadTemplate($manager, $fileName, $file);
         }
-
         $manager->flush();
     }
 
@@ -67,23 +53,23 @@ abstract class AbstractEmailFixture extends AbstractFixture implements
             $finder = new Finder();
             $files = $finder->files()->in($dir);
         } else {
-            $files = array();
+            $files = [];
         }
 
-        $templates = array();
-        /** @var \Symfony\Component\Finder\SplFileInfo $file  */
+        $templates = [];
+        /** @var SplFileInfo $file  */
         foreach ($files as $file) {
-            $fileName = str_replace(array('.html.twig', '.html', '.txt.twig', '.txt'), '', $file->getFilename());
+            $fileName = $this->getBasename($file);
 
             $format = 'html';
             if (preg_match('#\.(html|txt)(\.twig)?#', $file->getFilename(), $match)) {
                 $format = $match[1];
             }
 
-            $templates[$fileName] = array(
+            $templates[$fileName] = [
                 'path'   => $file->getPath() . DIRECTORY_SEPARATOR . $file->getFilename(),
                 'format' => $format,
-            );
+            ];
         }
 
         return $templates;
@@ -98,6 +84,20 @@ abstract class AbstractEmailFixture extends AbstractFixture implements
     {
         $template = file_get_contents($file['path']);
         $parsedTemplate = EmailTemplate::parseContent($template);
+        if (empty($parsedTemplate['params']['name'])) {
+            throw new \LogicException(sprintf('Email template name is expected to be non empty in file %s', $fileName));
+        }
+
+        if ($parsedTemplate['params']['name'] !== $this->getBasename($fileName)) {
+            throw new \LogicException(
+                sprintf(
+                    'Email template name is expected to be equal to its filename: "%s" is not equal to "%s"',
+                    $parsedTemplate['params']['name'],
+                    $this->getBasename($fileName)
+                )
+            );
+        }
+
         $existingTemplate = $this->findExistingTemplate($manager, $parsedTemplate);
 
         if ($existingTemplate) {
@@ -141,54 +141,38 @@ abstract class AbstractEmailFixture extends AbstractFixture implements
         return null;
     }
 
-    /**
-     * @param ObjectManager $manager
-     * @return Organization
-     */
-    protected function getOrganization(ObjectManager $manager)
+    protected function getOrganization(ObjectManager $manager): Organization
     {
-        if ($this->organization) {
-            return $this->organization;
+        if (null === $this->organization) {
+            $this->organization = $manager->getRepository(Organization::class)->getFirst();
         }
-
-        $this->organization = $manager->getRepository('OroOrganizationBundle:Organization')->getFirst();
 
         return $this->organization;
     }
 
-    /**
-     * Get administrator user
-     *
-     * @param ObjectManager $manager
-     *
-     * @return User
-     *
-     * @throws \RuntimeException
-     */
-    protected function getAdminUser(ObjectManager $manager)
+    protected function getAdminUser(ObjectManager $manager): User
     {
-        if ($this->adminUser) {
-            return $this->adminUser;
+        if (null === $this->adminUser) {
+            $repository = $manager->getRepository(Role::class);
+            $role = $repository->findOneBy(['role' => User::ROLE_ADMINISTRATOR]);
+            if (!$role) {
+                throw new \RuntimeException('Administrator role should exist.');
+            }
+            $user = $repository->getFirstMatchedUser($role);
+            if (!$user) {
+                throw new \RuntimeException('Administrator user should exist to load email templates.');
+            }
+            $this->adminUser = $user;
         }
-
-        $repository = $manager->getRepository('OroUserBundle:Role');
-        $role       = $repository->findOneBy(['role' => User::ROLE_ADMINISTRATOR]);
-
-        if (!$role) {
-            throw new \RuntimeException('Administrator role should exist.');
-        }
-
-        $user = $repository->getFirstMatchedUser($role);
-
-        if (!$user) {
-            throw new \RuntimeException(
-                'Administrator user should exist to load email templates.'
-            );
-        }
-
-        $this->adminUser = $user;
 
         return $this->adminUser;
+    }
+
+    protected function getBasename(SplFileInfo|string $file): string
+    {
+        $filename = $file instanceof SplFileInfo ? $file->getFilename() : $file;
+
+        return str_replace(['.html.twig', '.html', '.txt.twig', '.txt'], '', $filename);
     }
 
     /**

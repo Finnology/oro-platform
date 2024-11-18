@@ -9,7 +9,14 @@ use Oro\Bundle\SyncBundle\Client\ConnectionChecker as BaseConnectionChecker;
  */
 class ConnectionChecker extends BaseConnectionChecker
 {
+    #[\Override]
     public function checkConnection(): bool
+    {
+        return false;
+    }
+
+    #[\Override]
+    public function isConfigured(): bool
     {
         return false;
     }

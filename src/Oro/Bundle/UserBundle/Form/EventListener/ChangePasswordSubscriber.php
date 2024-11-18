@@ -9,10 +9,8 @@ use Symfony\Component\Form\FormEvents;
 
 class ChangePasswordSubscriber extends UserSubscriber
 {
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedEvents()
+    #[\Override]
+    public static function getSubscribedEvents(): array
     {
         return array(
             FormEvents::POST_SUBMIT => 'onSubmit',
@@ -23,6 +21,7 @@ class ChangePasswordSubscriber extends UserSubscriber
     /**
      * Re-create current password field in case of user don't filled any password field
      */
+    #[\Override]
     public function preSubmit(FormEvent $event)
     {
         $form = $event->getForm();

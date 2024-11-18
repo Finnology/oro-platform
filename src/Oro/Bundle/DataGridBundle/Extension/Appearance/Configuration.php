@@ -12,10 +12,8 @@ class Configuration implements ConfigurationInterface
     const ICON_KEY = 'icon';
     const DEFAULT_PROCESSING_KEY = 'default_processing';
 
-    /**
-     * {@inheritDoc}
-     */
-    public function getConfigTreeBuilder()
+    #[\Override]
+    public function getConfigTreeBuilder(): TreeBuilder
     {
         $builder = new TreeBuilder('appearances');
         $builder->getRootNode()

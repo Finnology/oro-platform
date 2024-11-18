@@ -42,9 +42,7 @@ class CumulativeResource implements ResourceInterface, SelfCheckingResourceInter
         return $this->resource;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function isFresh(int $timestamp): bool
     {
         if ($this->isFreshTimestamp !== $timestamp) {
@@ -102,10 +100,8 @@ class CumulativeResource implements ResourceInterface, SelfCheckingResourceInter
             : [];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function __toString()
+    #[\Override]
+    public function __toString(): string
     {
         return $this->resource;
     }

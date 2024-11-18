@@ -8,6 +8,7 @@ use Oro\Bundle\DataAuditBundle\Async\Topic\AuditChangedEntitiesInverseCollection
 use Oro\Bundle\DataAuditBundle\Async\Topic\AuditChangedEntitiesInverseCollectionsTopic;
 use Oro\Bundle\DataAuditBundle\Entity\Audit;
 use Oro\Bundle\DataAuditBundle\Exception\WrongDataAuditEntryStateException;
+use Oro\Bundle\DataAuditBundle\Provider\AuditConfigProvider;
 use Oro\Bundle\DataAuditBundle\Service\EntityChangesToAuditEntryConverter;
 use Oro\Bundle\DataAuditBundle\Tests\Functional\DataFixtures\LoadTestAuditDataWithOneToManyData;
 use Oro\Bundle\DataAuditBundle\Tests\Functional\Environment\Entity\TestAuditDataOwner;
@@ -35,6 +36,7 @@ class AuditChangedEntitiesInverseCollectionsProcessorTest extends WebTestCase
     /** @var AuditChangedEntitiesInverseCollectionsChunkProcessor */
     private $chunkProcessor;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->initClient([], $this->generateBasicAuthHeader());
@@ -46,7 +48,7 @@ class AuditChangedEntitiesInverseCollectionsProcessorTest extends WebTestCase
             ->get('oro_dataaudit.async.audit_changed_entities_inverse_collections_chunk');
     }
 
-    public function testChunkProcessorProcessResult()
+    public function testChunkProcessorProcessResult(): void
     {
         $testAuditOwner = $this->getReference('testAuditOwner');
         $session = $this->getConnection()->createSession();
@@ -66,9 +68,11 @@ class AuditChangedEntitiesInverseCollectionsProcessorTest extends WebTestCase
 
         $converter = $this->createMock(EntityChangesToAuditEntryConverter::class);
         $logger = $this->createMock(NullLogger::class);
+        $auditConfigProvider = $this->createMock(AuditConfigProvider::class);
         $chunkProcessor = new AuditChangedEntitiesInverseCollectionsChunkProcessor(
             $converter,
-            $this->getJobRunner()
+            $this->getJobRunner(),
+            $auditConfigProvider
         );
         $chunkProcessor->setLogger($logger);
 

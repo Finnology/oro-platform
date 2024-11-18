@@ -11,10 +11,8 @@ class SourceEntity extends Constraint
 {
     public string $message = 'Add entity before setting it as a source entity for {{ field }} field.';
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getTargets()
+    #[\Override]
+    public function getTargets(): string|array
     {
         return self::CLASS_CONSTRAINT;
     }

@@ -29,6 +29,7 @@ class LoggedUserVariablesProviderTest extends \PHPUnit\Framework\TestCase
     /** @var LoggedUserVariablesProvider */
     private $provider;
 
+    #[\Override]
     protected function setUp(): void
     {
         $translator = $this->createMock(TranslatorInterface::class);
@@ -145,7 +146,7 @@ class LoggedUserVariablesProviderTest extends \PHPUnit\Framework\TestCase
     {
         $user = $this->createMock(UserInterface::class);
         $user->expects($this->once())
-            ->method('getUsername')
+            ->method('getUserIdentifier')
             ->willReturn('test');
 
         $this->tokenAccessor->expects($this->once())

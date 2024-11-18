@@ -5,27 +5,16 @@ namespace Oro\Bundle\OrganizationBundle\Migrations\Schema\v1_6;
 use Doctrine\DBAL\Schema\Schema;
 use Oro\Bundle\EntityExtendBundle\EntityConfig\ExtendScope;
 use Oro\Bundle\EntityExtendBundle\Extend\RelationType;
-use Oro\Bundle\EntityExtendBundle\Migration\Extension\ExtendExtension;
 use Oro\Bundle\EntityExtendBundle\Migration\Extension\ExtendExtensionAwareInterface;
+use Oro\Bundle\EntityExtendBundle\Migration\Extension\ExtendExtensionAwareTrait;
 use Oro\Bundle\MigrationBundle\Migration\Migration;
 use Oro\Bundle\MigrationBundle\Migration\QueryBag;
 
 class AddScopeRelations implements Migration, ExtendExtensionAwareInterface
 {
-    /** @var ExtendExtension */
-    private $extendExtension;
+    use ExtendExtensionAwareTrait;
 
-    /**
-     * {@inheritdoc}
-     */
-    public function setExtendExtension(ExtendExtension $extendExtension)
-    {
-        $this->extendExtension = $extendExtension;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function up(Schema $schema, QueryBag $queries)
     {
         $this->addRelationsToScope($schema);

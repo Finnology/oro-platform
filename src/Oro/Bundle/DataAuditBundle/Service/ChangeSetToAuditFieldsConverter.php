@@ -8,11 +8,14 @@ use Oro\Bundle\DataAuditBundle\Model\AuditFieldTypeRegistry;
 use Oro\Bundle\DataAuditBundle\Provider\AuditConfigProvider;
 use Oro\Bundle\DataAuditBundle\Provider\AuditFieldTypeProvider;
 use Oro\Bundle\DataAuditBundle\Provider\EntityNameProvider;
+use Oro\Bundle\EntityBundle\Helper\UnidirectionalFieldHelper;
+use Oro\Bundle\EntityExtendBundle\Entity\EnumOption;
 use Psr\Log\LoggerAwareTrait;
 
 /**
  * This converter is a part of EntityChangesToAuditEntryConverter and it is intended to process field changes.
  * @see \Oro\Bundle\DataAuditBundle\Service\EntityChangesToAuditEntryConverter
+ * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  */
 class ChangeSetToAuditFieldsConverter implements ChangeSetToAuditFieldsConverterInterface
 {
@@ -40,9 +43,7 @@ class ChangeSetToAuditFieldsConverter implements ChangeSetToAuditFieldsConverter
         $this->auditRecordValidator = $auditRecordValidator;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function convert(
         string $auditEntryClass,
         string $auditFieldClass,
@@ -90,7 +91,9 @@ class ChangeSetToAuditFieldsConverter implements ChangeSetToAuditFieldsConverter
         }
 
         list($old, $new) = $this->clearData($change);
-
+        if (!$this->isChangeSetAvailable($new, $old)) {
+            return;
+        }
         if ($entityMetadata->hasField($fieldName)) {
             $old = $this->processField($old, $fieldType);
             $new = $this->processField($new, $fieldType);
@@ -103,9 +106,11 @@ class ChangeSetToAuditFieldsConverter implements ChangeSetToAuditFieldsConverter
                 $old
             );
         } elseif ($this->auditFieldTypeProvider->isAssociation($entityMetadata, $fieldName)) {
+            $auditFieldName = UnidirectionalFieldHelper::isFieldUnidirectional($fieldName)
+                ? UnidirectionalFieldHelper::getRealFieldName($fieldName) : $fieldName;
             $field = $this->createAuditFieldEntity(
                 $auditFieldClass,
-                $fieldName,
+                $auditFieldName,
                 AuditFieldTypeRegistry::COLLECTION_TYPE
             );
             $fields[$fieldName] = $field;
@@ -114,6 +119,10 @@ class ChangeSetToAuditFieldsConverter implements ChangeSetToAuditFieldsConverter
             $this->processDeleted($auditEntryClass, $this->extractValue($old, 'deleted'), $field);
 
             $field->calculateNewValue();
+
+            if ($field->getNewValue() === $field->getOldValue()) {
+                unset($fields[$fieldName]);
+            }
         } else {
             $fields[$fieldName] = $this->createAuditFieldEntity(
                 $auditFieldClass,
@@ -123,6 +132,19 @@ class ChangeSetToAuditFieldsConverter implements ChangeSetToAuditFieldsConverter
                 (string)$old
             );
         }
+    }
+
+    private function isChangeSetAvailable(mixed $old, mixed $new): bool
+    {
+        // enumerable fields changes is processed by EnumerableChangeSetToAuditFieldsConverter
+        if (is_array($old) && isset($old['entity_class']) && $old['entity_class'] === EnumOption::class) {
+            return false;
+        }
+        if (is_array($new) && isset($new['entity_class']) && $new['entity_class'] === EnumOption::class) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -234,9 +256,15 @@ class ChangeSetToAuditFieldsConverter implements ChangeSetToAuditFieldsConverter
 
         foreach ($changeSet['changed'] as $entity) {
             $entityName = $this->getEntityName($auditEntryClass, $entity);
+
             if (!$entityName) {
                 continue;
             }
+
+            if (!$this->configProvider->isAuditableEntity($entity['entity_class'])) {
+                continue;
+            }
+
             $entityClass = $entity['entity_class'];
             $changeSet = array_filter(
                 $entity['change_set'] ?? [],
@@ -245,6 +273,11 @@ class ChangeSetToAuditFieldsConverter implements ChangeSetToAuditFieldsConverter
                 },
                 ARRAY_FILTER_USE_KEY
             );
+
+            if (empty($changeSet)) {
+                continue;
+            }
+
             $field->addEntityChangedInCollectionWithChangeSet(
                 $entity['entity_class'],
                 $entity['entity_id'],

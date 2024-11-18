@@ -8,10 +8,8 @@ class RelatedEntity extends Constraint
 {
     public $message = 'The entity was not found.';
 
-    /**
-     * {@inheritdoc}
-     */
-    public function validatedBy()
+    #[\Override]
+    public function validatedBy(): string
     {
         return 'oro_form.related_entity_validator';
     }

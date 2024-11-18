@@ -2,9 +2,8 @@
 
 namespace Oro\Bundle\IntegrationBundle\Tests\Unit\ImportExport\Reader;
 
-use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\Mapping\Driver\AnnotationDriver;
+use Doctrine\ORM\Mapping\Driver\AttributeDriver;
 use Doctrine\Persistence\ManagerRegistry;
 use Oro\Bundle\BatchBundle\Entity\StepExecution;
 use Oro\Bundle\EntityConfigBundle\Provider\ExportQueryProvider;
@@ -31,6 +30,7 @@ class EntityReaderByIdTest extends OrmTestCase
     /** @var ExportQueryProvider|\PHPUnit\Framework\MockObject\MockObject */
     private $exportQueryProvider;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->contextRegistry = $this->createMock(ContextRegistry::class);
@@ -39,7 +39,7 @@ class EntityReaderByIdTest extends OrmTestCase
         $this->exportQueryProvider = $this->createMock(ExportQueryProvider::class);
 
         $this->em = $this->getTestEntityManager();
-        $this->em->getConfiguration()->setMetadataDriverImpl(new AnnotationDriver(new AnnotationReader()));
+        $this->em->getConfiguration()->setMetadataDriverImpl(new AttributeDriver([]));
 
         $this->reader = new EntityReaderById(
             $this->contextRegistry,

@@ -11,35 +11,26 @@ class EmailTemplateRichTextType extends AbstractType
 {
     const NAME = 'oro_email_template_rich_text';
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         // append template transformer to run after parent type transformers
         $builder->addModelTransformer(new EmailTemplateTransformer(), true);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getName()
     {
         return $this->getBlockPrefix();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return self::NAME;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getParent()
+    #[\Override]
+    public function getParent(): ?string
     {
         return OroRichTextType::class;
     }

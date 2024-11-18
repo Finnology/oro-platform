@@ -19,10 +19,8 @@ class InsertFromSelectQueryExecutor implements InsertQueryExecutorInterface
         $this->helper = $helper;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function execute(string $className, array $fields, QueryBuilder $selectQueryBuilder):int
+    #[\Override]
+    public function execute(string $className, array $fields, QueryBuilder $selectQueryBuilder): int
     {
         $insertToTableName = $this->helper->getTableName($className);
         $columns = $this->helper->getColumns($className, $fields);

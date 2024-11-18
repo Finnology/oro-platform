@@ -34,11 +34,12 @@ class Serializer extends SymfonySerializer implements SerializerInterface
         $this->normalizers = $normalizers;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function normalize($data, string $format = null, array $context = [])
-    {
+    #[\Override]
+    public function normalize(
+        $data,
+        string $format = null,
+        array $context = []
+    ): \ArrayObject|array|string|int|float|bool|null {
         if (null === $data || is_scalar($data)) {
             return $data;
         }
@@ -71,10 +72,8 @@ class Serializer extends SymfonySerializer implements SerializerInterface
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function denormalize($data, string $type, string $format = null, array $context = [])
+    #[\Override]
+    public function denormalize($data, string $type, string $format = null, array $context = []): mixed
     {
         if (!$this->normalizers) {
             throw new LogicException('You must register at least one normalizer to be able to denormalize objects.');
@@ -102,9 +101,7 @@ class Serializer extends SymfonySerializer implements SerializerInterface
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function supportsNormalization($data, string $format = null, array $context = []): bool
     {
         try {
@@ -116,9 +113,7 @@ class Serializer extends SymfonySerializer implements SerializerInterface
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function supportsDenormalization($data, string $type, string $format = null, array $context = []): bool
     {
         try {

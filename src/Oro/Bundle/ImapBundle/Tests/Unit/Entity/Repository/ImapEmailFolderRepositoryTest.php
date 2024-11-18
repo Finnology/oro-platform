@@ -2,9 +2,8 @@
 
 namespace Oro\Bundle\ImapBundle\Tests\Unit\Entity\Repository;
 
-use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Mapping\Driver\AnnotationDriver;
+use Doctrine\ORM\Mapping\Driver\AttributeDriver;
 use Oro\Bundle\ImapBundle\Entity\ImapEmailFolder;
 use Oro\Bundle\ImapBundle\Entity\Repository\ImapEmailFolderRepository;
 use Oro\Bundle\ImapBundle\Entity\UserEmailOrigin;
@@ -14,10 +13,11 @@ class ImapEmailFolderRepositoryTest extends OrmTestCase
 {
     private EntityManagerInterface $em;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->em = $this->getTestEntityManager();
-        $this->em->getConfiguration()->setMetadataDriverImpl(new AnnotationDriver(new AnnotationReader()));
+        $this->em->getConfiguration()->setMetadataDriverImpl(new AttributeDriver([]));
     }
 
     public function testGetFoldersByOriginQueryBuilder()

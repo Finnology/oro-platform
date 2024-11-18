@@ -1,10 +1,13 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\UserBundle\Command;
 
+use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
+use Oro\Bundle\EntityExtendBundle\Entity\EnumOption;
 use Oro\Bundle\UserBundle\Entity\User;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
@@ -29,6 +32,7 @@ class ListUserCommand extends Command
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     protected function configure()
     {
         $this
@@ -72,7 +76,8 @@ HELP
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    #[\Override]
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $limit = (int) $input->getOption('limit');
         $offset = ((int) $input->getOption('page') - 1) * $limit;
@@ -80,7 +85,7 @@ HELP
         /** @var QueryBuilder $builder */
         $builder = $this->doctrine
             ->getManagerForClass(User::class)
-            ->getRepository('OroUserBundle:User')
+            ->getRepository(User::class)
             ->createQueryBuilder('u');
         $builder->orderBy('u.enabled', 'DESC')
             ->addOrderBy('u.id', 'ASC');
@@ -102,7 +107,12 @@ HELP
         if (!empty($input->getOption('roles'))) {
             $builder
                 ->leftJoin('u.userRoles', 'r')
-                ->leftJoin('u.auth_status', 'au')
+                ->leftJoin(
+                    EnumOption::class,
+                    'au',
+                    Join::WITH,
+                    "JSON_EXTRACT(u.serialized_data, 'auth_status') = au"
+                )
                 ->andWhere('r.label IN (:roles)')
                 ->setParameter('roles', $input->getOption('roles'));
         }
@@ -111,17 +121,16 @@ HELP
         $table
             ->setHeaders(['ID', 'Username', 'Enabled (Auth Status)', 'First Name', 'Last Name', 'Roles'])
             ->setRows(array_map([$this, 'getUserRow'], $builder->getQuery()->getResult()))
-            ->render()
-        ;
+            ->render();
 
-        return 0;
+        return Command::SUCCESS;
     }
 
     protected function getUserRow(User $user): array
     {
         return [
             $user->getId(),
-            $user->getUsername(),
+            $user->getUserIdentifier(),
             sprintf(
                 '%s (%s)',
                 $user->isEnabled() ? 'Enabled' : 'Disabled',

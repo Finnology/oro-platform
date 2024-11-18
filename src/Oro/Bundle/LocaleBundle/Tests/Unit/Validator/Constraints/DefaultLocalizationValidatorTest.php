@@ -18,6 +18,7 @@ class DefaultLocalizationValidatorTest extends ConstraintValidatorTestCase
     /** @var FormInterface|\PHPUnit\Framework\MockObject\MockObject */
     private $form;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->localizationManager = $this->createMock(LocalizationManager::class);
@@ -26,6 +27,7 @@ class DefaultLocalizationValidatorTest extends ConstraintValidatorTestCase
         $this->setRoot($this->form);
     }
 
+    #[\Override]
     protected function createValidator(): DefaultLocalizationValidator
     {
         return new DefaultLocalizationValidator($this->localizationManager);
@@ -108,7 +110,7 @@ class DefaultLocalizationValidatorTest extends ConstraintValidatorTestCase
 
         $this->localizationManager->expects($this->once())
             ->method('getLocalization')
-            ->willReturn((new Localization)->setName('L1'));
+            ->willReturn((new Localization())->setName('L1'));
 
         $constraint = new Constraints\DefaultLocalization();
         $this->validator->validate(1, $constraint);

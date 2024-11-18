@@ -23,7 +23,7 @@ class ConfigValueRepository extends EntityRepository
 
         $this->getEntityManager()->beginTransaction();
         foreach ($removed as $item) {
-            $builder->delete('Oro\Bundle\ConfigBundle\Entity\ConfigValue', 'cv')
+            $builder->delete(ConfigValue::class, 'cv')
                 ->where('cv.config = :config')
                 ->andWhere('cv.name = :name')
                 ->andWhere('cv.section = :section')
@@ -95,5 +95,23 @@ class ConfigValueRepository extends EntityRepository
             ->getArrayResult();
 
         return array_unique(array_column($rows, 'recordId'));
+    }
+
+    public function getConfigValueByRecordId(int $recordId, string $section, string $name): ?ConfigValue
+    {
+        $qb = $this->createQueryBuilder('cv');
+
+        return $qb
+            ->join('cv.config', 'c')
+            ->where(
+                $qb->expr()->eq('c.recordId', ':recordId'),
+                $qb->expr()->eq('cv.section', ':section'),
+                $qb->expr()->eq('cv.name', ':name')
+            )
+            ->setParameter('recordId', $recordId)
+            ->setParameter('section', $section)
+            ->setParameter('name', $name)
+            ->getQuery()
+            ->getOneOrNullResult();
     }
 }

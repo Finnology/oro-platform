@@ -10,7 +10,6 @@ use Oro\Bundle\ImportExportBundle\Event\StrategyEvent;
 use Oro\Bundle\OrganizationBundle\Entity\Organization;
 use Oro\Bundle\SecurityBundle\Authentication\TokenAccessorInterface;
 use Oro\Bundle\SecurityBundle\Owner\Metadata\OwnershipMetadataProviderInterface;
-use Oro\Component\DependencyInjection\ServiceLink;
 use Symfony\Component\PropertyAccess\PropertyAccessor;
 
 /**
@@ -24,8 +23,8 @@ class ImportStrategyListener implements ImportStrategyListenerInterface
     /** @var TokenAccessorInterface */
     protected $tokenAccessor;
 
-    /** @var ServiceLink */
-    protected $metadataProviderLink;
+    /** @var OwnershipMetadataProviderInterface */
+    protected $ownershipMetadataProvider;
 
     /** @var Organization */
     protected $defaultOrganization;
@@ -39,17 +38,17 @@ class ImportStrategyListener implements ImportStrategyListenerInterface
     public function __construct(
         ManagerRegistry $registry,
         TokenAccessorInterface $tokenAccessor,
-        ServiceLink $metadataProviderLink
+        OwnershipMetadataProviderInterface $ownershipMetadataProvider
     ) {
         $this->registry = $registry;
         $this->tokenAccessor = $tokenAccessor;
-        $this->metadataProviderLink = $metadataProviderLink;
+        $this->ownershipMetadataProvider = $ownershipMetadataProvider;
     }
 
     /**
-     * {@inheritdoc}
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
+    #[\Override]
     public function onProcessAfter(StrategyEvent $event)
     {
         $entity = $event->getEntity();
@@ -99,9 +98,7 @@ class ImportStrategyListener implements ImportStrategyListenerInterface
         $this->getPropertyAccessor()->setValue($entity, $organizationField, $entityOrganization);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function onClear()
     {
         $this->defaultOrganization = null;
@@ -127,7 +124,7 @@ class ImportStrategyListener implements ImportStrategyListenerInterface
     {
         if (null === $this->defaultOrganization) {
             /** @var EntityRepository $entityRepository */
-            $entityRepository = $this->registry->getRepository('OroOrganizationBundle:Organization');
+            $entityRepository = $this->registry->getRepository(Organization::class);
             $organizations = $entityRepository->createQueryBuilder('e')
                 ->setMaxResults(2)
                 ->getQuery()
@@ -150,9 +147,8 @@ class ImportStrategyListener implements ImportStrategyListenerInterface
     {
         $entityName = ClassUtils::getClass($entity);
         if (!array_key_exists($entityName, $this->organizationFieldByEntity)) {
-            /** @var OwnershipMetadataProviderInterface $metadataProvider */
-            $metadataProvider = $this->metadataProviderLink->getService();
-            $this->organizationFieldByEntity[$entityName] = $metadataProvider->getMetadata($entityName)
+            $this->organizationFieldByEntity[$entityName] = $this->ownershipMetadataProvider
+                ->getMetadata($entityName)
                 ->getOrganizationFieldName();
         }
 

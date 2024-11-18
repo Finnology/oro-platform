@@ -3,15 +3,17 @@
 namespace Oro\Bundle\EntityBundle\Provider;
 
 use Doctrine\Common\Util\ClassUtils;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\Inflector\Inflector;
 use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\Persistence\Mapping\ClassMetadata;
 use Oro\Bundle\EntityConfigBundle\Provider\ConfigProvider;
+use Oro\Bundle\EntityExtendBundle\Entity\EnumOptionInterface;
 use Oro\Bundle\EntityExtendBundle\EntityPropertyInfo;
 use Oro\Bundle\EntityExtendBundle\Tools\ExtendHelper;
 
 /**
- * Generic resolver for entity names(titles):
+ * A generic provider for entity text representation:
  * - Short format returns name based on guesses using first existing field from the list $fieldGuesses or false
  * if no appropriate field is found
  * - Full format returns concatenation of all string fields or false if no string fields are found.
@@ -37,9 +39,7 @@ class EntityNameProvider implements EntityNameProviderInterface
         $this->inflector = $inflector;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getName($format, $locale, $entity)
     {
         if (!$this->isFormatSupported($format)) {
@@ -75,16 +75,14 @@ class EntityNameProvider implements EntityNameProviderInterface
         return false;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getNameDQL($format, $locale, $className, $alias)
     {
         if (!$this->isFormatSupported($format)) {
             return false;
         }
 
-        if ($format === self::SHORT) {
+        if (self::SHORT === $format) {
             $guessFieldName = $this->guessFieldName($className);
             if (!$guessFieldName) {
                 return false;
@@ -106,7 +104,7 @@ class EntityNameProvider implements EntityNameProviderInterface
         );
 
         $nameDQL = reset($fieldNames);
-        if (count($fieldNames) > 1) {
+        if (\count($fieldNames) > 1) {
             $nameDQL = sprintf("CONCAT_WS(' ', %s)", implode(', ', $fieldNames));
         }
 
@@ -126,7 +124,7 @@ class EntityNameProvider implements EntityNameProviderInterface
         }
 
         $identifierFieldNames = $metadata->getIdentifierFieldNames();
-        if (count($identifierFieldNames) !== 1) {
+        if (\count($identifierFieldNames) !== 1) {
             return null;
         }
 
@@ -146,19 +144,13 @@ class EntityNameProvider implements EntityNameProviderInterface
 
     private function getClassMetadata(string $className): ?ClassMetadata
     {
-        $manager = $this->doctrine->getManagerForClass($className);
-        if (null === $manager) {
-            return null;
-        }
-
-        return $manager->getClassMetadata($className);
+        return $this->doctrine->getManagerForClass($className)?->getClassMetadata($className);
     }
 
     private function guessFieldName(string $className): ?string
     {
         $metadata = $this->getClassMetadata($className);
-
-        if (!$metadata) {
+        if (null === $metadata) {
             return null;
         }
 
@@ -174,11 +166,18 @@ class EntityNameProvider implements EntityNameProviderInterface
     private function getFieldValue(object $entity, string $fieldName): mixed
     {
         $getterName = 'get' . $this->inflector->classify($fieldName);
+
         if (EntityPropertyInfo::methodExists($entity, $getterName)) {
-            return $entity->{$getterName}();
+            $value = $entity->{$getterName}();
+        } else {
+            $value = $entity->{$fieldName} ?? null;
         }
 
-        return $entity->{$fieldName} ?? null;
+        if ($value instanceof \UnitEnum) {
+            $value = $value->value;
+        }
+
+        return $value;
     }
 
     private function getFieldNames(string $className): array
@@ -188,19 +187,34 @@ class EntityNameProvider implements EntityNameProviderInterface
             return [];
         }
 
-        return array_filter(
-            (array)$metadata->getFieldNames(),
-            function ($fieldName) use ($metadata) {
-                return $this->isFieldSupported($metadata, $fieldName);
+        $result = [];
+        foreach ($metadata->getFieldNames() as $fieldName) {
+            if ($this->isFieldSupported($metadata, $fieldName)) {
+                $result[] = $fieldName;
             }
-        );
+        }
+        $configs = $this->configProvider->getConfigs($metadata->getName(), true);
+        foreach ($configs as $config) {
+            if (ExtendHelper::isMultiEnumType($config->getId()->getFieldType())
+                && ExtendHelper::isFieldAccessible($config)
+            ) {
+                $result[] = $config->getId()->getFieldName();
+            }
+        }
+
+        return $result;
     }
 
     private function getConstructedName(object $entity, array $fieldNames): ?string
     {
         $values = [];
         foreach ($fieldNames as $field) {
-            $values[] = $this->getFieldValue($entity, $field);
+            $fieldValue = $this->getFieldValue($entity, $field);
+            if (is_array($fieldValue) && !empty($fieldValue[0]) && $fieldValue[0] instanceof EnumOptionInterface) {
+                $values = array_merge($values, array_map(fn ($item) => $item->getInternalId(), $fieldValue));
+            } else {
+                $values[] = $fieldValue;
+            }
         }
 
         $values = array_filter($values);
@@ -210,12 +224,18 @@ class EntityNameProvider implements EntityNameProviderInterface
 
     private function isFieldSupported(ClassMetadata $metadata, string $fieldName): bool
     {
-        $isFieldSupported = $metadata->hasField($fieldName) && $metadata->getTypeOfField($fieldName) === 'string';
-        if ($isFieldSupported && $this->configProvider->hasConfig($metadata->getName(), $fieldName)) {
-            $fieldConfig = $this->configProvider->getConfig($metadata->getName(), $fieldName);
-            $isFieldSupported = ExtendHelper::isFieldAccessible($fieldConfig);
+        if (!$metadata->hasField($fieldName)) {
+            return false;
+        }
+        if ($metadata->getTypeOfField($fieldName) !== Types::STRING) {
+            return false;
+        }
+        if ($this->configProvider->hasConfig($metadata->getName(), $fieldName)
+            && !ExtendHelper::isFieldAccessible($this->configProvider->getConfig($metadata->getName(), $fieldName))
+        ) {
+            return false;
         }
 
-        return $isFieldSupported;
+        return true;
     }
 }

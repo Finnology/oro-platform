@@ -6,10 +6,8 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class TestSubscriber implements EventSubscriberInterface
 {
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedEvents()
+    #[\Override]
+    public static function getSubscribedEvents(): array
     {
         return [];
     }

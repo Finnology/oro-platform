@@ -16,6 +16,7 @@ class ValidationExtensionTest extends \PHPUnit\Framework\TestCase
     /** @var ValidationExtension */
     private $extension;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->validator = $this->createMock(ValidatorInterface::class);
@@ -55,7 +56,6 @@ class ValidationExtensionTest extends \PHPUnit\Framework\TestCase
                 'error_mapping' => [],
                 'invalid_message' => 'This value is not valid.',
                 'invalid_message_parameters' => [],
-                'legacy_error_messages' => true,
                 'allow_extra_fields' => false,
                 'extra_fields_message' => 'This form should not contain extra fields.',
                 'validation_groups' => null,
@@ -78,7 +78,6 @@ class ValidationExtensionTest extends \PHPUnit\Framework\TestCase
                 'error_mapping' => [],
                 'invalid_message' => 'This value is not valid.',
                 'invalid_message_parameters' => [],
-                'legacy_error_messages' => true,
                 'allow_extra_fields' => false,
                 'extra_fields_message' => 'This form should not contain extra fields.',
                 'validation_groups' => null,
@@ -101,7 +100,6 @@ class ValidationExtensionTest extends \PHPUnit\Framework\TestCase
                 'error_mapping' => [],
                 'invalid_message' => 'This value is not valid.',
                 'invalid_message_parameters' => [],
-                'legacy_error_messages' => true,
                 'allow_extra_fields' => false,
                 'extra_fields_message' => 'This form should not contain extra fields.',
                 'validation_groups' => null,

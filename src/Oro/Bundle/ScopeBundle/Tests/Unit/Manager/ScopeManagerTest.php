@@ -46,6 +46,7 @@ class ScopeManagerTest extends \PHPUnit\Framework\TestCase
     /** @var ClassMetadata|\PHPUnit\Framework\MockObject\MockObject */
     private $scopeClassMetadata;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->scopeDataAccessor = $this->createMock(ScopeDataAccessor::class);
@@ -308,7 +309,7 @@ class ScopeManagerTest extends \PHPUnit\Framework\TestCase
     public function testFindWithInvalidObjectValueInContext()
     {
         $this->expectException(NotSupportedCriteriaValueException::class);
-        $this->expectExceptionMessage(\sprintf(
+        $this->expectExceptionMessage(sprintf(
             'The type %s is not supported for context[field]. Expected stdClass, null, array or "IS_NOT_NULL".',
             StubScope::class
         ));

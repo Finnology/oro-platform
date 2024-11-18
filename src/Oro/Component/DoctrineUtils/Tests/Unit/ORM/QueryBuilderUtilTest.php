@@ -2,10 +2,10 @@
 
 namespace Oro\Component\DoctrineUtils\Tests\Unit\ORM;
 
-use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Mapping\Driver\AnnotationDriver;
+use Doctrine\ORM\Mapping\Driver\AttributeDriver;
+use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\Query\Parameter;
 use Doctrine\ORM\Query\QueryException;
 use Doctrine\ORM\QueryBuilder;
@@ -20,15 +20,17 @@ use Oro\Component\Testing\Unit\ORM\OrmTestCase;
  * @SuppressWarnings(PHPMD.TooManyMethods)
  * @SuppressWarnings(PHPMD.TooManyPublicMethods)
  * @SuppressWarnings(PHPMD.ExcessivePublicCount)
+ * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  */
 class QueryBuilderUtilTest extends OrmTestCase
 {
     private EntityManagerInterface $em;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->em = $this->getTestEntityManager();
-        $this->em->getConfiguration()->setMetadataDriverImpl(new AnnotationDriver(new AnnotationReader()));
+        $this->em->getConfiguration()->setMetadataDriverImpl(new AttributeDriver([]));
     }
 
     private function getQueryBuilder(): QueryBuilder
@@ -51,11 +53,8 @@ class QueryBuilderUtilTest extends OrmTestCase
 
     /**
      * @dataProvider getPageOffsetProvider
-     * @param int $expectedOffset
-     * @param null|int|string $page
-     * @param null|int|string $limit
      */
-    public function testGetPageOffset($expectedOffset, $page, $limit)
+    public function testGetPageOffset(int $expectedOffset, int|string|null $page, int|string|null $limit)
     {
         $this->assertSame($expectedOffset, QueryBuilderUtil::getPageOffset($page, $limit));
     }
@@ -107,6 +106,17 @@ class QueryBuilderUtilTest extends OrmTestCase
         $this->assertEquals(
             $expectedCriteria,
             QueryBuilderUtil::normalizeCriteria(['field' => 'value'])
+        );
+    }
+
+    public function testNormalizeCriteriaArrayValue()
+    {
+        $expectedCriteria = new Criteria();
+        $expectedCriteria->andWhere(Criteria::expr()->in('field', ['value']));
+
+        $this->assertEquals(
+            $expectedCriteria,
+            QueryBuilderUtil::normalizeCriteria(['field' => ['value']])
         );
     }
 
@@ -399,6 +409,58 @@ class QueryBuilderUtilTest extends OrmTestCase
         QueryBuilderUtil::removeUnusedParameters($qb);
     }
 
+    public function testFindClassForRootAlias()
+    {
+        $qb = $this->em->createQueryBuilder()
+            ->select('p')
+            ->from(Person::class, 'p')
+            ->join('p.bestItem', 'i');
+
+        $this->assertEquals(
+            Person::class,
+            QueryBuilderUtil::findClassByAlias($qb, 'p')
+        );
+    }
+
+    public function testFindClassForRootAliasFowQueryWithSeveralRootEntities()
+    {
+        $qb = $this->em->createQueryBuilder()
+            ->select('p')
+            ->from(Person::class, 'p')
+            ->from(Group::class, 'g')
+            ->join('p.bestItem', 'i');
+
+        $this->assertEquals(
+            Group::class,
+            QueryBuilderUtil::findClassByAlias($qb, 'g')
+        );
+    }
+
+    public function testFindClassWhenAliasNotFound()
+    {
+        $qb = $this->em->createQueryBuilder()
+            ->select('p')
+            ->from(Person::class, 'p')
+            ->join('p.bestItem', 'i');
+
+        $this->assertNull(
+            QueryBuilderUtil::findClassByAlias($qb, 'another')
+        );
+    }
+
+    /**
+     * @dataProvider getJoinClassDataProvider
+     */
+    public function testFindClassByAliasForJoinAlias(callable $qbFactory, array $joinPath, string $expectedClass)
+    {
+        $qb = $qbFactory($this->em);
+
+        $this->assertEquals(
+            $expectedClass,
+            QueryBuilderUtil::findClassByAlias($qb, ArrayUtil::getIn($qb->getDqlPart('join'), $joinPath)->getAlias())
+        );
+    }
+
     /**
      * @dataProvider getJoinClassDataProvider
      */
@@ -492,6 +554,30 @@ class QueryBuilderUtilTest extends OrmTestCase
         $this->assertEquals('g', QueryBuilderUtil::findJoinByAlias($qb, 'g')->getAlias());
         $this->assertEquals('i', QueryBuilderUtil::findJoinByAlias($qb, 'i')->getAlias());
         $this->assertNull(QueryBuilderUtil::findJoinByAlias($qb, 'w'));
+    }
+
+    public function testAddJoin()
+    {
+        $srcQb = $this->em->createQueryBuilder()
+            ->select('p')
+            ->from(Person::class, 'p')
+            ->innerJoin(Group::class, 'g', Join::WITH, 'g MEMBER OF p.groups')
+            ->leftJoin(Item::class, 'i', Join::WITH, 'i MEMBER OF p.items');
+
+        $qb = $this->em->createQueryBuilder()
+            ->select('p')
+            ->from(Person::class, 'p');
+
+        QueryBuilderUtil::addJoin($qb, QueryBuilderUtil::findJoinByAlias($srcQb, 'g'));
+        QueryBuilderUtil::addJoin($qb, QueryBuilderUtil::findJoinByAlias($srcQb, 'i'));
+
+        $this->assertEquals(
+            'SELECT p'
+            . ' FROM Oro\Component\DoctrineUtils\Tests\Unit\Fixtures\Entity\Person p'
+            . ' INNER JOIN Oro\Component\DoctrineUtils\Tests\Unit\Fixtures\Entity\Group g WITH g MEMBER OF p.groups'
+            . ' LEFT JOIN Oro\Component\DoctrineUtils\Tests\Unit\Fixtures\Entity\Item i WITH i MEMBER OF p.items',
+            $qb->getDQL()
+        );
     }
 
     public function testIsToOne()

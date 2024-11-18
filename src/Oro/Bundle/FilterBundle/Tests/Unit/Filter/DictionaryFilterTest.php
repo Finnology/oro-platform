@@ -2,9 +2,8 @@
 
 namespace Oro\Bundle\FilterBundle\Tests\Unit\Filter;
 
-use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Mapping\Driver\AnnotationDriver;
+use Doctrine\ORM\Mapping\Driver\AttributeDriver;
 use Doctrine\Persistence\ManagerRegistry;
 use Oro\Bundle\FilterBundle\Datasource\Orm\OrmFilterDatasourceAdapter;
 use Oro\Bundle\FilterBundle\Filter\DictionaryFilter;
@@ -29,10 +28,11 @@ class DictionaryFilterTest extends OrmTestCase
     /** @var DictionaryFilter */
     private $filter;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->em = $this->getTestEntityManager();
-        $this->em->getConfiguration()->setMetadataDriverImpl(new AnnotationDriver(new AnnotationReader()));
+        $this->em->getConfiguration()->setMetadataDriverImpl(new AttributeDriver([]));
 
         $this->formFactory = $this->createMock(FormFactoryInterface::class);
         $doctrine = $this->createMock(ManagerRegistry::class);
@@ -110,10 +110,10 @@ class DictionaryFilterTest extends OrmTestCase
             ->from(TestEntity::class, 'o');
 
         $values = [
-            new TestEnumValue('val1', 'Value1'),
-            new TestEnumValue('val2', 'Value2')
+            new TestEnumValue('test', 'Test', 'val1'),
+            new TestEnumValue('test', 'Test', 'val2')
         ];
-        $data   = [
+        $data = [
             'value' => $values
         ];
 
@@ -146,11 +146,11 @@ class DictionaryFilterTest extends OrmTestCase
             ->from(TestEntity::class, 'o');
 
         $values = [
-            new TestEnumValue('val1', 'Value1'),
-            new TestEnumValue('val2', 'Value2')
+            new TestEnumValue('test', 'Test', 'val1'),
+            new TestEnumValue('test', 'Test', 'val2')
         ];
-        $data   = [
-            'type'  => ChoiceFilterType::TYPE_NOT_CONTAINS,
+        $data = [
+            'type' => ChoiceFilterType::TYPE_NOT_CONTAINS,
             'value' => $values
         ];
 

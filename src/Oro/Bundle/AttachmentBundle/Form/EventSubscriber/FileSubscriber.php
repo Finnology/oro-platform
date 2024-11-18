@@ -26,10 +26,8 @@ class FileSubscriber implements EventSubscriberInterface
         $this->validator = $validator;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedEvents()
+    #[\Override]
+    public static function getSubscribedEvents(): array
     {
         return [
             FormEvents::POST_SUBMIT  => 'postSubmit'

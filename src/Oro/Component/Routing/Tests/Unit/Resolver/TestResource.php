@@ -18,25 +18,18 @@ class TestResource implements ResourceInterface, SelfCheckingResourceInterface
         $this->name = $name;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function __toString()
+    #[\Override]
+    public function __toString(): string
     {
         return (string)$this->name;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function isFresh($timestamp)
+    #[\Override]
+    public function isFresh($timestamp): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getResource()
     {
         return $this->name;

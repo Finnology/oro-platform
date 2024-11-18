@@ -5,6 +5,9 @@ namespace Oro\Component\Action\Action;
 use Oro\Component\Action\Exception\InvalidParameterException;
 use Symfony\Component\PropertyAccess\PropertyPathInterface;
 
+/**
+ * Action that create date time with options
+ */
 class CreateDateTime extends AbstractDateAction
 {
     /**
@@ -12,6 +15,7 @@ class CreateDateTime extends AbstractDateAction
      *
      * @return \DateTime
      */
+    #[\Override]
     protected function createDateTime($context)
     {
         return new \DateTime(
@@ -20,13 +24,11 @@ class CreateDateTime extends AbstractDateAction
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function initialize(array $options)
     {
         if (empty($options['time'])) {
-            $options['time'] = null;
+            $options['time'] = '';
         } elseif (!is_string($options['time'])) {
             throw new InvalidParameterException(
                 sprintf('Option "time" must be a string, %s given.', $this->getClassOrType($options['time']))

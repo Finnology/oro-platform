@@ -56,9 +56,7 @@ class EmailOriginFromType extends AbstractType
         $this->emailOriginHelper = $emailOriginHelper;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder->addModelTransformer(
@@ -70,9 +68,7 @@ class EmailOriginFromType extends AbstractType
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         $choices = $this->createChoices();
@@ -107,26 +103,19 @@ class EmailOriginFromType extends AbstractType
         return $origins;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getParent()
+    #[\Override]
+    public function getParent(): ?string
     {
         return Select2ChoiceType::class;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getName()
     {
         return $this->getBlockPrefix();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return static::NAME;
     }

@@ -46,6 +46,7 @@ class MigrateFileStorageCommand extends Command
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     protected function configure()
     {
         $this->setDescription('Move application files from old storages to the proper Gaufrette file storages.')
@@ -91,6 +92,7 @@ HELP
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
@@ -99,7 +101,7 @@ HELP
         if ('Cancel' === $mode) {
             $io->comment('Migration was cancelled.');
 
-            return 0;
+            return Command::SUCCESS;
         }
 
         if ('Automatic' === $mode) {
@@ -125,7 +127,7 @@ HELP
             } while (!$input->hasOption('mode') && $io->confirm('Would you like to import another storage?', false));
         }
 
-        return 0;
+        return Command::SUCCESS;
     }
 
     private function getMode(InputInterface $input, SymfonyStyle $io): string

@@ -4,24 +4,28 @@ namespace Oro\Bundle\WorkflowBundle\Tests\Unit\Restriction;
 
 use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
 use Oro\Bundle\WorkflowBundle\Entity\Repository\WorkflowRestrictionRepository;
+use Oro\Bundle\WorkflowBundle\Entity\WorkflowRestriction;
 use Oro\Bundle\WorkflowBundle\Model\Workflow;
 use Oro\Bundle\WorkflowBundle\Model\WorkflowRegistry;
 use Oro\Bundle\WorkflowBundle\Restriction\RestrictionManager;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 
-class RestrictionManagerTest extends \PHPUnit\Framework\TestCase
+class RestrictionManagerTest extends TestCase
 {
-    /** @var WorkflowRegistry|\PHPUnit\Framework\MockObject\MockObject */
+    /** @var WorkflowRegistry|MockObject */
     private $workflowRegistry;
 
-    /** @var DoctrineHelper|\PHPUnit\Framework\MockObject\MockObject */
+    /** @var DoctrineHelper|MockObject */
     private $doctrineHelper;
 
     /** @var RestrictionManager */
     private $restrictionManager;
 
-    /** @var WorkflowRestrictionRepository|\PHPUnit\Framework\MockObject\MockObject */
+    /** @var WorkflowRestrictionRepository|MockObject */
     private $repository;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->workflowRegistry = $this->createMock(WorkflowRegistry::class);
@@ -39,7 +43,7 @@ class RestrictionManagerTest extends \PHPUnit\Framework\TestCase
         $class = 'stdClass';
         $this->doctrineHelper->expects($this->once())
             ->method('getEntityRepositoryForClass')
-            ->with('OroWorkflowBundle:WorkflowRestriction')
+            ->with(WorkflowRestriction::class)
             ->willReturn($this->repository);
 
         $this->repository->expects($this->once())

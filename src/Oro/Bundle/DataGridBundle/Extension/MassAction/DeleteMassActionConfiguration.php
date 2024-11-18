@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\DataGridBundle\Extension\MassAction;
@@ -11,10 +12,8 @@ use Symfony\Component\Config\Definition\ConfigurationInterface;
  */
 class DeleteMassActionConfiguration implements ConfigurationInterface
 {
-    /**
-     * {@inheritdoc}
-     */
-    public function getConfigTreeBuilder()
+    #[\Override]
+    public function getConfigTreeBuilder(): TreeBuilder
     {
         $builder = new TreeBuilder('delete');
 

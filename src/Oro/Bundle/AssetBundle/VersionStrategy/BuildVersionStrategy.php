@@ -1,4 +1,5 @@
 <?php
+
 namespace Oro\Bundle\AssetBundle\VersionStrategy;
 
 use Symfony\Component\Asset\VersionStrategy\VersionStrategyInterface;
@@ -14,18 +15,13 @@ class BuildVersionStrategy implements VersionStrategyInterface
 
     private string $buildVersionFilePath;
 
-    /**
-     * @param string $buildVersionFilePath
-     */
     public function __construct(string $buildVersionFilePath)
     {
         $this->buildVersionFilePath = $buildVersionFilePath;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getVersion($path): string
+    #[\Override]
+    public function getVersion(string $path): string
     {
         if ($this->version === null) {
             $version = '';
@@ -40,10 +36,8 @@ class BuildVersionStrategy implements VersionStrategyInterface
         return $this->version;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function applyVersion($path): string
+    #[\Override]
+    public function applyVersion(string $path): string
     {
         $version = $this->getVersion($path);
         if ($version === '') {

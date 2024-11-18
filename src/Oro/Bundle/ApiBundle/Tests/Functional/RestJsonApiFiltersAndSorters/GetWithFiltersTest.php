@@ -13,6 +13,7 @@ use Oro\Bundle\ApiBundle\Tests\Functional\RestJsonApiTestCase;
  */
 class GetWithFiltersTest extends RestJsonApiTestCase
 {
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -165,13 +166,56 @@ class GetWithFiltersTest extends RestJsonApiTestCase
         );
     }
 
+    public function testUnknownMetaProperty()
+    {
+        $entityType = $this->getEntityType(TestEmployee::class);
+        $response = $this->cget(
+            ['entity' => $entityType],
+            ['meta' => 'another'],
+            [],
+            false
+        );
+
+        $this->assertResponseValidationError(
+            [
+                'title'  => 'filter constraint',
+                'detail' => 'The "another" is not known meta property. Known properties: title.',
+                'source' => ['parameter' => 'meta']
+            ],
+            $response
+        );
+    }
+
+    public function testUnknownMetaPropertyWhenTitleMetaPropertyIsDisabled()
+    {
+        $this->appendEntityConfig(
+            TestEmployee::class,
+            ['disable_meta_properties' => ['title']]
+        );
+
+        $entityType = $this->getEntityType(TestEmployee::class);
+        $response = $this->cget(
+            ['entity' => $entityType],
+            ['meta' => 'another'],
+            [],
+            false
+        );
+
+        $this->assertResponseValidationError(
+            [
+                'title'  => 'filter constraint',
+                'detail' => 'The "another" is not known meta property. Known properties: title.',
+                'source' => ['parameter' => 'meta']
+            ],
+            $response
+        );
+    }
+
     public function testMetaTitlesWhenMetaFilterIsDisabled()
     {
         $this->appendEntityConfig(
             TestEmployee::class,
-            [
-                'disable_meta_properties' => true
-            ]
+            ['disable_meta_properties' => true]
         );
 
         $entityType = $this->getEntityType(TestEmployee::class);
@@ -192,6 +236,31 @@ class GetWithFiltersTest extends RestJsonApiTestCase
         );
     }
 
+    public function testMetaTitlesWhenTitleMetaPropertyIsDisabled()
+    {
+        $this->appendEntityConfig(
+            TestEmployee::class,
+            ['disable_meta_properties' => ['title']]
+        );
+
+        $entityType = $this->getEntityType(TestEmployee::class);
+        $response = $this->cget(
+            ['entity' => $entityType],
+            ['meta' => 'title'],
+            [],
+            false
+        );
+
+        $this->assertResponseValidationError(
+            [
+                'title'  => 'filter constraint',
+                'detail' => 'The "title" is not allowed meta property. Allowed properties: .',
+                'source' => ['parameter' => 'meta']
+            ],
+            $response
+        );
+    }
+
     public function testMetaWithEmptyValue()
     {
         $response = $this->cget(
@@ -204,7 +273,7 @@ class GetWithFiltersTest extends RestJsonApiTestCase
         $this->assertResponseValidationError(
             [
                 'title'  => 'filter constraint',
-                'detail' => 'Expected string value. Given "".',
+                'detail' => 'Expected not empty string value. Given "".',
                 'source' => ['parameter' => 'meta']
             ],
             $response
@@ -223,7 +292,7 @@ class GetWithFiltersTest extends RestJsonApiTestCase
         $this->assertResponseValidationError(
             [
                 'title'  => 'filter constraint',
-                'detail' => 'Expected an array of strings. Given ",title".',
+                'detail' => 'Expected an array of not empty strings. Given ",title".',
                 'source' => ['parameter' => 'meta']
             ],
             $response
@@ -242,7 +311,7 @@ class GetWithFiltersTest extends RestJsonApiTestCase
         $this->assertResponseValidationError(
             [
                 'title'  => 'filter constraint',
-                'detail' => 'Expected an array of strings. Given "title,".',
+                'detail' => 'Expected an array of not empty strings. Given "title,".',
                 'source' => ['parameter' => 'meta']
             ],
             $response
@@ -395,19 +464,12 @@ class GetWithFiltersTest extends RestJsonApiTestCase
                 'data' => [
                     ['type' => $entityType, 'id' => '<toString(@TestDepartment1->id)>'],
                     ['type' => $entityType, 'id' => '<toString(@TestDepartment2->id)>'],
-                    ['type' => $entityType, 'id' => '<toString(@TestDepartment3->id)>'],
-                    ['type' => $entityType, 'id' => '<toString(@TestDepartment4->id)>'],
-                    ['type' => $entityType, 'id' => '<toString(@TestDepartment5->id)>'],
-                    ['type' => $entityType, 'id' => '<toString(@TestDepartment6->id)>'],
-                    ['type' => $entityType, 'id' => '<toString(@TestDepartment7->id)>'],
-                    ['type' => $entityType, 'id' => '<toString(@TestDepartment8->id)>'],
-                    ['type' => $entityType, 'id' => '<toString(@TestDepartment9->id)>'],
-                    ['type' => $entityType, 'id' => '<toString(@TestDepartment10->id)>']
+                    ['type' => $entityType, 'id' => '<toString(@TestDepartment3->id)>']
                 ]
             ],
             $response
         );
-        self::assertResponseCount(10, $response);
+        self::assertResponseCount(3, $response);
     }
 
     public function testCustomDefaultPagination()
@@ -417,7 +479,7 @@ class GetWithFiltersTest extends RestJsonApiTestCase
             [
                 'actions' => [
                     'get_list' => [
-                        'page_size' => 3
+                        'page_size' => 4
                     ]
                 ]
             ]
@@ -433,12 +495,13 @@ class GetWithFiltersTest extends RestJsonApiTestCase
                 'data' => [
                     ['type' => $entityType, 'id' => '<toString(@TestDepartment1->id)>'],
                     ['type' => $entityType, 'id' => '<toString(@TestDepartment2->id)>'],
-                    ['type' => $entityType, 'id' => '<toString(@TestDepartment3->id)>']
+                    ['type' => $entityType, 'id' => '<toString(@TestDepartment3->id)>'],
+                    ['type' => $entityType, 'id' => '<toString(@TestDepartment4->id)>']
                 ]
             ],
             $response
         );
-        self::assertResponseCount(3, $response);
+        self::assertResponseCount(4, $response);
     }
 
     public function testUnlimitedDefaultPagination()
@@ -830,6 +893,12 @@ class GetWithFiltersTest extends RestJsonApiTestCase
 
     public function testDisabledPagination()
     {
+        $response = $this->cget(['entity' => 'testapienum2']);
+        self::assertResponseCount(11, $response);
+    }
+
+    public function testDisabledPaginationAndPaginationFilters()
+    {
         $this->appendEntityConfig(
             TestDepartment::class,
             [
@@ -871,7 +940,7 @@ class GetWithFiltersTest extends RestJsonApiTestCase
         $entityType = $this->getEntityType(TestDepartment::class);
         $response = $this->cget(
             ['entity' => $entityType],
-            ['page' => ['number' => 1]]
+            ['page' => ['number' => 1, 'size' => 10]]
         );
 
         $this->assertResponseContains(
@@ -899,7 +968,7 @@ class GetWithFiltersTest extends RestJsonApiTestCase
         $entityType = $this->getEntityType(TestDepartment::class);
         $response = $this->cget(
             ['entity' => $entityType],
-            ['page' => ['number' => 2]]
+            ['page' => ['number' => 2, 'size' => 10]]
         );
 
         $this->assertResponseContains(

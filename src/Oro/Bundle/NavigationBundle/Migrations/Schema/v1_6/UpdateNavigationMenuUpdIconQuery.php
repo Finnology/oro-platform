@@ -158,9 +158,7 @@ class UpdateNavigationMenuUpdIconQuery extends ParametrizedMigrationQuery
         'zoom-out' => 'search-minus',
     ];
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getDescription()
     {
         $logger = new ArrayLogger();
@@ -169,9 +167,7 @@ class UpdateNavigationMenuUpdIconQuery extends ParametrizedMigrationQuery
         return $logger->getMessages();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function execute(LoggerInterface $logger)
     {
         $this->migrateConfigs($logger);
@@ -186,7 +182,7 @@ class UpdateNavigationMenuUpdIconQuery extends ParametrizedMigrationQuery
         $sql = 'SELECT id, icon FROM oro_navigation_menu_upd';
         $this->logQuery($logger, $sql);
 
-        $rows = $this->connection->fetchAll($sql);
+        $rows = $this->connection->fetchAllAssociative($sql);
 
         foreach ($rows as $key => $row) {
             if (isset($row['icon'])) {
@@ -215,7 +211,7 @@ class UpdateNavigationMenuUpdIconQuery extends ParametrizedMigrationQuery
     private function createIconName($name)
     {
         foreach (self::$iconReplaceMask as $pattern => $replace) {
-            $exact = str_ends_with($pattern, '*') ? '': '$';
+            $exact = str_ends_with($pattern, '*') ? '' : '$';
             $pattern = '/' . $pattern . $exact .'/';
             $next = false;
 

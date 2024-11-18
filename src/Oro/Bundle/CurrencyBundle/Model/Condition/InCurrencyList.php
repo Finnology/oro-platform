@@ -1,4 +1,5 @@
 <?php
+
 namespace Oro\Bundle\CurrencyBundle\Model\Condition;
 
 use Oro\Bundle\CurrencyBundle\Entity\MultiCurrency;
@@ -8,6 +9,9 @@ use Oro\Component\ConfigExpression\ContextAccessorAwareInterface;
 use Oro\Component\ConfigExpression\ContextAccessorAwareTrait;
 use Oro\Component\ConfigExpression\Exception;
 
+/**
+ * Check if entity currency is in currency list
+ */
 class InCurrencyList extends AbstractCondition implements ContextAccessorAwareInterface
 {
     use ContextAccessorAwareTrait;
@@ -20,9 +24,7 @@ class InCurrencyList extends AbstractCondition implements ContextAccessorAwareIn
     /** @var CurrencyListProviderInterface  */
     protected $currencyProvider;
 
-    /**
-     * @inheritdoc
-     */
+    #[\Override]
     public function getName()
     {
         return static::NAME;
@@ -33,9 +35,7 @@ class InCurrencyList extends AbstractCondition implements ContextAccessorAwareIn
         $this->currencyProvider = $currencyProvider;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function isConditionAllowed($context)
     {
         $entity = $this->resolveValue($context, $this->entity);
@@ -49,9 +49,7 @@ class InCurrencyList extends AbstractCondition implements ContextAccessorAwareIn
         return in_array($entity->getCurrency(), $currencies);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function initialize(array $options)
     {
         if (count($options) !== 1) {

@@ -26,9 +26,7 @@ class DbalWrongCredentialsOriginsDriver implements WrongCredentialsOriginsDriver
         $this->logger = $logger;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function addOrigin($emailOriginId, $ownerId = null)
     {
         $this->logger->notice('Email origin with wrong credentials was detected.', ['origin_id' => $emailOriginId]);
@@ -47,7 +45,7 @@ class DbalWrongCredentialsOriginsDriver implements WrongCredentialsOriginsDriver
         $existingRecord = $request
             ->setParameter('emailOriginId', $emailOriginId)
             ->execute()
-            ->fetchColumn();
+            ->fetchOne();
 
         if (!$existingRecord) {
             $connection->insert(
@@ -57,9 +55,7 @@ class DbalWrongCredentialsOriginsDriver implements WrongCredentialsOriginsDriver
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getAllOrigins()
     {
         $origins = [];
@@ -68,7 +64,7 @@ class DbalWrongCredentialsOriginsDriver implements WrongCredentialsOriginsDriver
             ->select('origin_id')
             ->from('oro_imap_wrong_creds_origin')
             ->execute()
-            ->fetchAll();
+            ->fetchAllAssociative();
 
         if (count($wrongOriginIds)) {
             $origins = $this->getOriginRepository()->getOriginsByIds($wrongOriginIds);
@@ -77,9 +73,7 @@ class DbalWrongCredentialsOriginsDriver implements WrongCredentialsOriginsDriver
         return $origins;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getAllOriginsByOwnerId($ownerId = null)
     {
         $origins = [];
@@ -95,7 +89,7 @@ class DbalWrongCredentialsOriginsDriver implements WrongCredentialsOriginsDriver
             $request->andWhere('owner_id is null');
         }
 
-        $wrongOriginIds = $request->execute()->fetchAll();
+        $wrongOriginIds = $request->execute()->fetchAllAssociative();
 
         if (count($wrongOriginIds)) {
             $origins = $this->getOriginRepository()->getOriginsByIds($wrongOriginIds);
@@ -104,9 +98,7 @@ class DbalWrongCredentialsOriginsDriver implements WrongCredentialsOriginsDriver
         return $origins;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function deleteOrigin($emailOriginId)
     {
         $this->logger->debug(
@@ -116,13 +108,11 @@ class DbalWrongCredentialsOriginsDriver implements WrongCredentialsOriginsDriver
         $this->getConnection()->delete('oro_imap_wrong_creds_origin', ['origin_id' => $emailOriginId]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function deleteAllOrigins()
     {
         $this->logger->debug('Delete email origins with wrong credentials from the storage.');
-        $this->getConnection()->exec('DELETE FROM oro_imap_wrong_creds_origin');
+        $this->getConnection()->executeStatement('DELETE FROM oro_imap_wrong_creds_origin');
     }
 
     /**

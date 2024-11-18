@@ -5,6 +5,7 @@ namespace Oro\Bundle\QueryDesignerBundle\QueryDesigner;
 use Oro\Component\Config\Cache\PhpArrayConfigProvider;
 use Oro\Component\Config\Loader\CumulativeConfigLoader;
 use Oro\Component\Config\Loader\CumulativeConfigProcessorUtil;
+use Oro\Component\Config\Loader\FolderYamlCumulativeFileLoader;
 use Oro\Component\Config\Loader\YamlCumulativeFileLoader;
 use Oro\Component\Config\ResourcesContainerInterface;
 
@@ -17,8 +18,7 @@ class ConfigurationProvider extends PhpArrayConfigProvider
     private const CONFIG_FILE = 'Resources/config/oro/query_designer.yml';
     private const APP_CONFIG_PATH = '../config/oro/query_designer';
 
-    /** @var Configuration */
-    private $configuration;
+    private Configuration $configuration;
 
     public function __construct(
         string $cacheFile,
@@ -37,17 +37,15 @@ class ConfigurationProvider extends PhpArrayConfigProvider
         return $this->doGetConfig();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function doLoadConfig(ResourcesContainerInterface $resourcesContainer)
+    #[\Override]
+    protected function doLoadConfig(ResourcesContainerInterface $resourcesContainer): array
     {
         $configs = [];
         $configLoader = new CumulativeConfigLoader(
             'oro_query_designer',
             [
                 new YamlCumulativeFileLoader(self::CONFIG_FILE),
-                new YamlCumulativeFileLoader(self::APP_CONFIG_PATH),
+                new FolderYamlCumulativeFileLoader(self::APP_CONFIG_PATH),
             ]
         );
         $resources = $configLoader->load($resourcesContainer);
@@ -66,9 +64,6 @@ class ConfigurationProvider extends PhpArrayConfigProvider
         );
     }
 
-    /**
-     * Updates the label for all functions for the specified group type.
-     */
     private function updateLabelsOfFunctions(array &$config, string $groupType, string $vendor): void
     {
         if (isset($config[$groupType])) {
@@ -83,15 +78,6 @@ class ConfigurationProvider extends PhpArrayConfigProvider
         }
     }
 
-    /**
-     * Updates the label for the given function.
-     *
-     * @param array  $func
-     * @param string $labelType The type of label. Can be 'name' or 'hint'
-     * @param string $vendor
-     * @param string $groupType
-     * @param string $groupName
-     */
     private function updateFunctionLabel(
         array &$func,
         string $labelType,

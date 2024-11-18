@@ -66,18 +66,21 @@ class EntityCacheWarmer extends CacheWarmer
     /**
      * {inheritdoc}
      */
-    public function warmUp($cacheDir)
+    #[\Override]
+    public function warmUp($cacheDir): array
     {
         $fs   = $this->createFilesystem();
         $twig = $this->createTwigEnvironment();
 
         $this->processEmailAddressTemplate($fs, $twig);
+        return [];
     }
 
     /**
      * {inheritdoc}
      */
-    public function isOptional()
+    #[\Override]
+    public function isOptional(): bool
     {
         return false;
     }

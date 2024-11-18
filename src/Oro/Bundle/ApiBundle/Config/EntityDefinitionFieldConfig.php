@@ -22,9 +22,7 @@ class EntityDefinitionFieldConfig extends FieldConfig
 {
     private ?string $dataType = null;
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function toArray(bool $excludeTargetEntity = false): array
     {
         $result = parent::toArray($excludeTargetEntity);
@@ -38,9 +36,7 @@ class EntityDefinitionFieldConfig extends FieldConfig
         return $result;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function isEmpty(): bool
     {
         return
@@ -51,6 +47,7 @@ class EntityDefinitionFieldConfig extends FieldConfig
     /**
      * Sets the configuration value.
      */
+    #[\Override]
     public function set(string $key, mixed $value): void
     {
         if (null !== $value) {
@@ -256,6 +253,18 @@ class EntityDefinitionFieldConfig extends FieldConfig
     }
 
     /**
+     * Gets a form option.
+     */
+    public function getFormOption(string $name, mixed $defaultValue = null): mixed
+    {
+        $formOptions = $this->get(ConfigUtil::FORM_OPTIONS);
+
+        return null !== $formOptions && \array_key_exists($name, $formOptions)
+            ? $formOptions[$name]
+            : $defaultValue;
+    }
+
+    /**
      * Sets the form options.
      */
     public function setFormOptions(?array $formOptions): void
@@ -272,9 +281,9 @@ class EntityDefinitionFieldConfig extends FieldConfig
      */
     public function setFormOption(string $name, mixed $value): void
     {
-        $formOptions = $this->getFormOptions();
+        $formOptions = $this->items[ConfigUtil::FORM_OPTIONS] ?? [];
         $formOptions[$name] = $value;
-        $this->setFormOptions($formOptions);
+        $this->items[ConfigUtil::FORM_OPTIONS] = $formOptions;
     }
 
     /**
@@ -284,7 +293,7 @@ class EntityDefinitionFieldConfig extends FieldConfig
      */
     public function getFormConstraints(): ?array
     {
-        return FormConstraintUtil::getFormConstraints($this->getFormOptions());
+        return FormConstraintUtil::getFormConstraints($this->get(ConfigUtil::FORM_OPTIONS));
     }
 
     /**
@@ -292,7 +301,10 @@ class EntityDefinitionFieldConfig extends FieldConfig
      */
     public function addFormConstraint(Constraint $constraint): void
     {
-        $this->setFormOptions(FormConstraintUtil::addFormConstraint($this->getFormOptions(), $constraint));
+        $this->items[ConfigUtil::FORM_OPTIONS] = FormConstraintUtil::addFormConstraint(
+            $this->get(ConfigUtil::FORM_OPTIONS),
+            $constraint
+        );
     }
 
     /**
@@ -300,7 +312,9 @@ class EntityDefinitionFieldConfig extends FieldConfig
      */
     public function removeFormConstraint(string $constraintClass): void
     {
-        $this->setFormOptions(FormConstraintUtil::removeFormConstraint($this->getFormOptions(), $constraintClass));
+        $this->setFormOptions(
+            FormConstraintUtil::removeFormConstraint($this->get(ConfigUtil::FORM_OPTIONS), $constraintClass)
+        );
     }
 
     /**
@@ -386,7 +400,7 @@ class EntityDefinitionFieldConfig extends FieldConfig
     }
 
     /**
-     * Gets a list of fields on which this field depends on.
+     * Gets a list of properties on which this field depends on.
      *
      * @return string[]|null
      */
@@ -396,27 +410,27 @@ class EntityDefinitionFieldConfig extends FieldConfig
     }
 
     /**
-     * Sets a list of fields on which this field depends on.
+     * Sets a list of properties on which this field depends on.
      *
-     * @param string[] $fieldNames
+     * @param string[] $propertyPaths
      */
-    public function setDependsOn(array $fieldNames): void
+    public function setDependsOn(array $propertyPaths): void
     {
-        if ($fieldNames) {
-            $this->items[ConfigUtil::DEPENDS_ON] = $fieldNames;
+        if ($propertyPaths) {
+            $this->items[ConfigUtil::DEPENDS_ON] = $propertyPaths;
         } else {
             unset($this->items[ConfigUtil::DEPENDS_ON]);
         }
     }
 
     /**
-     * Adds a field to a list of fields on which this field depends on.
+     * Adds a property to a list of properties on which this field depends on.
      */
-    public function addDependsOn(string $fieldName): void
+    public function addDependsOn(string $propertyPath): void
     {
         $dependsOn = $this->getDependsOn();
-        if (!$dependsOn || !\in_array($fieldName, $dependsOn, true)) {
-            $dependsOn[] = $fieldName;
+        if (!$dependsOn || !\in_array($propertyPath, $dependsOn, true)) {
+            $dependsOn[] = $propertyPath;
             $this->setDependsOn($dependsOn);
         }
     }
@@ -429,9 +443,7 @@ class EntityDefinitionFieldConfig extends FieldConfig
         return $this->has(ConfigUtil::COLLAPSE);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function setCollapsed(bool $collapse = true): void
     {
         $this->items[ConfigUtil::COLLAPSE] = $collapse;
@@ -549,7 +561,7 @@ class EntityDefinitionFieldConfig extends FieldConfig
      * IMPORTANT: the query builder must follow the rules described in AssociationQuery class.
      * @see \Oro\Component\EntitySerializer\AssociationQuery
      */
-    public function setAssociationQuery(QueryBuilder $query = null): void
+    public function setAssociationQuery(?QueryBuilder $query): void
     {
         if (null === $query) {
             unset($this->items[ConfigUtil::ASSOCIATION_QUERY]);

@@ -27,10 +27,8 @@ class TwigTemplateCacheWarmer implements CacheWarmerInterface, ServiceSubscriber
         $this->iterator = $iterator;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function warmUp($cacheDir)
+    #[\Override]
+    public function warmUp($cacheDir): array
     {
         if (null === $this->twig) {
             $this->twig = $this->container->get('twig');
@@ -47,20 +45,17 @@ class TwigTemplateCacheWarmer implements CacheWarmerInterface, ServiceSubscriber
                 // might be a syntax error or a non-Twig template
             }
         }
+        return [];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function isOptional()
+    #[\Override]
+    public function isOptional(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedServices()
+    #[\Override]
+    public static function getSubscribedServices(): array
     {
         return [
             'twig' => Environment::class

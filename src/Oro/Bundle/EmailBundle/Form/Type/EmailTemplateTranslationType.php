@@ -44,9 +44,7 @@ class EmailTemplateTranslationType extends AbstractType
         $this->localizationManager = $localizationManager;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
@@ -62,6 +60,7 @@ class EmailTemplateTranslationType extends AbstractType
                     'data-wysiwyg-enabled' => $options['wysiwyg_enabled'],
                 ],
                 'required' => false,
+                'wysiwyg_enabled' => $options['wysiwyg_enabled'],
                 'wysiwyg_options' => $options['wysiwyg_options'],
             ]);
 
@@ -97,9 +96,7 @@ class EmailTemplateTranslationType extends AbstractType
         $builder->addViewTransformer($this->getViewTransformer($options));
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function finishView(FormView $view, FormInterface $form, array $options): void
     {
         $view->vars['localization_id'] = null;
@@ -110,9 +107,7 @@ class EmailTemplateTranslationType extends AbstractType
             /** @var Localization $localization */
             $localization = $options['localization'];
             $view->vars['localization_id'] = $localization->getId();
-            $view->vars['localization_title'] = $localization->getTitle(
-                $this->localizationManager->getDefaultLocalization()
-            );
+            $view->vars['localization_title'] = $localization->getName();
 
             if ($localization->getParentLocalization()) {
                 $view->vars['localization_parent_id'] = $localization->getParentLocalization()->getId();
@@ -120,9 +115,7 @@ class EmailTemplateTranslationType extends AbstractType
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
@@ -139,9 +132,7 @@ class EmailTemplateTranslationType extends AbstractType
         $resolver->setAllowedTypes('wysiwyg_options', ['array']);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getBlockPrefix(): string
     {
         return 'oro_email_emailtemplate_localization';

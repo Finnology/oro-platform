@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\IntegrationBundle\Command;
@@ -47,17 +48,13 @@ class SyncCommand extends Command implements
         parent::__construct();
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function getDefaultDefinition(): string
     {
         return '*/5 * * * *';
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     public function isActive(): bool
     {
         /** @var ChannelRepository $integrationRepository */
@@ -77,6 +74,7 @@ class SyncCommand extends Command implements
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     public function configure()
     {
         $this
@@ -117,7 +115,8 @@ HELP
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
-    public function execute(InputInterface $input, OutputInterface $output)
+    #[\Override]
+    public function execute(InputInterface $input, OutputInterface $output): int
     {
         $output->writeln('Started integration sync scheduling');
         $connector = $input->getOption('connector');
@@ -165,7 +164,7 @@ HELP
         }
         $output->writeln('Integration sync scheduling complete');
 
-        return 0;
+        return Command::SUCCESS;
     }
 
     /**

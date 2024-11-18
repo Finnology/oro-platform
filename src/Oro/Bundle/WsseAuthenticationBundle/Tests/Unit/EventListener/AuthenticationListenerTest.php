@@ -2,6 +2,7 @@
 
 namespace Oro\Bundle\WsseAuthenticationBundle\Tests\Unit\EventListener;
 
+use Oro\Bundle\UserBundle\Entity\AbstractUser;
 use Oro\Bundle\UserBundle\Entity\User;
 use Oro\Bundle\UserBundle\Security\UserLoginAttemptLogger;
 use Oro\Bundle\WsseAuthenticationBundle\EventListener\AuthenticationListener;
@@ -18,6 +19,7 @@ class AuthenticationListenerTest extends \PHPUnit\Framework\TestCase
     /** @var AuthenticationListener */
     private $listener;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->logger = $this->createMock(UserLoginAttemptLogger::class);
@@ -26,7 +28,7 @@ class AuthenticationListenerTest extends \PHPUnit\Framework\TestCase
 
     public function testOnAuthenticationSuccessWithNotSupportedToken(): void
     {
-        $token = new UsernamePasswordToken('test', 'main');
+        $token = new UsernamePasswordToken($this->createMock(UserInterface::class), 'main');
         $event = new AuthenticationEvent($token);
 
         $this->logger->expects(self::never())
@@ -37,7 +39,7 @@ class AuthenticationListenerTest extends \PHPUnit\Framework\TestCase
 
     public function testOnAuthenticationSuccessWithNotUserInToken(): void
     {
-        $token = new WsseToken($this->createMock(UserInterface::class), 'main', 'test');
+        $token = new WsseToken($this->createMock(AbstractUser::class), 'main', ['test']);
         $event = new AuthenticationEvent($token);
 
         $this->logger->expects(self::never())
@@ -49,7 +51,7 @@ class AuthenticationListenerTest extends \PHPUnit\Framework\TestCase
     public function testOnAuthenticationSuccess(): void
     {
         $user = new User();
-        $token = new WsseToken($user, 'main', 'test');
+        $token = new WsseToken($user, 'main', ['test']);
         $event = new AuthenticationEvent($token);
 
         $this->logger->expects(self::once())

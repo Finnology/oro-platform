@@ -15,9 +15,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class PriceTypeTest extends FormIntegrationTestCase
 {
-    /**
-     * {@inheritDoc}
-     */
+    #[\Override]
     protected function getExtensions(): array
     {
         $currencyProvider = $this->createMock(CurrencyProviderInterface::class);
@@ -44,7 +42,7 @@ class PriceTypeTest extends FormIntegrationTestCase
         ];
     }
 
-    public function testValueWhenDefaultEnglishLocale()
+    public function testValueWhenDefaultEnglishLocale(): void
     {
         $value = 1234567.89;
         $form = $this->factory->create(PriceType::class, (new Price())->setValue($value));
@@ -59,7 +57,7 @@ class PriceTypeTest extends FormIntegrationTestCase
         self::assertEquals($submittedValue, $form->getData()->getValue());
     }
 
-    public function testValueWhenGermanLocale()
+    public function testValueWhenGermanLocale(): void
     {
         $previousLocale = \Locale::getDefault();
         try {
@@ -89,7 +87,7 @@ class PriceTypeTest extends FormIntegrationTestCase
         array $submittedData,
         mixed $expectedData,
         array $options = []
-    ) {
+    ): void {
         $form = $this->factory->create(PriceType::class, $defaultData, $options);
 
         $this->assertEquals($defaultData, $form->getData());
@@ -177,13 +175,29 @@ class PriceTypeTest extends FormIntegrationTestCase
         ];
     }
 
-    public function testGetName()
+    public function testGetName(): void
     {
         $formType = $this->factory->create(PriceType::class);
         $this->assertEquals(PriceType::NAME, $formType->getName());
     }
 
-    public function testConfigureOptions()
+    public function testReadonlyPrice(): void
+    {
+        $submittedData = ['value' => 100, 'currency' => 'USD'];
+        $form = $this->factory->create(PriceType::class, new Price(), []);
+
+        $form->submit($submittedData);
+        $this->assertFalse($form->getConfig()->getOptions()['readonly']);
+        $this->assertFalse($form->get('value')->getConfig()->getOptions()['attr']['readonly']);
+
+        $form = $this->factory->create(PriceType::class, new Price(), ['readonly' => true]);
+
+        $form->submit($submittedData);
+        $this->assertTrue($form->getConfig()->getOptions()['readonly']);
+        $this->assertTrue($form->get('value')->getConfig()->getOptions()['attr']['readonly']);
+    }
+
+    public function testConfigureOptions(): void
     {
         $optionsResolverMock = $this->createMock(OptionsResolver::class);
 
@@ -202,8 +216,9 @@ class PriceTypeTest extends FormIntegrationTestCase
                 'full_currency_list' => false,
                 'currency_empty_value' => 'oro.currency.currency.form.choose',
                 'compact' => false,
-                'validation_groups'=> ['Default'],
-                'match_price_on_null' => true
+                'validation_groups' => ['Default'],
+                'match_price_on_null' => true,
+                'readonly' => false
                 ]
             );
 

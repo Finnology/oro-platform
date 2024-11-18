@@ -13,11 +13,13 @@ use Symfony\Component\OptionsResolver\Exception\MissingOptionsException;
 
 class WorkflowTransitionCronTriggerTopicTest extends AbstractTopicTestCase
 {
+    #[\Override]
     protected function getTopic(): TopicInterface
     {
         return new WorkflowTransitionCronTriggerTopic();
     }
 
+    #[\Override]
     public function validBodyDataProvider(): array
     {
         return [
@@ -51,9 +53,20 @@ class WorkflowTransitionCronTriggerTopicTest extends AbstractTopicTestCase
                     TransitionTriggerMessage::MAIN_ENTITY => ['id' => 4242],
                 ],
             ],
+            'required only when mainEntity is null' => [
+                'body' => [
+                    TransitionTriggerMessage::TRANSITION_TRIGGER => 42,
+                    TransitionTriggerMessage::MAIN_ENTITY => null,
+                ],
+                'expectedBody' => [
+                    TransitionTriggerMessage::TRANSITION_TRIGGER => 42,
+                    TransitionTriggerMessage::MAIN_ENTITY => null,
+                ],
+            ],
         ];
     }
 
+    #[\Override]
     public function invalidBodyDataProvider(): array
     {
         return [

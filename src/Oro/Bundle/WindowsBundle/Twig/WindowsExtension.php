@@ -53,9 +53,7 @@ class WindowsExtension extends AbstractExtension implements ServiceSubscriberInt
         return $this->container->get('fragment.handler');
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getFunctions()
     {
         return [
@@ -127,10 +125,8 @@ class WindowsExtension extends AbstractExtension implements ServiceSubscriberInt
         return '';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedServices()
+    #[\Override]
+    public static function getSubscribedServices(): array
     {
         return [
             'oro_windows.manager.windows_state_registry' => WindowsStateManagerRegistry::class,

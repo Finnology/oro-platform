@@ -4,6 +4,7 @@ namespace Oro\Bundle\ApiBundle\Tests\Unit\Request;
 
 use Doctrine\Common\Collections\Criteria;
 use Oro\Bundle\ApiBundle\Filter\StandaloneFilter;
+use Oro\Bundle\ApiBundle\Model\NormalizedDateTime;
 use Oro\Bundle\ApiBundle\Model\Range;
 use Oro\Bundle\ApiBundle\Processor\NormalizeValue as Processor;
 use Oro\Bundle\ApiBundle\Processor\NormalizeValue\NormalizeValueContext;
@@ -26,27 +27,26 @@ use Oro\Component\ChainProcessor\ProcessorRegistryInterface;
  */
 class ValueNormalizerTest extends \PHPUnit\Framework\TestCase
 {
-    private const STRING_REQUIREMENT = '.+';
-    private const INTEGER_REQUIREMENT = '-?\d+';
-    private const UNSIGNED_INTEGER_REQUIREMENT = '\d+';
-    private const BIGINT_REQUIREMENT = '-?\d+';
-    private const BOOLEAN_REQUIREMENT = '0|1|true|false|yes|no';
-    private const DECIMAL_REQUIREMENT = '-?\d*\.?\d+';
-    private const NUMBER_REQUIREMENT = '-?\d*\.?\d+';
-    private const PERCENT100_REQUIREMENT = '-?\d*\.?\d+';
-    private const DATETIME_REQUIREMENT =
-        '\d{4}(-\d{2}(-\d{2}([T ]\d{2}:\d{2}(:\d{2}(\.\d+)?)?(Z|([-+]\d{2}(:?\d{2})?))?)?)?)?';
-    private const DATE_REQUIREMENT = '\d{4}(-\d{2}(-\d{2}?)?)?';
-    private const TIME_REQUIREMENT = '\d{2}:\d{2}(:\d{2}(\.\d+)?)?';
-    private const GUID_REQUIREMENT = '[a-f0-9]{8}\-[a-f0-9]{4}\-[a-f0-9]{4}\-[a-f0-9]{4}\-[a-f0-9]{12}';
-    private const ORDER_BY_REQUIREMENT = '-?[\w\.]+(,-?[\w\.]+)*';
+    private const STRING_REQUIREMENT = Processor\NormalizeString::REQUIREMENT;
+    private const INTEGER_REQUIREMENT = Processor\NormalizeInteger::REQUIREMENT;
+    private const UNSIGNED_INTEGER_REQUIREMENT = Processor\NormalizeUnsignedInteger::REQUIREMENT;
+    private const BIGINT_REQUIREMENT = Processor\NormalizeBigint::REQUIREMENT;
+    private const BOOLEAN_REQUIREMENT = Processor\NormalizeBoolean::REQUIREMENT;
+    private const DECIMAL_REQUIREMENT = Processor\NormalizeDecimal::REQUIREMENT;
+    private const NUMBER_REQUIREMENT = Processor\NormalizeNumber::REQUIREMENT;
+    private const PERCENT100_REQUIREMENT = Processor\NormalizePercent100::REQUIREMENT;
+    private const GUID_REQUIREMENT = Processor\NormalizeGuid::REQUIREMENT;
+    private const DATETIME_REQUIREMENT = Processor\Rest\NormalizeDateTime::REQUIREMENT;
+    private const DATE_REQUIREMENT = Processor\Rest\NormalizeDate::REQUIREMENT;
+    private const TIME_REQUIREMENT = Processor\Rest\NormalizeTime::REQUIREMENT;
+    private const ORDER_BY_REQUIREMENT = Processor\Rest\NormalizeOrderBy::REQUIREMENT;
 
-    /** @var ValueNormalizer */
-    private $valueNormalizer;
+    private ValueNormalizer $valueNormalizer;
 
     /**
      * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      */
+    #[\Override]
     protected function setUp(): void
     {
         $processorRegistry = $this->createMock(ProcessorRegistryInterface::class);
@@ -161,6 +161,21 @@ class ValueNormalizerTest extends \PHPUnit\Framework\TestCase
             ->willReturnMap($processorMap);
     }
 
+    private function getDateTime(string $datetime): \DateTime
+    {
+        return new \DateTime($datetime, new \DateTimeZone('UTC'));
+    }
+
+    private function getNormalizedDateTime(
+        string $datetime,
+        int $precision = NormalizedDateTime::PRECISION_SECOND
+    ): NormalizedDateTime {
+        $result = new NormalizedDateTime($datetime, new \DateTimeZone('UTC'));
+        $result->setPrecision($precision);
+
+        return $result;
+    }
+
     /**
      * @dataProvider getRequirementProvider
      */
@@ -203,6 +218,9 @@ class ValueNormalizerTest extends \PHPUnit\Framework\TestCase
         self::assertSame($expectedValue, $result);
     }
 
+    /**
+     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
+     */
     public function getArrayRequirementProvider(): array
     {
         return [
@@ -313,6 +331,9 @@ class ValueNormalizerTest extends \PHPUnit\Framework\TestCase
         self::assertSame($expectedValue, $result);
     }
 
+    /**
+     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
+     */
     public function getRangeRequirementProvider(): array
     {
         return [
@@ -411,7 +432,7 @@ class ValueNormalizerTest extends \PHPUnit\Framework\TestCase
 
     private function getRangeRequirement(string $requirement): string
     {
-        return sprintf('%1$s|%1$s..%1$s', $requirement);
+        return sprintf('%1$s|%1$s\.\.%1$s', $requirement);
     }
 
     /**
@@ -423,6 +444,9 @@ class ValueNormalizerTest extends \PHPUnit\Framework\TestCase
         self::assertSame($expectedValue, $result);
     }
 
+    /**
+     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
+     */
     public function getArrayRangeRequirementProvider(): array
     {
         return [
@@ -521,7 +545,7 @@ class ValueNormalizerTest extends \PHPUnit\Framework\TestCase
 
     private function getArrayRangeRequirement(string $requirement): string
     {
-        return sprintf('%1$s|%2$s..%2$s', $this->getArrayRequirement($requirement), $requirement);
+        return sprintf('%1$s|%2$s\.\.%2$s', $this->getArrayRequirement($requirement), $requirement);
     }
 
     /**
@@ -584,8 +608,9 @@ class ValueNormalizerTest extends \PHPUnit\Framework\TestCase
             [null, null, DataType::GUID, [RequestType::REST], true],
             [null, null, DataType::GUID, [RequestType::REST], false],
             [null, null, DataType::ORDER_BY, [RequestType::REST], true],
-            [' ', ' ', DataType::STRING, [RequestType::REST], true],
-            [' ', ' ', DataType::STRING, [RequestType::REST], false],
+            ['0', '0', DataType::STRING, [RequestType::REST], false],
+            [['0', '1'], '0,1', DataType::STRING, [RequestType::REST], true],
+            [['0', '1'], ['0', '1'], DataType::STRING, [RequestType::REST], true],
             [',', ',', DataType::STRING, [RequestType::REST], false],
             ['test', 'test', DataType::STRING, [RequestType::REST], true],
             ['test', 'test', DataType::STRING, [RequestType::REST], false],
@@ -775,82 +800,151 @@ class ValueNormalizerTest extends \PHPUnit\Framework\TestCase
             [-123.4, '-1.234', DataType::PERCENT_100, [RequestType::REST], false],
             [[123.4, -456.0], '1.234,-4.56', DataType::PERCENT_100, [RequestType::REST], true],
             [
-                new \DateTime('2010-01-28T15:00:00', new \DateTimeZone('UTC')),
-                new \DateTime('2010-01-28T15:00:00', new \DateTimeZone('UTC')),
-                DataType::DATETIME,
-                [RequestType::REST],
-                true
-            ],
-            [
-                new \DateTime('2010-01-28T15:00:00', new \DateTimeZone('UTC')),
-                new \DateTime('2010-01-28T15:00:00', new \DateTimeZone('UTC')),
-                DataType::DATETIME,
-                [RequestType::REST],
-                false
-            ],
-            [
-                [
-                    new \DateTime('2010-01-28T15:00:00', new \DateTimeZone('UTC')),
-                    new \DateTime('2010-01-28T15:00:00', new \DateTimeZone('UTC'))
-                ],
-                [
-                    new \DateTime('2010-01-28T15:00:00', new \DateTimeZone('UTC')),
-                    new \DateTime('2010-01-28T15:00:00', new \DateTimeZone('UTC'))
-                ],
+                $this->getDateTime('2010-01-28T15:00:00'),
+                $this->getDateTime('2010-01-28T15:00:00'),
                 DataType::DATETIME,
                 [RequestType::REST],
                 true
             ],
             [
                 [
-                    new \DateTime('2010-01-28T15:00:00', new \DateTimeZone('UTC')),
-                    new \DateTime('2010-01-28T15:00:00', new \DateTimeZone('UTC'))
+                    $this->getDateTime('2010-01-28T15:00:00'),
+                    $this->getDateTime('2010-01-28T15:00:00')
                 ],
                 [
-                    new \DateTime('2010-01-28T15:00:00', new \DateTimeZone('UTC')),
-                    new \DateTime('2010-01-28T15:00:00', new \DateTimeZone('UTC'))
+                    $this->getDateTime('2010-01-28T15:00:00'),
+                    $this->getDateTime('2010-01-28T15:00:00')
+                ],
+                DataType::DATETIME,
+                [RequestType::REST],
+                true
+            ],
+            [
+                $this->getNormalizedDateTime('2010-01-28T15:00:00'),
+                $this->getNormalizedDateTime('2010-01-28T15:00:00'),
+                DataType::DATETIME,
+                [RequestType::REST],
+                true
+            ],
+            [
+                $this->getNormalizedDateTime('2010-01-28T15:00:00'),
+                $this->getNormalizedDateTime('2010-01-28T15:00:00'),
+                DataType::DATETIME,
+                [RequestType::REST],
+                false
+            ],
+            [
+                [
+                    $this->getNormalizedDateTime('2010-01-28T15:00:00'),
+                    $this->getNormalizedDateTime('2010-01-28T15:00:00')
+                ],
+                [
+                    $this->getNormalizedDateTime('2010-01-28T15:00:00'),
+                    $this->getNormalizedDateTime('2010-01-28T15:00:00')
+                ],
+                DataType::DATETIME,
+                [RequestType::REST],
+                true
+            ],
+            [
+                [
+                    $this->getNormalizedDateTime('2010-01-28T15:00:00'),
+                    $this->getNormalizedDateTime('2010-01-28T15:00:00')
+                ],
+                [
+                    $this->getNormalizedDateTime('2010-01-28T15:00:00'),
+                    $this->getNormalizedDateTime('2010-01-28T15:00:00')
                 ],
                 DataType::DATETIME,
                 [RequestType::REST],
                 false
             ],
             [
-                new \DateTime('2010-01-28T00:00:00', new \DateTimeZone('UTC')),
+                $this->getNormalizedDateTime('2010-01-28T00:00:00', NormalizedDateTime::PRECISION_DAY),
                 '2010-01-28',
                 DataType::DATETIME,
                 [RequestType::REST],
                 true
             ],
             [
-                new \DateTime('2010-01-28T00:00:00', new \DateTimeZone('UTC')),
+                $this->getNormalizedDateTime('2010-01-28T00:00:00', NormalizedDateTime::PRECISION_DAY),
                 '2010-01-28',
                 DataType::DATETIME,
                 [RequestType::REST],
                 false
             ],
             [
-                new \DateTime('2010-01-28T15:00:00', new \DateTimeZone('UTC')),
-                '2010-01-28T15:00:00+00:00',
+                $this->getNormalizedDateTime('2010-02-01T00:00:00', NormalizedDateTime::PRECISION_MONTH),
+                '2010-02',
                 DataType::DATETIME,
                 [RequestType::REST],
                 true
             ],
             [
-                new \DateTime('2010-01-28T15:00:00', new \DateTimeZone('UTC')),
+                $this->getNormalizedDateTime('2010-02-01T00:00:00', NormalizedDateTime::PRECISION_MONTH),
+                '2010-02',
+                DataType::DATETIME,
+                [RequestType::REST],
+                false
+            ],
+            [
+                $this->getNormalizedDateTime('2010-01-01T00:00:00', NormalizedDateTime::PRECISION_YEAR),
+                '2010',
+                DataType::DATETIME,
+                [RequestType::REST],
+                true
+            ],
+            [
+                $this->getNormalizedDateTime('2010-01-01T00:00:00', NormalizedDateTime::PRECISION_YEAR),
+                '2010',
+                DataType::DATETIME,
+                [RequestType::REST],
+                false
+            ],
+            [
+                $this->getNormalizedDateTime('2010-01-28T15:01:00', NormalizedDateTime::PRECISION_MINUTE),
+                '2010-01-28T15:01',
+                DataType::DATETIME,
+                [RequestType::REST],
+                true
+            ],
+            [
+                $this->getNormalizedDateTime('2010-01-28T15:00:00', NormalizedDateTime::PRECISION_HOUR),
+                '2010-01-28T15',
+                DataType::DATETIME,
+                [RequestType::REST],
+                true
+            ],
+            [
+                $this->getNormalizedDateTime('2010-01-28T15:01:02'),
+                '2010-01-28T15:01:02Z',
+                DataType::DATETIME,
+                [RequestType::REST],
+                true
+            ],
+            [
+                $this->getNormalizedDateTime('2010-01-28T15:01:02'),
+                '2010-01-28T15:01:02+00:00',
+                DataType::DATETIME,
+                [RequestType::REST],
+                true
+            ],
+            [
+                $this->getNormalizedDateTime('2010-01-28T15:00:00'),
                 '2010-01-28T15:00:00+00:00',
                 DataType::DATETIME,
                 [RequestType::REST],
                 false
             ],
             [
-                new \DateTime('2010-01-28T15:00:00+0200', new \DateTimeZone('UTC')),
+                $this->getNormalizedDateTime('2010-01-28T15:00:00+0200'),
                 '2010-01-28T15:00:00+02:00',
                 DataType::DATETIME,
                 [RequestType::REST],
                 true
             ],
             [
-                new \DateTime('2010-01-28T15:00:00+0200', new \DateTimeZone('UTC')),
+                $this->getNormalizedDateTime('2010-01-28T15:00:00+0200'),
                 '2010-01-28T15:00:00+02:00',
                 DataType::DATETIME,
                 [RequestType::REST],
@@ -858,8 +952,8 @@ class ValueNormalizerTest extends \PHPUnit\Framework\TestCase
             ],
             [
                 [
-                    new \DateTime('2010-01-28T15:00:00', new \DateTimeZone('UTC')),
-                    new \DateTime('2010-01-28T15:00:00+0200', new \DateTimeZone('UTC'))
+                    $this->getNormalizedDateTime('2010-01-28T15:00:00'),
+                    $this->getNormalizedDateTime('2010-01-28T15:00:00+0200')
                 ],
                 '2010-01-28T15:00:00+00:00,2010-01-28T15:00:00+02:00',
                 DataType::DATETIME,
@@ -867,63 +961,111 @@ class ValueNormalizerTest extends \PHPUnit\Framework\TestCase
                 true
             ],
             [
-                new \DateTime('2010-01-28T00:00:00', new \DateTimeZone('UTC')),
-                new \DateTime('2010-01-28T00:00:00', new \DateTimeZone('UTC')),
-                DataType::DATE,
-                [RequestType::REST],
-                true
-            ],
-            [
-                new \DateTime('2010-01-28T00:00:00', new \DateTimeZone('UTC')),
-                new \DateTime('2010-01-28T00:00:00', new \DateTimeZone('UTC')),
-                DataType::DATE,
-                [RequestType::REST],
-                false
-            ],
-            [
-                [
-                    new \DateTime('2010-01-28T00:00:00', new \DateTimeZone('UTC')),
-                    new \DateTime('2010-01-28T00:00:00', new \DateTimeZone('UTC'))
-                ],
-                [
-                    new \DateTime('2010-01-28T00:00:00', new \DateTimeZone('UTC')),
-                    new \DateTime('2010-01-28T00:00:00', new \DateTimeZone('UTC'))
-                ],
+                $this->getDateTime('2010-01-28T00:00:00'),
+                $this->getDateTime('2010-01-28T00:00:00'),
                 DataType::DATE,
                 [RequestType::REST],
                 true
             ],
             [
                 [
-                    new \DateTime('2010-01-28T00:00:00', new \DateTimeZone('UTC')),
-                    new \DateTime('2010-01-28T00:00:00', new \DateTimeZone('UTC'))
+                    $this->getDateTime('2010-01-28T00:00:00'),
+                    $this->getDateTime('2010-01-28T00:00:00')
                 ],
                 [
-                    new \DateTime('2010-01-28T00:00:00', new \DateTimeZone('UTC')),
-                    new \DateTime('2010-01-28T00:00:00', new \DateTimeZone('UTC'))
+                    $this->getDateTime('2010-01-28T00:00:00'),
+                    $this->getDateTime('2010-01-28T00:00:00')
+                ],
+                DataType::DATE,
+                [RequestType::REST],
+                true
+            ],
+            [
+                $this->getNormalizedDateTime('2010-01-28T00:00:00'),
+                $this->getNormalizedDateTime('2010-01-28T00:00:00'),
+                DataType::DATE,
+                [RequestType::REST],
+                true
+            ],
+            [
+                $this->getNormalizedDateTime('2010-01-28T00:00:00'),
+                $this->getNormalizedDateTime('2010-01-28T00:00:00'),
+                DataType::DATE,
+                [RequestType::REST],
+                false
+            ],
+            [
+                [
+                    $this->getNormalizedDateTime('2010-01-28T00:00:00'),
+                    $this->getNormalizedDateTime('2010-01-28T00:00:00')
+                ],
+                [
+                    $this->getNormalizedDateTime('2010-01-28T00:00:00'),
+                    $this->getNormalizedDateTime('2010-01-28T00:00:00')
+                ],
+                DataType::DATE,
+                [RequestType::REST],
+                true
+            ],
+            [
+                [
+                    $this->getNormalizedDateTime('2010-01-28T00:00:00'),
+                    $this->getNormalizedDateTime('2010-01-28T00:00:00')
+                ],
+                [
+                    $this->getNormalizedDateTime('2010-01-28T00:00:00'),
+                    $this->getNormalizedDateTime('2010-01-28T00:00:00')
                 ],
                 DataType::DATE,
                 [RequestType::REST],
                 false
             ],
             [
-                new \DateTime('2010-01-28T00:00:00', new \DateTimeZone('UTC')),
+                $this->getNormalizedDateTime('2010-01-28T00:00:00', NormalizedDateTime::PRECISION_DAY),
                 '2010-01-28',
                 DataType::DATE,
                 [RequestType::REST],
                 true
             ],
             [
-                new \DateTime('2010-01-28T00:00:00', new \DateTimeZone('UTC')),
+                $this->getNormalizedDateTime('2010-01-28T00:00:00', NormalizedDateTime::PRECISION_DAY),
                 '2010-01-28',
                 DataType::DATE,
                 [RequestType::REST],
                 false
             ],
             [
+                $this->getNormalizedDateTime('2010-02-01T00:00:00', NormalizedDateTime::PRECISION_MONTH),
+                '2010-02',
+                DataType::DATE,
+                [RequestType::REST],
+                true
+            ],
+            [
+                $this->getNormalizedDateTime('2010-02-01T00:00:00', NormalizedDateTime::PRECISION_MONTH),
+                '2010-02',
+                DataType::DATE,
+                [RequestType::REST],
+                false
+            ],
+            [
+                $this->getNormalizedDateTime('2010-01-01T00:00:00', NormalizedDateTime::PRECISION_YEAR),
+                '2010',
+                DataType::DATE,
+                [RequestType::REST],
+                true
+            ],
+            [
+                $this->getNormalizedDateTime('2010-01-01T00:00:00', NormalizedDateTime::PRECISION_YEAR),
+                '2010',
+                DataType::DATE,
+                [RequestType::REST],
+                false
+            ],
+            [
                 [
-                    new \DateTime('2010-01-28T00:00:00', new \DateTimeZone('UTC')),
-                    new \DateTime('2010-01-29T00:00:00', new \DateTimeZone('UTC'))
+                    $this->getNormalizedDateTime('2010-01-28T00:00:00', NormalizedDateTime::PRECISION_DAY),
+                    $this->getNormalizedDateTime('2010-01-29T00:00:00', NormalizedDateTime::PRECISION_DAY)
                 ],
                 '2010-01-28,2010-01-29',
                 DataType::DATE,
@@ -931,63 +1073,111 @@ class ValueNormalizerTest extends \PHPUnit\Framework\TestCase
                 true
             ],
             [
-                new \DateTime('1970-01-01T15:00:00', new \DateTimeZone('UTC')),
-                new \DateTime('1970-01-01T15:00:00', new \DateTimeZone('UTC')),
-                DataType::TIME,
-                [RequestType::REST],
-                true
-            ],
-            [
-                new \DateTime('1970-01-01T15:00:00', new \DateTimeZone('UTC')),
-                new \DateTime('1970-01-01T15:00:00', new \DateTimeZone('UTC')),
-                DataType::TIME,
-                [RequestType::REST],
-                false
-            ],
-            [
-                [
-                    new \DateTime('1970-01-01T15:00:00', new \DateTimeZone('UTC')),
-                    new \DateTime('1970-01-01T15:00:00', new \DateTimeZone('UTC'))
-                ],
-                [
-                    new \DateTime('1970-01-01T15:00:00', new \DateTimeZone('UTC')),
-                    new \DateTime('1970-01-01T15:00:00', new \DateTimeZone('UTC'))
-                ],
+                $this->getDateTime('1970-01-01T15:00:00'),
+                $this->getDateTime('1970-01-01T15:00:00'),
                 DataType::TIME,
                 [RequestType::REST],
                 true
             ],
             [
                 [
-                    new \DateTime('1970-01-01T15:00:00', new \DateTimeZone('UTC')),
-                    new \DateTime('1970-01-01T15:00:00', new \DateTimeZone('UTC'))
+                    $this->getDateTime('1970-01-01T15:00:00'),
+                    $this->getDateTime('1970-01-01T15:00:00')
                 ],
                 [
-                    new \DateTime('1970-01-01T15:00:00', new \DateTimeZone('UTC')),
-                    new \DateTime('1970-01-01T15:00:00', new \DateTimeZone('UTC'))
+                    $this->getDateTime('1970-01-01T15:00:00'),
+                    $this->getDateTime('1970-01-01T15:00:00')
+                ],
+                DataType::TIME,
+                [RequestType::REST],
+                true
+            ],
+            [
+                $this->getNormalizedDateTime('1970-01-01T15:00:00'),
+                $this->getNormalizedDateTime('1970-01-01T15:00:00'),
+                DataType::TIME,
+                [RequestType::REST],
+                true
+            ],
+            [
+                $this->getNormalizedDateTime('1970-01-01T15:00:00'),
+                $this->getNormalizedDateTime('1970-01-01T15:00:00'),
+                DataType::TIME,
+                [RequestType::REST],
+                false
+            ],
+            [
+                [
+                    $this->getNormalizedDateTime('1970-01-01T15:00:00'),
+                    $this->getNormalizedDateTime('1970-01-01T15:00:00')
+                ],
+                [
+                    $this->getNormalizedDateTime('1970-01-01T15:00:00'),
+                    $this->getNormalizedDateTime('1970-01-01T15:00:00')
+                ],
+                DataType::TIME,
+                [RequestType::REST],
+                true
+            ],
+            [
+                [
+                    $this->getNormalizedDateTime('1970-01-01T15:00:00'),
+                    $this->getNormalizedDateTime('1970-01-01T15:00:00')
+                ],
+                [
+                    $this->getNormalizedDateTime('1970-01-01T15:00:00'),
+                    $this->getNormalizedDateTime('1970-01-01T15:00:00')
                 ],
                 DataType::TIME,
                 [RequestType::REST],
                 false
             ],
             [
-                new \DateTime('1970-01-01T10:30:59', new \DateTimeZone('UTC')),
+                $this->getNormalizedDateTime('1970-01-01T10:30:59'),
                 '10:30:59',
                 DataType::TIME,
                 [RequestType::REST],
                 true
             ],
             [
-                new \DateTime('1970-01-01T10:30:59', new \DateTimeZone('UTC')),
+                $this->getNormalizedDateTime('1970-01-01T10:30:59'),
                 '10:30:59',
                 DataType::TIME,
                 [RequestType::REST],
                 false
             ],
             [
+                $this->getNormalizedDateTime('1970-01-01T10:30:00', NormalizedDateTime::PRECISION_MINUTE),
+                '10:30',
+                DataType::TIME,
+                [RequestType::REST],
+                true
+            ],
+            [
+                $this->getNormalizedDateTime('1970-01-01T10:30:00', NormalizedDateTime::PRECISION_MINUTE),
+                '10:30',
+                DataType::TIME,
+                [RequestType::REST],
+                false
+            ],
+            [
+                $this->getNormalizedDateTime('1970-01-01T10:00:00', NormalizedDateTime::PRECISION_HOUR),
+                '10',
+                DataType::TIME,
+                [RequestType::REST],
+                true
+            ],
+            [
+                $this->getNormalizedDateTime('1970-01-01T10:00:00', NormalizedDateTime::PRECISION_HOUR),
+                '10',
+                DataType::TIME,
+                [RequestType::REST],
+                false
+            ],
+            [
                 [
-                    new \DateTime('1970-01-01T10:30:59', new \DateTimeZone('UTC')),
-                    new \DateTime('1970-01-01T11:45:00', new \DateTimeZone('UTC'))
+                    $this->getNormalizedDateTime('1970-01-01T10:30:59'),
+                    $this->getNormalizedDateTime('1970-01-01T11:45:00')
                 ],
                 '10:30:59,11:45:00',
                 DataType::TIME,
@@ -1069,9 +1259,6 @@ class ValueNormalizerTest extends \PHPUnit\Framework\TestCase
         return [
             [new Range('test1', 'test2'), new Range('test1', 'test2'), DataType::STRING],
             [new Range('test1', 'test2'), 'test1..test2', DataType::STRING],
-            [new Range(' ', ' '), ' .. ', DataType::STRING],
-            [new Range(' ', 'test2'), ' ..test2', DataType::STRING],
-            [new Range('test1', ' '), 'test1.. ', DataType::STRING],
             [new Range(123, 456), new Range(123, 456), DataType::INTEGER],
             [new Range(123, 456), '123..456', DataType::INTEGER],
             [new Range(-456, -123), '-456..-123', DataType::INTEGER],
@@ -1125,65 +1312,98 @@ class ValueNormalizerTest extends \PHPUnit\Framework\TestCase
             [new Range(-45.6, -12.3), '-.456..-.123', DataType::PERCENT_100],
             [
                 new Range(
-                    new \DateTime('2010-01-28T15:00:00', new \DateTimeZone('UTC')),
-                    new \DateTime('2010-01-28T15:00:01', new \DateTimeZone('UTC'))
+                    $this->getDateTime('2010-01-28T15:00:00'),
+                    $this->getDateTime('2010-01-28T15:00:01')
                 ),
                 new Range(
-                    new \DateTime('2010-01-28T15:00:00', new \DateTimeZone('UTC')),
-                    new \DateTime('2010-01-28T15:00:01', new \DateTimeZone('UTC'))
+                    $this->getDateTime('2010-01-28T15:00:00'),
+                    $this->getDateTime('2010-01-28T15:00:01')
                 ),
                 DataType::DATETIME
             ],
             [
                 new Range(
-                    new \DateTime('2010-01-28T15:00:00', new \DateTimeZone('UTC')),
-                    new \DateTime('2010-01-28T15:00:01', new \DateTimeZone('UTC'))
+                    $this->getNormalizedDateTime('2010-01-28T15:00:00'),
+                    $this->getNormalizedDateTime('2010-01-28T15:00:01')
+                ),
+                new Range(
+                    $this->getNormalizedDateTime('2010-01-28T15:00:00'),
+                    $this->getNormalizedDateTime('2010-01-28T15:00:01')
+                ),
+                DataType::DATETIME
+            ],
+            [
+                new Range(
+                    $this->getNormalizedDateTime('2010-01-28T15:00:00'),
+                    $this->getNormalizedDateTime('2010-01-28T15:00:01')
                 ),
                 '2010-01-28T15:00:00..2010-01-28T15:00:01',
                 DataType::DATETIME
             ],
             [
                 new Range(
-                    new \DateTime('2010-01-28T00:00:00', new \DateTimeZone('UTC')),
-                    new \DateTime('2010-01-29T00:00:00', new \DateTimeZone('UTC'))
+                    $this->getNormalizedDateTime('2010-01-28T00:00:00', NormalizedDateTime::PRECISION_DAY),
+                    $this->getNormalizedDateTime('2010-01-29T00:00:00', NormalizedDateTime::PRECISION_DAY)
                 ),
                 '2010-01-28..2010-01-29',
                 DataType::DATETIME
             ],
             [
                 new Range(
-                    new \DateTime('2010-01-28T15:00:00', new \DateTimeZone('UTC')),
-                    new \DateTime('2010-01-28T15:00:01', new \DateTimeZone('UTC'))
+                    $this->getDateTime('2010-01-28T15:00:00'),
+                    $this->getDateTime('2010-01-28T15:00:01')
                 ),
                 new Range(
-                    new \DateTime('2010-01-28T15:00:00', new \DateTimeZone('UTC')),
-                    new \DateTime('2010-01-28T15:00:01', new \DateTimeZone('UTC'))
+                    $this->getDateTime('2010-01-28T15:00:00'),
+                    $this->getDateTime('2010-01-28T15:00:01')
                 ),
                 DataType::DATE
             ],
             [
                 new Range(
-                    new \DateTime('2010-01-28T00:00:00', new \DateTimeZone('UTC')),
-                    new \DateTime('2010-01-29T00:00:00', new \DateTimeZone('UTC'))
+                    $this->getNormalizedDateTime('2010-01-28T15:00:00'),
+                    $this->getNormalizedDateTime('2010-01-28T15:00:01')
+                ),
+                new Range(
+                    $this->getNormalizedDateTime('2010-01-28T15:00:00'),
+                    $this->getNormalizedDateTime('2010-01-28T15:00:01')
+                ),
+                DataType::DATE
+            ],
+            [
+                new Range(
+                    $this->getNormalizedDateTime('2010-01-28T00:00:00', NormalizedDateTime::PRECISION_DAY),
+                    $this->getNormalizedDateTime('2010-01-29T00:00:00', NormalizedDateTime::PRECISION_DAY)
                 ),
                 '2010-01-28..2010-01-29',
                 DataType::DATE
             ],
             [
                 new Range(
-                    new \DateTime('1970-01-01T00:00:00', new \DateTimeZone('UTC')),
-                    new \DateTime('1970-01-01T00:00:01', new \DateTimeZone('UTC'))
+                    $this->getDateTime('1970-01-01T00:00:00'),
+                    $this->getDateTime('1970-01-01T00:00:01')
                 ),
                 new Range(
-                    new \DateTime('1970-01-01T00:00:00', new \DateTimeZone('UTC')),
-                    new \DateTime('1970-01-01T00:00:01', new \DateTimeZone('UTC'))
+                    $this->getDateTime('1970-01-01T00:00:00'),
+                    $this->getDateTime('1970-01-01T00:00:01')
                 ),
                 DataType::TIME
             ],
             [
                 new Range(
-                    new \DateTime('1970-01-01T00:00:00', new \DateTimeZone('UTC')),
-                    new \DateTime('1970-01-01T00:00:01', new \DateTimeZone('UTC'))
+                    $this->getNormalizedDateTime('1970-01-01T00:00:00'),
+                    $this->getNormalizedDateTime('1970-01-01T00:00:01')
+                ),
+                new Range(
+                    $this->getNormalizedDateTime('1970-01-01T00:00:00'),
+                    $this->getNormalizedDateTime('1970-01-01T00:00:01')
+                ),
+                DataType::TIME
+            ],
+            [
+                new Range(
+                    $this->getNormalizedDateTime('1970-01-01T00:00:00'),
+                    $this->getNormalizedDateTime('1970-01-01T00:00:01')
                 ),
                 '00:00:00..00:00:01',
                 DataType::TIME
@@ -1212,7 +1432,7 @@ class ValueNormalizerTest extends \PHPUnit\Framework\TestCase
     {
         return [
             [
-                'Expected string value. Given "".',
+                'Expected not empty string value. Given "".',
                 '',
                 DataType::STRING,
                 [RequestType::REST]
@@ -1224,8 +1444,56 @@ class ValueNormalizerTest extends \PHPUnit\Framework\TestCase
                 [RequestType::REST]
             ],
             [
-                'Expected an array of strings. Given ",".',
+                'Expected an array of not empty strings. Given ",".',
                 ',',
+                DataType::STRING,
+                [RequestType::REST]
+            ],
+            [
+                'Expected an array of not empty strings. Given "test,".',
+                'test,',
+                DataType::STRING,
+                [RequestType::REST]
+            ],
+            [
+                'Expected an array of not empty strings. Given ",test".',
+                ',test',
+                DataType::STRING,
+                [RequestType::REST]
+            ],
+            [
+                'Expected an array of not empty strings. Given "test1,,test2".',
+                'test1,,test2',
+                DataType::STRING,
+                [RequestType::REST]
+            ],
+            [
+                'Expected an array of not empty strings. Given " ,".',
+                ' ,',
+                DataType::STRING,
+                [RequestType::REST]
+            ],
+            [
+                'Expected an array of not empty strings. Given ", ".',
+                ', ',
+                DataType::STRING,
+                [RequestType::REST]
+            ],
+            [
+                'Expected an array of not empty strings. Given "test, ".',
+                'test, ',
+                DataType::STRING,
+                [RequestType::REST]
+            ],
+            [
+                'Expected an array of not empty strings. Given " ,test".',
+                ' ,test',
+                DataType::STRING,
+                [RequestType::REST]
+            ],
+            [
+                'Expected an array of not empty strings. Given "test1, ,test2".',
+                'test1, ,test2',
                 DataType::STRING,
                 [RequestType::REST]
             ],
@@ -1542,6 +1810,12 @@ class ValueNormalizerTest extends \PHPUnit\Framework\TestCase
                 [RequestType::REST]
             ],
             [
+                'Expected GUID value. Given "".',
+                '',
+                DataType::GUID,
+                [RequestType::REST]
+            ],
+            [
                 'Expected GUID value. Given "test".',
                 'test',
                 DataType::GUID,
@@ -1563,6 +1837,30 @@ class ValueNormalizerTest extends \PHPUnit\Framework\TestCase
                 'Expected an array of GUIDs. Given '
                 . '"EAC12975-D94D-4E96-88B1-101B99914DEF,7eab7435-44bb-493a-9bda-dea3fda3c0dh".',
                 'EAC12975-D94D-4E96-88B1-101B99914DEF,7eab7435-44bb-493a-9bda-dea3fda3c0dh',
+                DataType::GUID,
+                [RequestType::REST]
+            ],
+            [
+                'Expected an array of GUIDs. Given ",7eab7435-44bb-493a-9bda-dea3fda3c0dh".',
+                ',7eab7435-44bb-493a-9bda-dea3fda3c0dh',
+                DataType::GUID,
+                [RequestType::REST]
+            ],
+            [
+                'Expected an array of GUIDs. Given "7eab7435-44bb-493a-9bda-dea3fda3c0dh,".',
+                '7eab7435-44bb-493a-9bda-dea3fda3c0dh,',
+                DataType::GUID,
+                [RequestType::REST]
+            ],
+            [
+                'Expected an array of GUIDs. Given " ,7eab7435-44bb-493a-9bda-dea3fda3c0dh".',
+                ' ,7eab7435-44bb-493a-9bda-dea3fda3c0dh',
+                DataType::GUID,
+                [RequestType::REST]
+            ],
+            [
+                'Expected an array of GUIDs. Given "7eab7435-44bb-493a-9bda-dea3fda3c0dh, ".',
+                '7eab7435-44bb-493a-9bda-dea3fda3c0dh, ',
                 DataType::GUID,
                 [RequestType::REST]
             ]
@@ -1590,7 +1888,7 @@ class ValueNormalizerTest extends \PHPUnit\Framework\TestCase
     {
         return [
             [
-                'Expected a pair of strings (string..string). Given "..".',
+                'Expected a pair of not empty strings (not empty string..not empty string). Given "..".',
                 '..',
                 DataType::STRING,
                 [RequestType::REST]
@@ -1602,7 +1900,7 @@ class ValueNormalizerTest extends \PHPUnit\Framework\TestCase
                 [RequestType::REST]
             ],
             [
-                'Expected a pair of strings (string..string). Given "..test".',
+                'Expected a pair of not empty strings (not empty string..not empty string). Given "..test".',
                 '..test',
                 DataType::STRING,
                 [RequestType::REST]
@@ -1614,8 +1912,20 @@ class ValueNormalizerTest extends \PHPUnit\Framework\TestCase
                 [RequestType::REST]
             ],
             [
-                'Expected a pair of strings (string..string). Given "test..".',
+                'Expected a pair of not empty strings (not empty string..not empty string). Given "test..".',
                 'test..',
+                DataType::STRING,
+                [RequestType::REST]
+            ],
+            [
+                'Expected a pair of not empty strings (not empty string..not empty string). Given " ..test".',
+                ' ..test',
+                DataType::STRING,
+                [RequestType::REST]
+            ],
+            [
+                'Expected a pair of not empty strings (not empty string..not empty string). Given "test.. ".',
+                'test.. ',
                 DataType::STRING,
                 [RequestType::REST]
             ],
@@ -1895,17 +2205,20 @@ class ValueNormalizerTest extends \PHPUnit\Framework\TestCase
     private function addProcessor(
         ProcessorBagConfigBuilder $processorBagConfigBuilder,
         string $processorId,
-        string $dataType = null,
+        string $dataType,
         string|array|null $requestType = null
     ): string {
         $attributes = [];
-        if (null !== $dataType) {
-            $attributes['dataType'] = $dataType;
-        }
         if (null !== $requestType) {
             $attributes['requestType'] = is_array($requestType) ? ['&' => $requestType] : $requestType;
         }
-        $processorBagConfigBuilder->addProcessor($processorId, $attributes, 'normalize_value', null, -10);
+        $processorBagConfigBuilder->addProcessor(
+            $processorId,
+            $attributes,
+            'normalize_value.' . $dataType,
+            null,
+            -10
+        );
 
         return $processorId;
     }
@@ -1918,6 +2231,13 @@ class ValueNormalizerTest extends \PHPUnit\Framework\TestCase
             if ($expected instanceof Range) {
                 self::assertNormalizedValue($expected->getFromValue(), $actual->getFromValue(), 'Range.fromValue');
                 self::assertNormalizedValue($expected->getToValue(), $actual->getToValue(), 'Range.toValue');
+            } elseif ($expected instanceof NormalizedDateTime) {
+                self::assertEquals($expected, $actual, $message);
+                self::assertEquals(
+                    $expected->getPrecision(),
+                    $actual->getPrecision(),
+                    ($message ? $message . '. ' : '') . 'NormalizedDateTime::precision'
+                );
             } else {
                 self::assertEquals($expected, $actual, $message);
             }

@@ -6,11 +6,12 @@ use Oro\Bundle\MessageQueueBundle\DependencyInjection\Compiler\RegisterPersisten
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 /**
- * Adds the `oro_api.tests.customize_form_data_logger` service to persistent services in MQ config
+ * Adds the "oro_api.tests.customize_form_data_logger" service to persistent services in MQ config.
  */
 class MakeTestLoggerServicePersistentPass extends RegisterPersistentServicesPass
 {
-    protected function getPersistentServices(ContainerBuilder $container)
+    #[\Override]
+    protected function getPersistentServices(ContainerBuilder $container): array
     {
         return ['oro_api.tests.customize_form_data_logger'];
     }

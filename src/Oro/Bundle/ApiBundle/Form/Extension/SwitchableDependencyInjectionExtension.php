@@ -4,6 +4,8 @@ namespace Oro\Bundle\ApiBundle\Form\Extension;
 
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Form\FormExtensionInterface;
+use Symfony\Component\Form\FormTypeGuesserInterface;
+use Symfony\Component\Form\FormTypeInterface;
 
 /**
  * Provides functionality to switch between API and regular form types, form type extensions and a form type guesser.
@@ -45,42 +47,32 @@ class SwitchableDependencyInjectionExtension implements FormExtensionInterface
         $this->currentExtensionName = $extensionName;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function hasType($name)
+    #[\Override]
+    public function hasType(string $name): bool
     {
         return $this->getExtension()->hasType($name);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function getType($name)
+    #[\Override]
+    public function getType(string $name): FormTypeInterface
     {
         return $this->getExtension()->getType($name);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function hasTypeExtensions($name)
+    #[\Override]
+    public function hasTypeExtensions(string $name): bool
     {
         return $this->getExtension()->hasTypeExtensions($name);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function getTypeExtensions($name)
+    #[\Override]
+    public function getTypeExtensions(string $name): array
     {
         return $this->getExtension()->getTypeExtensions($name);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function getTypeGuesser()
+    #[\Override]
+    public function getTypeGuesser(): ?FormTypeGuesserInterface
     {
         return $this->getExtension()->getTypeGuesser();
     }

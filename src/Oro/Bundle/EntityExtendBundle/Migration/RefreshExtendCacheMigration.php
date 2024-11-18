@@ -6,13 +6,18 @@ use Doctrine\DBAL\Schema\Schema;
 use Oro\Bundle\EntityConfigBundle\Config\ConfigManager;
 use Oro\Bundle\EntityConfigBundle\Tools\CommandExecutor;
 use Oro\Bundle\EntityExtendBundle\Migration\Schema\ExtendSchema;
-use Oro\Bundle\MigrationBundle\Migration\Extension\DataStorageExtension;
 use Oro\Bundle\MigrationBundle\Migration\Extension\DataStorageExtensionAwareInterface;
+use Oro\Bundle\MigrationBundle\Migration\Extension\DataStorageExtensionAwareTrait;
 use Oro\Bundle\MigrationBundle\Migration\Migration;
 use Oro\Bundle\MigrationBundle\Migration\QueryBag;
 
+/**
+ * The migration to refresh extend cache.
+ */
 class RefreshExtendCacheMigration implements Migration, DataStorageExtensionAwareInterface
 {
+    use DataStorageExtensionAwareTrait;
+
     /** @var ConfigManager */
     protected $configManager;
 
@@ -21,9 +26,6 @@ class RefreshExtendCacheMigration implements Migration, DataStorageExtensionAwar
 
     /** @var string */
     protected $initialEntityConfigStatePath;
-
-    /** @var DataStorageExtension */
-    protected $dataStorageExtension;
 
     /**
      * @param CommandExecutor $commandExecutor
@@ -40,17 +42,7 @@ class RefreshExtendCacheMigration implements Migration, DataStorageExtensionAwar
         $this->initialEntityConfigStatePath = $initialEntityConfigStatePath;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function setDataStorageExtension(DataStorageExtension $dataStorageExtension)
-    {
-        $this->dataStorageExtension = $dataStorageExtension;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function up(Schema $schema, QueryBag $queries)
     {
         $this->configManager->flushAllCaches();

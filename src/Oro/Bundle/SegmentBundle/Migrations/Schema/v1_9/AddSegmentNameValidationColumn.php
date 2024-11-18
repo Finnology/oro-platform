@@ -2,31 +2,18 @@
 
 namespace Oro\Bundle\SegmentBundle\Migrations\Schema\v1_9;
 
-use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Schema\Comparator;
 use Doctrine\DBAL\Schema\Schema;
 use Oro\Bundle\MigrationBundle\Migration\Extension\DatabasePlatformAwareInterface;
+use Oro\Bundle\MigrationBundle\Migration\Extension\DatabasePlatformAwareTrait;
 use Oro\Bundle\MigrationBundle\Migration\Migration;
 use Oro\Bundle\MigrationBundle\Migration\QueryBag;
 
 class AddSegmentNameValidationColumn implements Migration, DatabasePlatformAwareInterface
 {
-    /**
-     * @var AbstractPlatform
-     */
-    private $platform;
+    use DatabasePlatformAwareTrait;
 
-    /**
-     * Sets the database platform
-     */
-    public function setDatabasePlatform(AbstractPlatform $platform): void
-    {
-        $this->platform = $platform;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function up(Schema $schema, QueryBag $queries)
     {
         $schemaWithNewColumn = clone $schema;

@@ -4,12 +4,13 @@ namespace Oro\Bundle\SecurityBundle\Owner\Metadata;
 
 use Oro\Bundle\SecurityBundle\Acl\AccessLevel;
 
+/**
+ * Represents the entity ownership metadata that represents a "root" ACL entry.
+ */
 class RootOwnershipMetadata extends OwnershipMetadata
 {
-    /**
-     * {@inheritdoc}
-     */
-    public function getAccessLevelNames()
+    #[\Override]
+    public function getAccessLevelNames(): array
     {
         // in community version the "root" ACL entry should not have GLOBAL(Organization) access level
         return AccessLevel::getAccessLevelNames(

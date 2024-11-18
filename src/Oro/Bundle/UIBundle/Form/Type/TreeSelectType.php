@@ -17,9 +17,7 @@ class TreeSelectType extends AbstractType
 {
     const NAME = 'oro_ui_tree_select';
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function finishView(FormView $view, FormInterface $form, array $options)
     {
         $view->vars['treeOptions'] = [
@@ -31,9 +29,7 @@ class TreeSelectType extends AbstractType
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setRequired(['tree_data', 'tree_key']);
@@ -48,26 +44,19 @@ class TreeSelectType extends AbstractType
         $resolver->setAllowedTypes('tree_key', ['string']);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getName()
     {
         return self::NAME;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return EntityTreeSelectType::NAME;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getParent()
+    #[\Override]
+    public function getParent(): ?string
     {
         return HiddenType::class;
     }

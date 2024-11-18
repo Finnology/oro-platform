@@ -35,9 +35,7 @@ class AddressExtension extends AbstractExtension implements ServiceSubscriberInt
         return $this->container->get('oro_locale.formatter.address');
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getFilters()
     {
         return [
@@ -105,10 +103,8 @@ class AddressExtension extends AbstractExtension implements ServiceSubscriberInt
         return $template->renderBlock('address', ['formatted' => $formatted]);
     }
 
-    /**
-     * {@inheritdoc]
-     */
-    public static function getSubscribedServices()
+    #[\Override]
+    public static function getSubscribedServices(): array
     {
         return [
             'oro_locale.formatter.address' => AddressFormatter::class

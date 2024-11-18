@@ -3,118 +3,82 @@
 namespace Oro\Bundle\EmailBundle\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Oro\Bundle\OrganizationBundle\Entity\Organization;
 use Oro\Bundle\OrganizationBundle\Entity\OrganizationInterface;
 use Oro\Bundle\UserBundle\Entity\User;
 
 /**
  * Email Origin
- *
- * @ORM\Table(name="oro_email_origin",
- *      indexes={
- *          @ORM\Index(name="IDX_mailbox_name", columns={"mailbox_name"}),
- *          @ORM\Index(name="isActive_name_idx", columns={"isActive", "name"})
- *      }
- * )
- * @ORM\Entity
- * @ORM\InheritanceType("SINGLE_TABLE")
- * @ORM\DiscriminatorColumn(name="name", type="string", length=30)
  */
+#[ORM\Entity]
+#[ORM\Table(name: 'oro_email_origin')]
+#[ORM\Index(columns: ['mailbox_name'], name: 'IDX_mailbox_name')]
+#[ORM\Index(columns: ['isActive', 'name'], name: 'isActive_name_idx')]
+#[ORM\InheritanceType('SINGLE_TABLE')]
+#[ORM\DiscriminatorColumn(name: 'name', type: 'string', length: 30)]
 abstract class EmailOrigin
 {
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
-    protected $id;
+    #[ORM\Column(name: 'id', type: Types::INTEGER)]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
+    protected ?int $id = null;
+
+    #[ORM\Column(name: 'mailbox_name', type: Types::STRING, length: 64, nullable: false, options: ['default' => ''])]
+    protected ?string $mailboxName = null;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(name="mailbox_name", type="string", length=64, nullable=false, options={"default" = ""})
+     * @var Collection<int, EmailFolder>
      */
-    protected $mailboxName;
+    #[ORM\OneToMany(
+        mappedBy: 'origin',
+        targetEntity: EmailFolder::class,
+        cascade: ['persist', 'remove'],
+        orphanRemoval: true
+    )]
+    protected ?Collection $folders = null;
 
     /**
-     * @var ArrayCollection
-     *
-     * @ORM\OneToMany(targetEntity="EmailFolder", mappedBy="origin", cascade={"persist", "remove"}, orphanRemoval=true)
+     * @var Collection<int, EmailUser>
      */
-    protected $folders;
+    #[ORM\OneToMany(
+        mappedBy: 'origin',
+        targetEntity: EmailUser::class,
+        cascade: ['persist', 'remove'],
+        orphanRemoval: true
+    )]
+    protected ?Collection $emailUsers = null;
 
-    /**
-     * @var ArrayCollection
-     *
-     * @ORM\OneToMany(targetEntity="EmailUser", mappedBy="origin", cascade={"persist", "remove"}, orphanRemoval=true)
-     */
-    protected $emailUsers;
+    #[ORM\Column(name: 'isActive', type: Types::BOOLEAN)]
+    protected ?bool $isActive = true;
 
-    /**
-     * @var boolean
-     *
-     * @ORM\Column(name="isActive", type="boolean")
-     */
-    protected $isActive = true;
+    #[ORM\Column(name: 'is_sync_enabled', type: Types::BOOLEAN, nullable: true)]
+    protected ?bool $isSyncEnabled = true;
 
-    /**
-     * @var boolean
-     *
-     * @ORM\Column(name="is_sync_enabled", type="boolean", nullable=true)
-     */
-    protected $isSyncEnabled = true;
+    #[ORM\Column(name: 'sync_code_updated', type: Types::DATETIME_MUTABLE, nullable: true)]
+    protected ?\DateTimeInterface $syncCodeUpdatedAt = null;
 
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="sync_code_updated", type="datetime", nullable=true)
-     */
-    protected $syncCodeUpdatedAt;
+    #[ORM\Column(name: 'synchronized', type: Types::DATETIME_MUTABLE, nullable: true)]
+    protected ?\DateTimeInterface $synchronizedAt = null;
 
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="synchronized", type="datetime", nullable=true)
-     */
-    protected $synchronizedAt;
+    #[ORM\Column(name: 'sync_code', type: Types::INTEGER, nullable: true)]
+    protected ?int $syncCode = null;
 
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="sync_code", type="integer", nullable=true)
-     */
-    protected $syncCode;
+    #[ORM\Column(name: 'sync_count', type: Types::INTEGER, nullable: true)]
+    protected ?int $syncCount = null;
 
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="sync_count", type="integer", nullable=true)
-     */
-    protected $syncCount;
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'emailOrigins')]
+    #[ORM\JoinColumn(name: 'owner_id', referencedColumnName: 'id', nullable: true, onDelete: 'CASCADE')]
+    protected ?User $owner = null;
 
-    /**
-     * @var User
-     *
-     * @ORM\ManyToOne(targetEntity="Oro\Bundle\UserBundle\Entity\User", inversedBy="emailOrigins")
-     * @ORM\JoinColumn(name="owner_id", referencedColumnName="id", onDelete="CASCADE", nullable=true)
-     */
-    protected $owner;
+    #[ORM\ManyToOne(targetEntity: Organization::class)]
+    #[ORM\JoinColumn(name: 'organization_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
+    protected ?OrganizationInterface $organization = null;
 
-    /**
-     * @var OrganizationInterface
-     *
-     * @ORM\ManyToOne(targetEntity="Oro\Bundle\OrganizationBundle\Entity\Organization")
-     * @ORM\JoinColumn(name="organization_id", referencedColumnName="id", onDelete="CASCADE")
-     */
-    protected $organization;
-
-    /**
-     * @var Mailbox
-     * @ORM\OneToOne(targetEntity="Mailbox", mappedBy="origin")
-     */
-    protected $mailbox;
+    #[ORM\OneToOne(mappedBy: 'origin', targetEntity: Mailbox::class)]
+    protected ?Mailbox $mailbox = null;
 
     public function __construct()
     {
@@ -134,41 +98,40 @@ abstract class EmailOrigin
     }
 
     /**
-     * Get an email folder
+     * Gets an email folder by its type and full name.
      *
      * @param string      $type     Can be 'inbox', 'sent', 'trash', 'drafts' or 'other'
      * @param string|null $fullName
      *
      * @return EmailFolder|null
      */
-    public function getFolder($type, $fullName = null)
+    public function getFolder(string $type, ?string $fullName = null): ?EmailFolder
     {
-        return $this->folders
-            ->filter(
-                function (EmailFolder $folder) use ($type, $fullName) {
-                    return
-                        $folder->getType() === $type
-                        && (empty($fullName) || $folder->getFullName() === $fullName);
-                }
-            )->first();
+        foreach ($this->folders as $folder) {
+            if ($folder->getType() === $type && (!$fullName || $folder->getFullName() === $fullName)) {
+                return $folder;
+            }
+        }
+
+        return null;
     }
 
     /**
-     * Get email folders
+     * Gets all email folders.
      *
-     * @return ArrayCollection|EmailFolder[]
+     * @return Collection<int, EmailFolder>
      */
-    public function getFolders()
+    public function getFolders(): Collection
     {
         return $this->folders;
     }
 
     /**
-     * Get root folders (where parent_folder_id is null)
+     * Gets root folders (folders without a parent folder).
      *
-     * @return ArrayCollection|EmailFolder[]
+     * @return Collection<int, EmailFolder>
      */
-    public function getRootFolders()
+    public function getRootFolders(): Collection
     {
         return $this->folders->filter(function (EmailFolder $emailFolder) {
             return $emailFolder->getParentFolder() === null;
@@ -176,16 +139,15 @@ abstract class EmailOrigin
     }
 
     /**
-     * Replace existing folders by new ones
+     * Replaces existing folders by new ones,
      *
-     * @param EmailFolder[]|ArrayCollection $folders
+     * @param Collection<int, EmailFolder> $folders
      *
      * @return $this
      */
-    public function setFolders($folders)
+    public function setFolders(Collection $folders): self
     {
         $this->folders->clear();
-
         foreach ($folders as $folder) {
             $this->addFolder($folder);
         }
@@ -193,14 +155,7 @@ abstract class EmailOrigin
         return $this;
     }
 
-    /**
-     * Add folder
-     *
-     * @param  EmailFolder $folder
-     *
-     * @return EmailOrigin
-     */
-    public function addFolder(EmailFolder $folder)
+    public function addFolder(EmailFolder $folder): self
     {
         $this->folders[] = $folder;
 
@@ -209,14 +164,7 @@ abstract class EmailOrigin
         return $this;
     }
 
-    /**
-     * Remove folder
-     *
-     * @param EmailFolder $folder
-     *
-     * @return $this
-     */
-    public function removeFolder(EmailFolder $folder)
+    public function removeFolder(EmailFolder $folder): self
     {
         if ($this->folders->contains($folder)) {
             $this->folders->removeElement($folder);
@@ -320,6 +268,7 @@ abstract class EmailOrigin
      *
      * @return string
      */
+    #[\Override]
     public function __toString()
     {
         return (string)$this->id;
@@ -334,7 +283,7 @@ abstract class EmailOrigin
     }
 
     /**
-     * @param OrganizationInterface $organization
+     * @param OrganizationInterface|null $organization
      *
      * @return $this
      */
@@ -396,7 +345,7 @@ abstract class EmailOrigin
     }
 
     /**
-     * @param Mailbox $mailbox
+     * @param Mailbox|null $mailbox
      *
      * @return $this
      */
@@ -407,17 +356,11 @@ abstract class EmailOrigin
         return $this;
     }
 
-    /**
-     * @return bool
-     */
     public function isSyncEnabled(): bool
     {
         return $this->isSyncEnabled ?? true;
     }
 
-    /**
-     * @param bool $isSyncEnabled
-     */
     public function setIsSyncEnabled(bool $isSyncEnabled): void
     {
         $this->isSyncEnabled = $isSyncEnabled;

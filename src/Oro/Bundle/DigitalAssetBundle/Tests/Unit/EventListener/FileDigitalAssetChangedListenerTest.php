@@ -2,7 +2,7 @@
 
 namespace Oro\Bundle\DigitalAssetBundle\Tests\Unit\EventListener;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Event\OnFlushEventArgs;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\UnitOfWork;
@@ -30,6 +30,7 @@ class FileDigitalAssetChangedListenerTest extends \PHPUnit\Framework\TestCase
     /** @var File|\PHPUnit\Framework\MockObject\MockObject */
     private $file;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->fileReflector = $this->createMock(FileReflector::class);
@@ -44,8 +45,7 @@ class FileDigitalAssetChangedListenerTest extends \PHPUnit\Framework\TestCase
 
     public function testPrePersistWhenNoDigitalAsset(): void
     {
-        $this->fileReflector
-            ->expects($this->never())
+        $this->fileReflector->expects($this->never())
             ->method('reflectFromDigitalAsset');
 
         $this->listener->prePersist($this->file, $this->eventArgs);
@@ -53,13 +53,11 @@ class FileDigitalAssetChangedListenerTest extends \PHPUnit\Framework\TestCase
 
     public function testPrePersistWhenNewDigitalAsset(): void
     {
-        $this->file
-            ->expects($this->once())
+        $this->file->expects($this->once())
             ->method('getDigitalAsset')
-            ->willReturn($digitalAsset = $this->createMock(DigitalAsset::class));
+            ->willReturn($this->createMock(DigitalAsset::class));
 
-        $this->fileReflector
-            ->expects($this->never())
+        $this->fileReflector->expects($this->never())
             ->method('reflectFromDigitalAsset');
 
         $this->listener->prePersist($this->file, $this->eventArgs);
@@ -67,18 +65,15 @@ class FileDigitalAssetChangedListenerTest extends \PHPUnit\Framework\TestCase
 
     public function testPrePersist(): void
     {
-        $this->file
-            ->expects($this->once())
+        $this->file->expects($this->once())
             ->method('getDigitalAsset')
             ->willReturn($digitalAsset = $this->createMock(DigitalAsset::class));
 
-        $digitalAsset
-            ->expects($this->once())
+        $digitalAsset->expects($this->once())
             ->method('getId')
             ->willReturn(1);
 
-        $this->fileReflector
-            ->expects($this->once())
+        $this->fileReflector->expects($this->once())
             ->method('reflectFromDigitalAsset')
             ->with($this->file, $digitalAsset);
 
@@ -90,24 +85,20 @@ class FileDigitalAssetChangedListenerTest extends \PHPUnit\Framework\TestCase
      */
     public function testPreUpdateWhenDigitalAssetNotChanged(array $changeSet): void
     {
-        $this->eventArgs
-            ->expects($this->once())
+        $this->eventArgs->expects($this->once())
             ->method('getObjectManager')
-            ->willReturn($entityManager = $this->createMock(EntityManager::class));
+            ->willReturn($entityManager = $this->createMock(EntityManagerInterface::class));
 
-        $entityManager
-            ->expects($this->once())
+        $entityManager->expects($this->once())
             ->method('getUnitOfWork')
             ->willReturn($unitOfWork = $this->createMock(UnitOfWork::class));
 
-        $unitOfWork
-            ->expects($this->once())
+        $unitOfWork->expects($this->once())
             ->method('getEntityChangeSet')
             ->with($this->file)
             ->willReturn($changeSet);
 
-        $this->fileReflector
-            ->expects($this->never())
+        $this->fileReflector->expects($this->never())
             ->method('reflectFromDigitalAsset');
 
         $this->listener->preUpdate($this->file, $this->eventArgs);
@@ -127,34 +118,28 @@ class FileDigitalAssetChangedListenerTest extends \PHPUnit\Framework\TestCase
 
     public function testPreUpdate(): void
     {
-        $this->eventArgs
-            ->expects($this->once())
+        $this->eventArgs->expects($this->once())
             ->method('getObjectManager')
-            ->willReturn($entityManager = $this->createMock(EntityManager::class));
+            ->willReturn($entityManager = $this->createMock(EntityManagerInterface::class));
 
-        $entityManager
-            ->expects($this->once())
+        $entityManager->expects($this->once())
             ->method('getUnitOfWork')
             ->willReturn($unitOfWork = $this->createMock(UnitOfWork::class));
 
-        $unitOfWork
-            ->expects($this->once())
+        $unitOfWork->expects($this->once())
             ->method('getEntityChangeSet')
             ->with($this->file)
-            ->willReturn($changeSet = ['digitalAsset' => ['sampleOldValue', 'sampleNewValue']]);
+            ->willReturn(['digitalAsset' => ['sampleOldValue', 'sampleNewValue']]);
 
-        $this->file
-            ->expects($this->once())
+        $this->file->expects($this->once())
             ->method('getDigitalAsset')
             ->willReturn($digitalAsset = $this->createMock(DigitalAsset::class));
 
-        $digitalAsset
-            ->expects($this->once())
+        $digitalAsset->expects($this->once())
             ->method('getId')
             ->willReturn(1);
 
-        $this->fileReflector
-            ->expects($this->once())
+        $this->fileReflector->expects($this->once())
             ->method('reflectFromDigitalAsset')
             ->with($this->file, $digitalAsset);
 
@@ -164,19 +149,16 @@ class FileDigitalAssetChangedListenerTest extends \PHPUnit\Framework\TestCase
     public function testFlush(): void
     {
         $onFlushEventArgs = $this->createMock(OnFlushEventArgs::class);
-        $onFlushEventArgs
-            ->expects($this->once())
-            ->method('getEntityManager')
-            ->willReturn($entityManager = $this->createMock(EntityManager::class));
+        $onFlushEventArgs->expects($this->once())
+            ->method('getObjectManager')
+            ->willReturn($entityManager = $this->createMock(EntityManagerInterface::class));
 
-        $entityManager
-            ->expects($this->once())
+        $entityManager->expects($this->once())
             ->method('getClassMetadata')
             ->with(File::class)
             ->willReturn($metadata = $this->createMock(ClassMetadata::class));
 
-        $entityManager
-            ->expects($this->once())
+        $entityManager->expects($this->once())
             ->method('getUnitOfWork')
             ->willReturn($unitOfWork = $this->createMock(UnitOfWork::class));
 
@@ -191,18 +173,15 @@ class FileDigitalAssetChangedListenerTest extends \PHPUnit\Framework\TestCase
             $expectedFile,
         ];
 
-        $unitOfWork
-            ->expects($this->once())
+        $unitOfWork->expects($this->once())
             ->method('getScheduledEntityInsertions')
             ->willReturn($scheduledInsertions);
 
-        $this->fileReflector
-            ->expects($this->once())
+        $this->fileReflector->expects($this->once())
             ->method('reflectFromDigitalAsset')
             ->with($expectedFile, $expectedDigitalAsset);
 
-        $unitOfWork
-            ->expects($this->once())
+        $unitOfWork->expects($this->once())
             ->method('recomputeSingleEntityChangeSet')
             ->with($metadata, $expectedFile);
 

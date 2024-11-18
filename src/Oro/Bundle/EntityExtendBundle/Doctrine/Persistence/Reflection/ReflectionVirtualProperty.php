@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\EntityExtendBundle\Doctrine\Persistence\Reflection;
@@ -34,6 +35,7 @@ class ReflectionVirtualProperty extends \ReflectionProperty
      * @return mixed
      */
     #[ReturnTypeWillChange]
+    #[\Override]
     public function getValue(?object $object = null): mixed
     {
         if ($object instanceof Proxy && !$object->__isInitialized()) {
@@ -50,10 +52,11 @@ class ReflectionVirtualProperty extends \ReflectionProperty
 
     /**
      * @param mixed|ExtendEntityInterface $object
-     * @param mixed|null $value
+     * @param mixed $value
      * @return void
      */
     #[ReturnTypeWillChange]
+    #[\Override]
     public function setValue(mixed $object, mixed $value = null): void
     {
         if (!($object instanceof Proxy && !$object->__isInitialized())) {

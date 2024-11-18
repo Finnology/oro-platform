@@ -26,9 +26,7 @@ class SetDefaultSorting implements ProcessorInterface
         $this->filterNamesRegistry = $filterNamesRegistry;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function process(ContextInterface $context): void
     {
         /** @var Context $context */
@@ -45,30 +43,6 @@ class SetDefaultSorting implements ProcessorInterface
                 $context->getFilters(),
                 $config,
                 $context->getConfigOfSorters()
-            );
-        }
-    }
-
-    protected function addSortFilter(
-        string $filterName,
-        FilterCollection $filters,
-        EntityDefinitionConfig $config,
-        ?SortersConfig $configOfSorters
-    ): void {
-        if (!$filters->has($filterName)) {
-            $filters->add(
-                $filterName,
-                new SortFilter(
-                    DataType::ORDER_BY,
-                    $this->getSortFilterDescription(),
-                    function () use ($config, $configOfSorters) {
-                        return $this->getDefaultValue($config, $configOfSorters);
-                    },
-                    function ($value) {
-                        return $this->convertDefaultValueToString($value);
-                    }
-                ),
-                false
             );
         }
     }
@@ -90,10 +64,6 @@ class SetDefaultSorting implements ProcessorInterface
         if (!$orderBy) {
             $idFieldNames = $config->getIdentifierFieldNames();
             foreach ($idFieldNames as $fieldName) {
-                $field = $config->getField($fieldName);
-                if (null !== $field) {
-                    $fieldName = $field->getPropertyPath($fieldName);
-                }
                 if ($this->isSorterEnabled($fieldName, $configOfSorters)) {
                     $orderBy[$fieldName] = Criteria::ASC;
                 }
@@ -103,15 +73,12 @@ class SetDefaultSorting implements ProcessorInterface
         return $orderBy;
     }
 
-    protected function isSorterEnabled(
-        string $fieldName,
-        ?SortersConfig $configOfSorters,
-        bool $byPropertyPath = true
-    ): bool {
+    protected function isSorterEnabled(string $fieldName, ?SortersConfig $configOfSorters): bool
+    {
         if (null === $configOfSorters) {
             return false;
         }
-        $sorter = $configOfSorters->findField($fieldName, $byPropertyPath);
+        $sorter = $configOfSorters->findField($fieldName);
         if (null === $sorter) {
             return false;
         }
@@ -129,5 +96,29 @@ class SetDefaultSorting implements ProcessorInterface
         }
 
         return implode(',', $result);
+    }
+
+    private function addSortFilter(
+        string $filterName,
+        FilterCollection $filterCollection,
+        EntityDefinitionConfig $config,
+        ?SortersConfig $configOfSorters
+    ): void {
+        if (!$filterCollection->has($filterName)) {
+            $filterCollection->add(
+                $filterName,
+                new SortFilter(
+                    DataType::ORDER_BY,
+                    $this->getSortFilterDescription(),
+                    function () use ($config, $configOfSorters) {
+                        return $this->getDefaultValue($config, $configOfSorters);
+                    },
+                    function ($value) {
+                        return $this->convertDefaultValueToString($value);
+                    }
+                ),
+                false
+            );
+        }
     }
 }

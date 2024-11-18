@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\TranslationBundle\Tests\Unit\Action;
@@ -20,6 +21,7 @@ class GetLanguageTranslationMetricsActionTest extends \PHPUnit\Framework\TestCas
     private GetLanguageTranslationMetricsAction $action2;
     private array $metrics;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->codeWithoutTranslations = 'fr_FR';

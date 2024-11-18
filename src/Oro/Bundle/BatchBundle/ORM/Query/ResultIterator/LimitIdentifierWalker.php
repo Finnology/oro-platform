@@ -12,9 +12,7 @@ class LimitIdentifierWalker extends TreeWalkerAdapter
 {
     const PARAMETER_IDS = 'buffered_result_iterator_keys';
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function walkSelectStatement(AST\SelectStatement $AST)
     {
         $this->_getQuery();
@@ -50,7 +48,7 @@ class LimitIdentifierWalker extends TreeWalkerAdapter
         $expression->literals[] = new AST\InputParameter(':' . self::PARAMETER_IDS);
 
         // create a condition and insert it to existing Where Expression
-        $conditionalPrimary = new AST\ConditionalPrimary;
+        $conditionalPrimary = new AST\ConditionalPrimary();
         $conditionalPrimary->simpleConditionalExpression = $expression;
         if ($AST->whereClause) {
             if ($AST->whereClause->conditionalExpression instanceof AST\ConditionalTerm) {

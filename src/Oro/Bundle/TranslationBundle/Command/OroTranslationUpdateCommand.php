@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\TranslationBundle\Command;
@@ -41,6 +42,7 @@ class OroTranslationUpdateCommand extends Command
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     protected function configure(): void
     {
         $this
@@ -68,6 +70,7 @@ HELP
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
+    #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
@@ -81,7 +84,7 @@ HELP
                     $langCode
                 ));
 
-                return 1;
+                return Command::FAILURE;
             }
 
             return $this->updateAllLanguages($io);
@@ -97,7 +100,7 @@ HELP
                     $langCode
                 ));
 
-                return 1;
+                return Command::FAILURE;
             }
 
             return $this->updateLanguage($language, $io) ? 0 : 1;
@@ -105,7 +108,7 @@ HELP
 
         $this->printInstalledLanguageInfo($io);
 
-        return 0;
+        return Command::SUCCESS;
     }
 
     private function updateAllLanguages(SymfonyStyle $io): int

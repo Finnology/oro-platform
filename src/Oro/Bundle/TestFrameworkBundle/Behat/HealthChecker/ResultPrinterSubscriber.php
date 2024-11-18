@@ -20,10 +20,8 @@ class ResultPrinterSubscriber implements EventSubscriberInterface, HealthChecker
         $this->output = $output;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedEvents()
+    #[\Override]
+    public static function getSubscribedEvents(): array
     {
         return [
             AfterExerciseCompleted::BEFORE_TEARDOWN => ['printMessages'],

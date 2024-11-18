@@ -11,42 +11,35 @@ class TestUser implements UserInterface
         return 1;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getRoles()
+    #[\Override]
+    public function getRoles(): array
     {
         return [];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getPassword()
     {
         return '';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getSalt()
     {
         return '';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getUsername()
     {
         return 'testUser';
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function eraseCredentials()
     {
+    }
+
+    #[\Override]
+    public function getUserIdentifier(): string
+    {
+        return $this->getUsername();
     }
 }

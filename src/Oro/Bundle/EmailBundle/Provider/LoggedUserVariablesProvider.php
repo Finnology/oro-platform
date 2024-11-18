@@ -54,17 +54,13 @@ class LoggedUserVariablesProvider implements SystemVariablesProviderInterface
         $this->htmlTagHelper = $htmlTagHelper;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getVariableDefinitions(): array
     {
         return $this->getVariables(false);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getVariableValues(): array
     {
         return $this->getVariables(true);
@@ -123,7 +119,7 @@ class LoggedUserVariablesProvider implements SystemVariablesProviderInterface
     {
         if ($user instanceof UserInterface) {
             if ($addValue) {
-                $val = $user->getUsername();
+                $val = $user->getUserIdentifier();
             } else {
                 $val = [
                     'type'  => 'string',

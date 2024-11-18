@@ -2,6 +2,7 @@
 
 namespace Oro\Bundle\ApiBundle\Processor\CustomizeFormData;
 
+use Oro\Bundle\ApiBundle\Collection\AdditionalEntityCollection;
 use Oro\Bundle\ApiBundle\Collection\IncludedEntityCollection;
 use Oro\Bundle\ApiBundle\Form\FormUtil;
 use Oro\Bundle\ApiBundle\Processor\ChangeContextInterface;
@@ -56,6 +57,8 @@ class CustomizeFormDataContext extends CustomizeDataContext implements ChangeCon
 
     /**
      * This event is dispatched after the database transaction is open but before data are flushed into the database.
+     * Do not call EntityManager::persist() and EntityManager::remove() during handling of this event,
+     * use {@see addAdditionalEntity()} and {@see addAdditionalEntityToRemove()} instead.
      * @see \Oro\Bundle\ApiBundle\Processor\CustomizeFormData\FlushDataHandler
      */
     public const EVENT_PRE_FLUSH_DATA = 'pre_flush_data';
@@ -76,15 +79,20 @@ class CustomizeFormDataContext extends CustomizeDataContext implements ChangeCon
      */
     public const EVENT_POST_SAVE_DATA = 'post_save_data';
 
+    /**
+     * This event is dispatched before the database transaction is rolled back for
+     * API requests with the "validate" meta flag.
+     * @see \Oro\Bundle\ApiBundle\Processor\CustomizeFormData\FlushDataHandler
+     */
+    public const EVENT_ROLLBACK_VALIDATED_REQUEST = 'rollback_validated_request';
+
     /** the form event name */
     private const EVENT = 'event';
-
-    /** the name of the action which causes this action, e.g. "create" or "update" */
-    private const PARENT_ACTION = 'parentAction';
 
     private ?FormInterface $form = null;
     private mixed $data = null;
     private ?IncludedEntityCollection $includedEntities = null;
+    private ?AdditionalEntityCollection $additionalEntities = null;
     private ?EntityMapper $entityMapper = null;
 
     /**
@@ -115,26 +123,6 @@ class CustomizeFormDataContext extends CustomizeDataContext implements ChangeCon
         $this->set(self::EVENT, $event);
         $this->setFirstGroup($event);
         $this->setLastGroup($event);
-    }
-
-    /**
-     * Gets the name of the action which causes this action, e.g. "create" or "update".
-     */
-    public function getParentAction(): ?string
-    {
-        return $this->get(self::PARENT_ACTION);
-    }
-
-    /**
-     * Sets the name of the action which causes this action, e.g. "create" or "update".
-     */
-    public function setParentAction(?string $action): void
-    {
-        if ($action) {
-            $this->set(self::PARENT_ACTION, $action);
-        } else {
-            $this->remove(self::PARENT_ACTION);
-        }
     }
 
     /**
@@ -227,6 +215,9 @@ class CustomizeFormDataContext extends CustomizeDataContext implements ChangeCon
      */
     public function setIncludedEntities(IncludedEntityCollection $includedEntities): void
     {
+        if (null !== $this->includedEntities) {
+            throw new \LogicException('The collection of included entities was already initialized.');
+        }
         $this->includedEntities = $includedEntities;
     }
 
@@ -238,6 +229,7 @@ class CustomizeFormDataContext extends CustomizeDataContext implements ChangeCon
      *
      * @return object[]
      */
+    #[\Override]
     public function getAllEntities(bool $mainOnly = false): array
     {
         $includedEntities = $this->getIncludedEntities();
@@ -265,35 +257,64 @@ class CustomizeFormDataContext extends CustomizeDataContext implements ChangeCon
     }
 
     /**
-     * This method is just an alias for getData.
+     * Gets the list of additional entities involved to the request processing.
+     *
+     * @return object[]
      */
-    public function getResult(): mixed
+    public function getAdditionalEntities(): array
     {
-        return $this->data;
+        return $this->getAdditionalEntityCollection()->getEntities();
     }
 
     /**
-     * This method is just an alias for setData.
+     * Adds the entity to a list of additional entities involved to the request processing.
+     * For example when an association is represented as a field,
+     * a target entity of this association does not exist in the list of included entities
+     * and need to be persisted manually, so, it should be added to the list of additional entities.
      */
-    public function setResult(mixed $data): void
+    public function addAdditionalEntity(object $entity): void
     {
-        $this->data = $data;
+        $this->getAdditionalEntityCollection()->add($entity);
     }
 
     /**
-     * {@inheritDoc}
+     * Adds an entity to the list of additional entities involved to the request processing
+     * when this entity should be removed from the database.
      */
-    public function hasResult(): bool
+    public function addAdditionalEntityToRemove(object $entity): void
     {
-        return true;
+        $this->getAdditionalEntityCollection()->add($entity, true);
     }
 
     /**
-     * {@inheritDoc}
+     * Removes an entity from the list of additional entities involved to the request processing.
      */
-    public function removeResult(): void
+    public function removeAdditionalEntity(object $entity): void
     {
-        throw new \BadMethodCallException('Not implemented.');
+        $this->getAdditionalEntityCollection()->remove($entity);
+    }
+
+    /**
+     * Initializes the collection of additional entities.
+     */
+    public function setAdditionalEntityCollection(AdditionalEntityCollection $additionalEntities): void
+    {
+        if (null !== $this->additionalEntities) {
+            throw new \LogicException('The collection of additional entities was already initialized.');
+        }
+        $this->additionalEntities = $additionalEntities;
+    }
+
+    /**
+     * Gets a collection contains the list of additional entities involved to the request processing.
+     */
+    public function getAdditionalEntityCollection(): AdditionalEntityCollection
+    {
+        if (null === $this->additionalEntities) {
+            throw new \LogicException('The collection of additional entities was not initialized.');
+        }
+
+        return $this->additionalEntities;
     }
 
     /**
@@ -310,5 +331,35 @@ class CustomizeFormDataContext extends CustomizeDataContext implements ChangeCon
     public function setEntityMapper(?EntityMapper $entityMapper): void
     {
         $this->entityMapper = $entityMapper;
+    }
+
+    /**
+     * This method is just an alias for getData.
+     */
+    #[\Override]
+    public function getResult(): mixed
+    {
+        return $this->data;
+    }
+
+    /**
+     * This method is just an alias for setData.
+     */
+    #[\Override]
+    public function setResult(mixed $data): void
+    {
+        $this->data = $data;
+    }
+
+    #[\Override]
+    public function hasResult(): bool
+    {
+        return true;
+    }
+
+    #[\Override]
+    public function removeResult(): void
+    {
+        throw new \BadMethodCallException('Not implemented.');
     }
 }

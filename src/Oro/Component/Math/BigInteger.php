@@ -72,18 +72,14 @@ final class BigInteger extends BigNumber
         return $this->getTargetObject()->toBase($base);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function toBigInteger()
     {
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function __unserialize(array $serialized):void
+    #[\Override]
+    public function __unserialize(array $serialized): void
     {
         if ($this->getTargetObject() !== null) {
             throw new \LogicException('unserialize() must not be called directly.');

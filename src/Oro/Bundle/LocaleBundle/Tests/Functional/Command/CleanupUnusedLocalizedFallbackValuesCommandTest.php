@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\LocaleBundle\Tests\Functional\Command;
@@ -12,6 +13,7 @@ class CleanupUnusedLocalizedFallbackValuesCommandTest extends WebTestCase
 {
     private ?LocalizedFallbackValueRepository $repository = null;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->initClient();

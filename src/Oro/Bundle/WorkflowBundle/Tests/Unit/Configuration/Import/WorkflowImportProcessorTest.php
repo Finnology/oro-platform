@@ -2,7 +2,6 @@
 
 namespace Oro\Bundle\WorkflowBundle\Tests\Unit\Configuration\Import;
 
-use Doctrine\Common\Collections\ArrayCollection;
 use Oro\Bundle\WorkflowBundle\Configuration\ConfigImportProcessorInterface;
 use Oro\Bundle\WorkflowBundle\Configuration\Import\WorkflowImportProcessor;
 use Oro\Bundle\WorkflowBundle\Configuration\Reader\ConfigFileReaderInterface;
@@ -25,6 +24,7 @@ class WorkflowImportProcessorTest extends \PHPUnit\Framework\TestCase
     /** @var WorkflowImportProcessor */
     private $processor;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->reader = $this->createMock(ConfigFileReaderInterface::class);
@@ -112,7 +112,7 @@ class WorkflowImportProcessorTest extends \PHPUnit\Framework\TestCase
 
         $finderMock->expects($this->once())
             ->method('getIterator')
-            ->willReturn(new ArrayCollection([$file]));
+            ->willReturn(new \ArrayIterator([$file]));
 
         $this->reader->expects($this->once())
             ->method('read')
@@ -166,7 +166,6 @@ class WorkflowImportProcessorTest extends \PHPUnit\Framework\TestCase
         $currentFile = new \SplFileInfo(__FILE__);
         $file1 = new \SplFileInfo('file1');
         $file2 = new \SplFileInfo('file2');
-        $filesLookingTo = new ArrayCollection([$file1, $file2]);
 
         $parent->expects($this->exactly(3))
             ->method('process')
@@ -179,7 +178,7 @@ class WorkflowImportProcessorTest extends \PHPUnit\Framework\TestCase
 
         $finderMock->expects($this->once())
             ->method('getIterator')
-            ->willReturn($filesLookingTo);
+            ->willReturn(new \ArrayIterator([$file1, $file2]));
 
         $this->reader->expects($this->exactly(2))
             ->method('read')
@@ -278,7 +277,6 @@ class WorkflowImportProcessorTest extends \PHPUnit\Framework\TestCase
         $currentFile = new \SplFileInfo(__FILE__);
         $file1 = new \SplFileInfo('file1');
         $file2 = new \SplFileInfo('file2');
-        $filesLookingTo = new ArrayCollection([$file1, $file2]);
 
         $this->finderBuilder->expects($this->once())
             ->method('create')
@@ -286,7 +284,7 @@ class WorkflowImportProcessorTest extends \PHPUnit\Framework\TestCase
 
         $finderMock->expects($this->once())
             ->method('getIterator')
-            ->willReturn($filesLookingTo);
+            ->willReturn(new \ArrayIterator([$file1, $file2]));
 
         $this->reader->expects($this->exactly(2))
             ->method('read')
@@ -331,7 +329,7 @@ class WorkflowImportProcessorTest extends \PHPUnit\Framework\TestCase
 
         $finderMock->expects($this->once())
             ->method('getIterator')
-            ->willReturn(new ArrayCollection([$file1]));
+            ->willReturn(new \ArrayIterator([$file1]));
 
         $this->reader->expects($this->once())
             ->method('read')

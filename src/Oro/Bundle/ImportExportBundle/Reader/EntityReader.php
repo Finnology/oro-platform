@@ -9,6 +9,8 @@ use Doctrine\ORM\Query;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\Persistence\ObjectManager;
+use Oro\Bundle\BatchBundle\Item\Support\ClosableInterface;
+use Oro\Bundle\BatchBundle\Step\ItemStep;
 use Oro\Bundle\EntityConfigBundle\Provider\ExportQueryProvider;
 use Oro\Bundle\ImportExportBundle\Context\ContextInterface;
 use Oro\Bundle\ImportExportBundle\Context\ContextRegistry;
@@ -28,7 +30,7 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
  * Prepares the list of entities for export.
  * Responsible for creating a list for each batch during export
  */
-class EntityReader extends IteratorBasedReader implements BatchIdsReaderInterface
+class EntityReader extends IteratorBasedReader implements BatchIdsReaderInterface, ClosableInterface
 {
     protected ManagerRegistry $registry;
     protected OwnershipMetadataProviderInterface $ownershipMetadata;
@@ -52,6 +54,7 @@ class EntityReader extends IteratorBasedReader implements BatchIdsReaderInterfac
     /**
      * @throws InvalidConfigurationException
      */
+    #[\Override]
     protected function initializeFromContext(ContextInterface $context)
     {
         if ($context->hasOption('entityName')) {
@@ -83,7 +86,7 @@ class EntityReader extends IteratorBasedReader implements BatchIdsReaderInterfac
 
     /**
      * @param string $entityName
-     * @param Organization $organization
+     * @param Organization|null $organization
      * @param array $ids
      */
     public function setSourceEntityName($entityName, Organization $organization = null, array $ids = [])
@@ -146,9 +149,7 @@ class EntityReader extends IteratorBasedReader implements BatchIdsReaderInterfac
         return $qb;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getIds($entityName, array $options = [])
     {
         /** @var EntityManager $entityManager */
@@ -220,7 +221,7 @@ class EntityReader extends IteratorBasedReader implements BatchIdsReaderInterfac
      *
      * @param QueryBuilder $queryBuilder
      * @param string       $entityName
-     * @param Organization $organization
+     * @param Organization|null $organization
      */
     protected function addOrganizationLimits(QueryBuilder $queryBuilder, $entityName, Organization $organization = null)
     {
@@ -240,14 +241,24 @@ class EntityReader extends IteratorBasedReader implements BatchIdsReaderInterfac
      */
     protected function createSourceIterator($source)
     {
+        $iteratorBatchSize = null;
         if ($this->stepExecution) {
-            // Only the ExportBufferedIdentityQueryResultIterator can be responsible for cleaning the doctrine manager,
-            // since the iterator does not provide details of the data processing.
+            // Only the ExportBufferedIdentityQueryResultIterator can be responsible for cleaning the doctrine manager.
             $this->getContext()->setValue(DoctrineClearWriter::SKIP_CLEAR, true);
+            $iteratorBatchSize = $this->getContext()->getValue(ItemStep::BATCH_SIZE);
         }
 
-        return (new ExportBufferedIdentityQueryResultIterator($source))
-            ->setPageCallback(fn () => $this->registry->getManager()->clear())
+        $iterator = new ExportBufferedIdentityQueryResultIterator($source);
+        if ($iteratorBatchSize) {
+            $iterator->setBufferSize($iteratorBatchSize);
+        }
+
+        return ($iterator)
+            ->setPageCallback(function (bool $lastPage) {
+                if (!$lastPage) {
+                    $this->registry->getManager()->clear();
+                }
+            })
             ->setPageLoadedCallback(function (array $rows) {
                 if (!$this->dispatcher->hasListeners(Events::AFTER_ENTITY_PAGE_LOADED)) {
                     return $rows;
@@ -272,5 +283,11 @@ class EntityReader extends IteratorBasedReader implements BatchIdsReaderInterfac
         }
 
         return $queryBuilder->getQuery();
+    }
+
+    #[\Override]
+    public function close(): void
+    {
+        $this->registry->getManager()->clear();
     }
 }

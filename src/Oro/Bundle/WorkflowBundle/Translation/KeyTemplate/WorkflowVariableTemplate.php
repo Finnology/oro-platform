@@ -9,9 +9,7 @@ class WorkflowVariableTemplate extends WorkflowTemplate
 {
     const NAME = 'workflow_variable';
 
-    /**
-     * @return string
-     */
+    #[\Override]
     public function getTemplate(): string
     {
         return parent::getTemplate() . '.variable.{{ variable_name }}';
@@ -20,6 +18,7 @@ class WorkflowVariableTemplate extends WorkflowTemplate
     /**
      * @return array
      */
+    #[\Override]
     public function getRequiredKeys()
     {
         return array_merge(parent::getRequiredKeys(), ['variable_name']);

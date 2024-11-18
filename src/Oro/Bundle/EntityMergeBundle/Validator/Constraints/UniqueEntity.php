@@ -11,10 +11,8 @@ class UniqueEntity extends Constraint
 {
     public string $message = 'Merge entities should be unique.';
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getTargets()
+    #[\Override]
+    public function getTargets(): string|array
     {
         return self::CLASS_CONSTRAINT;
     }

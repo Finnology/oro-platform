@@ -35,9 +35,7 @@ class DbalStateDriver implements StateDriverInterface
         $this->logger = $logger;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function setChangeStateDate(\DateTime $date = null)
     {
         try {
@@ -52,9 +50,7 @@ class DbalStateDriver implements StateDriverInterface
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getChangeStateDate()
     {
         try {
@@ -71,9 +67,7 @@ class DbalStateDriver implements StateDriverInterface
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function setChangeStateDateWithTimeGap(\DateTime $date, $gapPeriod = 5)
     {
         try {
@@ -136,7 +130,7 @@ class DbalStateDriver implements StateDriverInterface
             ->where('id = :id')
             ->setParameter('id', $this->key, \PDO::PARAM_STR)
             ->execute()
-            ->fetchColumn();
+            ->fetchOne();
 
         if ($result) {
             $result = new \DateTime($result, new \DateTimeZone('UTC'));

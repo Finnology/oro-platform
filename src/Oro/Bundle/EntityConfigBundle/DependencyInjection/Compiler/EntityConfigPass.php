@@ -7,6 +7,7 @@ use Oro\Bundle\EntityConfigBundle\Provider\ConfigProviderBag;
 use Oro\Bundle\EntityConfigBundle\Provider\PropertyConfigBag;
 use Oro\Component\Config\Loader\ContainerBuilderAdapter;
 use Oro\Component\Config\Loader\CumulativeConfigLoader;
+use Oro\Component\Config\Loader\FolderYamlCumulativeFileLoader;
 use Oro\Component\Config\Loader\YamlCumulativeFileLoader;
 use Oro\Component\DependencyInjection\ServiceLink;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
@@ -29,9 +30,11 @@ class EntityConfigPass implements CompilerPassInterface
 
     const ENTITY_CONFIG_ROOT_NODE = 'entity_config';
 
-    /**
-     * {@inheritdoc}
-     */
+    private const CONFIG_FILE = 'Resources/config/oro/entity_config.yml';
+
+    private const APP_CONFIG_PATH = '../config/oro/entity';
+
+    #[\Override]
     public function process(ContainerBuilder $container)
     {
         $configManager = $container->getDefinition(self::CONFIG_MANAGER_SERVICE);
@@ -92,7 +95,10 @@ class EntityConfigPass implements CompilerPassInterface
     {
         $configLoader = new CumulativeConfigLoader(
             'oro_entity_config',
-            new YamlCumulativeFileLoader('Resources/config/oro/entity_config.yml')
+            [
+                new YamlCumulativeFileLoader(self::CONFIG_FILE),
+                new FolderYamlCumulativeFileLoader($this->getAppConfigPath()),
+            ]
         );
         $result = [];
         $resources = $configLoader->load(new ContainerBuilderAdapter($container));
@@ -109,5 +115,10 @@ class EntityConfigPass implements CompilerPassInterface
         }
 
         return $result;
+    }
+
+    protected function getAppConfigPath(): string
+    {
+        return self::APP_CONFIG_PATH;
     }
 }

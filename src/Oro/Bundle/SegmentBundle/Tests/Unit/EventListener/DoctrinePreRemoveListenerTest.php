@@ -3,7 +3,7 @@
 namespace Oro\Bundle\SegmentBundle\Tests\Unit\EventListener;
 
 use Doctrine\ORM\Configuration;
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Event\PostFlushEventArgs;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\Persistence\Event\LifecycleEventArgs;
@@ -14,7 +14,7 @@ use Oro\Bundle\SegmentBundle\Tests\Unit\Fixtures\StubEntity;
 
 class DoctrinePreRemoveListenerTest extends \PHPUnit\Framework\TestCase
 {
-    /** @var EntityManager|\PHPUnit\Framework\MockObject\MockObject */
+    /** @var EntityManagerInterface|\PHPUnit\Framework\MockObject\MockObject */
     private $entityManager;
 
     /** @var ConfigManager|\PHPUnit\Framework\MockObject\MockObject */
@@ -23,9 +23,10 @@ class DoctrinePreRemoveListenerTest extends \PHPUnit\Framework\TestCase
     /** @var DoctrinePreRemoveListener */
     private $listener;
 
+    #[\Override]
     protected function setUp(): void
     {
-        $this->entityManager = $this->createMock(EntityManager::class);
+        $this->entityManager = $this->createMock(EntityManagerInterface::class);
         $this->configManager = $this->createMock(ConfigManager::class);
 
         $this->listener = new DoctrinePreRemoveListener($this->configManager);
@@ -37,7 +38,7 @@ class DoctrinePreRemoveListenerTest extends \PHPUnit\Framework\TestCase
     public function testPreRemove(bool $entityIsConfigurable = false)
     {
         $entity = new StubEntity();
-        $args   = new LifecycleEventArgs($entity, $this->entityManager);
+        $args = new LifecycleEventArgs($entity, $this->entityManager);
 
         $this->mockMetadata($entityIsConfigurable ? 1 : 0);
         $this->configManager->expects($this->once())
@@ -51,7 +52,7 @@ class DoctrinePreRemoveListenerTest extends \PHPUnit\Framework\TestCase
     {
         return [
             'should process all configurable entities' => [true],
-            'should not process all entities'          => [false]
+            'should not process all entities' => [false]
         ];
     }
 
@@ -71,7 +72,7 @@ class DoctrinePreRemoveListenerTest extends \PHPUnit\Framework\TestCase
         }
 
         $configuration = new Configuration();
-        $configuration->addEntityNamespace('OroSegmentBundle', 'OroSegmentBundleNamespace');
+        $configuration->setEntityNamespaces(['OroSegmentBundle' => '/test']);
         $this->entityManager->expects($this->once())
             ->method('getConfiguration')
             ->willReturn($configuration);
@@ -105,7 +106,7 @@ class DoctrinePreRemoveListenerTest extends \PHPUnit\Framework\TestCase
         }
 
         $configuration = new Configuration();
-        $configuration->addEntityNamespace('SomeBundle', 'SomeBundleNamespace');
+        $configuration->setEntityNamespaces([]);
         $this->entityManager->expects($this->once())
             ->method('getConfiguration')
             ->willReturn($configuration);
@@ -137,7 +138,7 @@ class DoctrinePreRemoveListenerTest extends \PHPUnit\Framework\TestCase
             $entity->setId($i);
             $entity->setName('name-' . $i);
             $entities[] = [
-                'id'     => $i,
+                'id' => $i,
                 'entity' => $entity
             ];
         }

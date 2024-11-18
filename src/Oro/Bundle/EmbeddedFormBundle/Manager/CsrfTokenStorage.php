@@ -4,6 +4,7 @@ namespace Oro\Bundle\EmbeddedFormBundle\Manager;
 
 use Symfony\Component\Cache\Adapter\AdapterInterface;
 use Symfony\Component\Cache\PruneableInterface;
+use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use Symfony\Component\Security\Csrf\TokenStorage\ClearableTokenStorageInterface;
 use Symfony\Component\Security\Csrf\TokenStorage\TokenStorageInterface;
 
@@ -36,31 +37,25 @@ class CsrfTokenStorage implements TokenStorageInterface, ClearableTokenStorageIn
         $this->sessionIdProvider = $sessionIdProvider;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function hasToken($tokenId)
+    #[\Override]
+    public function hasToken($tokenId): bool
     {
         return $this->tokenCache->hasItem($this->getCacheKey($tokenId));
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getToken($tokenId)
+    #[\Override]
+    public function getToken($tokenId): string
     {
         $cacheItem = $this->tokenCache->getItem($this->getCacheKey($tokenId));
         $token = $cacheItem->get();
-        if (false === $token) {
-            $token = null;
+        if (null === $token) {
+            throw new TokenNotFoundException('The CSRF token with ID '.$tokenId.' does not exist.');
         }
 
         return $token;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function setToken($tokenId, $token)
     {
         $cacheItem = $this->tokenCache->getItem($this->getCacheKey($tokenId));
@@ -75,17 +70,19 @@ class CsrfTokenStorage implements TokenStorageInterface, ClearableTokenStorageIn
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function removeToken($tokenId)
+    #[\Override]
+    public function removeToken($tokenId): ?string
     {
-        $this->tokenCache->delete($this->getCacheKey($tokenId));
+        try {
+            $token = $this->getToken($tokenId);
+            $this->tokenCache->delete($this->getCacheKey($tokenId));
+            return $token;
+        } catch (TokenNotFoundException $e) {
+            return null;
+        }
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function clear()
     {
         $this->tokenCache->clear();

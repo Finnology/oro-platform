@@ -195,10 +195,8 @@ class PropertyAccessorWithDotArraySyntax implements PropertyAccessorInterface
             ?? new ReflectionExtractor(['set'], null, null, false);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getValue($objectOrArray, $propertyPath)
+    #[\Override]
+    public function getValue($objectOrArray, $propertyPath): mixed
     {
         $zval = [
             self::VALUE => $objectOrArray,
@@ -222,9 +220,7 @@ class PropertyAccessorWithDotArraySyntax implements PropertyAccessorInterface
         return $propertyValues[\count($propertyValues) - 1][self::VALUE];
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function setValue(&$objectOrArray, $propertyPath, $value)
     {
         if (\is_object($objectOrArray) && false === strpbrk((string)$propertyPath, '.[')) {
@@ -365,10 +361,8 @@ class PropertyAccessorWithDotArraySyntax implements PropertyAccessorInterface
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function isReadable($objectOrArray, $propertyPath)
+    #[\Override]
+    public function isReadable($objectOrArray, $propertyPath): bool
     {
         if (!$propertyPath instanceof PropertyPathInterface) {
             $propertyPath = new PropertyPath($propertyPath);
@@ -388,10 +382,8 @@ class PropertyAccessorWithDotArraySyntax implements PropertyAccessorInterface
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function isWritable($objectOrArray, $propertyPath)
+    #[\Override]
+    public function isWritable($objectOrArray, $propertyPath): bool
     {
         $propertyPath = $this->getPropertyPath($propertyPath);
 
@@ -519,8 +511,7 @@ class PropertyAccessorWithDotArraySyntax implements PropertyAccessorInterface
             }
             // customization start
             // if (isset($zval[self::REF]) && (0 === $i || isset($propertyValues[$i - 1][self::IS_REF_CHAINED]))) {
-            if (isset($zval[self::REF])
-                && $zval[self::REF] !== false
+            if (!empty($zval[self::REF])
                 && (0 === $i || isset($propertyValues[$i - 1][self::IS_REF_CHAINED]))) {
                 // customization end
                 // Set the IS_REF_CHAINED flag to true if:
@@ -561,7 +552,7 @@ class PropertyAccessorWithDotArraySyntax implements PropertyAccessorInterface
         // Use an array instead of an object since performance is very crucial here
         // customization start
         // $result = self::RESULT_PROTO;
-        $result = [self::VALUE => null, self::REF => false];
+        $result = [self::VALUE => null, self::REF => []];
         // customization end
 
         if (isset($zval[self::VALUE][$index])) {
@@ -573,7 +564,7 @@ class PropertyAccessorWithDotArraySyntax implements PropertyAccessorInterface
             } elseif (\is_object($result[self::VALUE])) {
                 $result[self::REF] = $result[self::VALUE];
             }
-        // customization start
+            // customization start
         } elseif (null !== $index
             && is_array($zval[self::VALUE])
             && !array_key_exists($index, $zval[self::VALUE])
@@ -688,7 +679,7 @@ class PropertyAccessorWithDotArraySyntax implements PropertyAccessorInterface
             if (isset($zval[self::REF])) {
                 $result[self::REF] = &$object->$property;
             }
-        // customization start
+            // customization start
         } elseif ($object instanceof \ArrayAccess) {
             if (isset($object[$property])) {
                 $result[self::VALUE] = $object[$property];
@@ -706,7 +697,7 @@ class PropertyAccessorWithDotArraySyntax implements PropertyAccessorInterface
             if (isset($zval[self::REF])) {
                 $result[self::REF] = &$value;
             }
-        //customization end
+            //customization end
         } elseif (!$ignoreInvalidProperty) {
             throw new NoSuchPropertyException(
                 sprintf(

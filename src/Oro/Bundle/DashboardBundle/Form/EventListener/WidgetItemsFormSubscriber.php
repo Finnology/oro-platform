@@ -25,10 +25,8 @@ class WidgetItemsFormSubscriber implements EventSubscriberInterface
         $this->translator    = $translator;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedEvents()
+    #[\Override]
+    public static function getSubscribedEvents(): array
     {
         return [
             FormEvents::PRE_SET_DATA => 'preSet',
@@ -65,7 +63,7 @@ class WidgetItemsFormSubscriber implements EventSubscriberInterface
     }
 
     /**
-     * @param array $data
+     * @param array|null $data
      *
      * @return array
      */

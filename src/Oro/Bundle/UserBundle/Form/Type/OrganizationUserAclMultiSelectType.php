@@ -10,9 +10,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
  */
 class OrganizationUserAclMultiSelectType extends UserMultiSelectType
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults(
@@ -33,26 +31,20 @@ class OrganizationUserAclMultiSelectType extends UserMultiSelectType
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getParent()
+    #[\Override]
+    public function getParent(): ?string
     {
         return OroJquerySelect2HiddenType::class;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getName()
     {
         return $this->getBlockPrefix();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    #[\Override]
+    public function getBlockPrefix(): string
     {
         return 'oro_user_organization_acl_multiselect';
     }
