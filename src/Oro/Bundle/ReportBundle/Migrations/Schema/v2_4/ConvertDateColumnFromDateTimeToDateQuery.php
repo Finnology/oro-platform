@@ -10,7 +10,7 @@ class ConvertDateColumnFromDateTimeToDateQuery extends ParametrizedMigrationQuer
 {
     private const TABLE = 'oro_calendar_date';
     private const ID_COLUMN = 'id';
-    private const DATE_COLUMN = 'date';
+    private const DATE_COLUMN = '`date`';
 
     public function getDescription()
     {
@@ -30,13 +30,13 @@ class ConvertDateColumnFromDateTimeToDateQuery extends ParametrizedMigrationQuer
     public function execute(LoggerInterface $logger)
     {
         $updateSQL = sprintf(
-            'ALTER TABLE %s ALTER COLUMN %s TYPE DATE',
+            'ALTER TABLE %s MODIFY COLUMN %s DATE',
             self::TABLE,
             self::DATE_COLUMN
         );
 
         $deleteSQL = sprintf(
-            'DELETE FROM %s cd1 USING %s cd2 WHERE cd1.%s = cd2.%s AND cd1.%s > cd2.%s',
+            'DELETE cd1 FROM %s AS cd1 JOIN %s cd2 ON cd1.%s = cd2.%s WHERE cd1.%s > cd2.%s',
             self::TABLE,
             self::TABLE,
             self::DATE_COLUMN,
@@ -52,7 +52,7 @@ class ConvertDateColumnFromDateTimeToDateQuery extends ParametrizedMigrationQuer
         );
 
         $createCommentSQL = sprintf(
-            "COMMENT ON COLUMN %s.%s IS '(DC2Type:date)'",
+            "ALTER TABLE %s MODIFY COLUMN %s DATE COMMENT '(DC2Type:date)'",
             self::TABLE,
             self::DATE_COLUMN
         );
