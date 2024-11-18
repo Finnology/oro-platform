@@ -45,10 +45,14 @@ class QueryBuilderUtil
     {
         if (null === $criteria) {
             $criteria = new Criteria();
-        } elseif (is_array($criteria)) {
+        } elseif (\is_array($criteria)) {
             $newCriteria = new Criteria();
             foreach ($criteria as $fieldName => $value) {
-                $newCriteria->andWhere(Criteria::expr()->eq($fieldName, $value));
+                $newCriteria->andWhere(
+                    \is_array($value)
+                        ? Criteria::expr()->in($fieldName, $value)
+                        : Criteria::expr()->eq($fieldName, $value)
+                );
             }
 
             $criteria = $newCriteria;
@@ -333,13 +337,7 @@ class QueryBuilderUtil
             ->getAssociationTargetClass($field);
     }
 
-    /**
-     * @param QueryBuilder $qb
-     * @param string $alias
-     *
-     * @return Expr\Join|null
-     */
-    public static function findJoinByAlias(QueryBuilder $qb, $alias)
+    public static function findJoinByAlias(QueryBuilder $qb, string $alias): ?Expr\Join
     {
         $joinParts = $qb->getDQLPart('join');
         foreach ($joinParts as $joins) {
@@ -351,6 +349,27 @@ class QueryBuilderUtil
         }
 
         return null;
+    }
+
+    public static function addJoin(QueryBuilder $qb, Expr\Join $join): void
+    {
+        if ($join->getJoinType() === Expr\Join::LEFT_JOIN) {
+            $qb->leftJoin(
+                $join->getJoin(),
+                $join->getAlias(),
+                $join->getConditionType(),
+                $join->getCondition(),
+                $join->getIndexBy()
+            );
+        } else {
+            $qb->innerJoin(
+                $join->getJoin(),
+                $join->getAlias(),
+                $join->getConditionType(),
+                $join->getCondition(),
+                $join->getIndexBy()
+            );
+        }
     }
 
     /**

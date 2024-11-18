@@ -1,4 +1,5 @@
 <?php
+
 namespace Oro\Bundle\AssetBundle\VersionStrategy;
 
 use Symfony\Component\Asset\VersionStrategy\VersionStrategyInterface;
@@ -14,9 +15,6 @@ class BuildVersionStrategy implements VersionStrategyInterface
 
     private string $buildVersionFilePath;
 
-    /**
-     * @param string $buildVersionFilePath
-     */
     public function __construct(string $buildVersionFilePath)
     {
         $this->buildVersionFilePath = $buildVersionFilePath;

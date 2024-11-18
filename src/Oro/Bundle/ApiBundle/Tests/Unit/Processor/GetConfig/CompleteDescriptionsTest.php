@@ -9,6 +9,7 @@ use Oro\Bundle\ApiBundle\ApiDoc\EntityNameProvider;
 use Oro\Bundle\ApiBundle\ApiDoc\ResourceDocParserInterface;
 use Oro\Bundle\ApiBundle\ApiDoc\ResourceDocParserRegistry;
 use Oro\Bundle\ApiBundle\ApiDoc\ResourceDocProvider;
+use Oro\Bundle\ApiBundle\Config\EntityDefinitionConfig;
 use Oro\Bundle\ApiBundle\Config\FiltersConfig;
 use Oro\Bundle\ApiBundle\Model\Label;
 use Oro\Bundle\ApiBundle\Processor\GetConfig\CompleteDescriptions;
@@ -58,22 +59,22 @@ class CompleteDescriptionsTest extends ConfigProcessorTestCase
     private const FIELD_FILTER_DESCRIPTION = 'Filter records by \'%s\' field.';
     private const ASSOCIATION_FILTER_DESCRIPTION = 'Filter records by \'%s\' relationship.';
 
-    /** @var \PHPUnit\Framework\MockObject\MockObject|ResourcesProvider */
+    /** @var ResourcesProvider|\PHPUnit\Framework\MockObject\MockObject */
     private $resourcesProvider;
 
-    /** @var \PHPUnit\Framework\MockObject\MockObject|EntityDescriptionProvider */
+    /** @var EntityDescriptionProvider|\PHPUnit\Framework\MockObject\MockObject */
     private $entityDescriptionProvider;
 
-    /** @var \PHPUnit\Framework\MockObject\MockObject|ResourceDocProvider */
+    /** @var ResourceDocProvider|\PHPUnit\Framework\MockObject\MockObject */
     private $resourceDocProvider;
 
-    /** @var \PHPUnit\Framework\MockObject\MockObject|ResourceDocParserInterface */
+    /** @var ResourceDocParserInterface|\PHPUnit\Framework\MockObject\MockObject */
     private $resourceDocParser;
 
-    /** @var \PHPUnit\Framework\MockObject\MockObject|TranslatorInterface */
+    /** @var TranslatorInterface|\PHPUnit\Framework\MockObject\MockObject */
     private $translator;
 
-    /** @var \PHPUnit\Framework\MockObject\MockObject|DoctrineHelper */
+    /** @var DoctrineHelper|\PHPUnit\Framework\MockObject\MockObject */
     private $doctrineHelper;
 
     /** @var ConfigProviderMock */
@@ -106,17 +107,21 @@ class CompleteDescriptionsTest extends ConfigProcessorTestCase
         );
         $identifierDescriptionHelper = new IdentifierDescriptionHelper($this->doctrineHelper);
 
+        $entityDescriptionHelper = new EntityDescriptionHelper(
+            $this->entityDescriptionProvider,
+            new EntityNameProvider($this->entityDescriptionProvider, (new InflectorFactory())->build()),
+            $this->translator,
+            $this->resourceDocProvider,
+            $resourceDocParserProvider,
+            $descriptionProcessor,
+            $identifierDescriptionHelper
+        );
+        $entityDescriptionHelper->setMaxEntitiesLimit(-1);
+        $entityDescriptionHelper->setMaxDeleteEntitiesLimit(100);
+
         $this->processor = new CompleteDescriptions(
             $this->resourcesProvider,
-            new EntityDescriptionHelper(
-                $this->entityDescriptionProvider,
-                new EntityNameProvider($this->entityDescriptionProvider, (new InflectorFactory())->build()),
-                $this->translator,
-                $this->resourceDocProvider,
-                $resourceDocParserProvider,
-                $descriptionProcessor,
-                $identifierDescriptionHelper
-            ),
+            $entityDescriptionHelper,
             new FieldsDescriptionHelper(
                 $this->entityDescriptionProvider,
                 $this->translator,
@@ -424,6 +429,71 @@ class CompleteDescriptionsTest extends ConfigProcessorTestCase
                 'fields'                 => [
                     'id'     => [
                         'description' => self::REQUIRED_ID_DESCRIPTION
+                    ],
+                    'field1' => null
+                ]
+            ],
+            $this->context->getResult()
+        );
+    }
+
+    public function testIdentifierFieldWhenIdentifierDescriptionIsSet()
+    {
+        $config = [
+            'identifier_field_names' => ['id'],
+            'identifier_description' => 'identifier field description',
+            'exclusion_policy'       => 'all',
+            'fields'                 => [
+                'id'     => null,
+                'field1' => null
+            ]
+        ];
+
+        $this->context->setTargetAction('get_list');
+        $this->context->setResult($this->createConfigObject($config));
+        $this->processor->process($this->context);
+
+        $this->assertConfig(
+            [
+                'identifier_field_names' => ['id'],
+                'exclusion_policy'       => 'all',
+                'identifier_description' => 'identifier field description',
+                'fields'                 => [
+                    'id'     => [
+                        'description' => 'identifier field description'
+                    ],
+                    'field1' => null
+                ]
+            ],
+            $this->context->getResult()
+        );
+    }
+
+    public function testIdentifierFieldForUpdateActionWhenIdentifierDescriptionIsSet()
+    {
+        $config = [
+            'identifier_field_names' => ['id'],
+            'identifier_description' => 'identifier field description',
+            'exclusion_policy'       => 'all',
+            'fields'                 => [
+                'id'     => null,
+                'field1' => null
+            ]
+        ];
+
+        $this->context->setTargetAction('update');
+        $this->context->setResult($this->createConfigObject($config));
+        $this->processor->process($this->context);
+
+        $this->assertConfig(
+            [
+                'identifier_field_names' => ['id'],
+                'exclusion_policy'       => 'all',
+                'identifier_description' => 'identifier field description',
+                'fields'                 => [
+                    'id'     => [
+                        'description' => '<p>identifier field description</p>'
+                            . '<p><strong>The required field.</strong></p>'
                     ],
                     'field1' => null
                 ]
@@ -872,7 +942,7 @@ class CompleteDescriptionsTest extends ConfigProcessorTestCase
         $config = [
             'exclusion_policy' => 'all',
             'fields'           => [
-                'owner'        => null
+                'owner' => null
             ]
         ];
 
@@ -898,7 +968,7 @@ class CompleteDescriptionsTest extends ConfigProcessorTestCase
                 'exclusion_policy'       => 'all',
                 'identifier_description' => self::ID_DESCRIPTION,
                 'fields'                 => [
-                    'owner'        => [
+                    'owner' => [
                         'description' => 'action field description. ' . self::OWNER_DESCRIPTION
                     ]
                 ]
@@ -1868,6 +1938,58 @@ class CompleteDescriptionsTest extends ConfigProcessorTestCase
         );
     }
 
+    public function testEntityDocumentationForGetListActionWhenThereIsMaxResultsLimit()
+    {
+        $config = [
+            'exclusion_policy' => 'all',
+            'documentation'    => 'Test documentation',
+            'max_results'      => 1000
+        ];
+
+        $this->context->getRequestType()->set(new RequestType([RequestType::JSON_API]));
+        $this->context->setTargetAction('get_list');
+        $this->context->setResult($this->createConfigObject($config));
+        $this->processor->process($this->context);
+
+        $this->assertConfig(
+            [
+                'exclusion_policy'       => 'all',
+                'max_results'            => 1000,
+                'identifier_description' => self::ID_DESCRIPTION,
+                'documentation'          => 'Test documentation'
+                    . '<p><strong>Note:</strong>'
+                    . ' The maximum number of records this endpoint can return is 1000.</p>'
+            ],
+            $this->context->getResult()
+        );
+    }
+
+    public function testEntityDocumentationForDeleteListActionWhenThereIsMaxResultsLimit()
+    {
+        $config = [
+            'exclusion_policy' => 'all',
+            'documentation'    => 'Test documentation',
+            'max_results'      => 1000
+        ];
+
+        $this->context->getRequestType()->set(new RequestType([RequestType::JSON_API]));
+        $this->context->setTargetAction('delete_list');
+        $this->context->setResult($this->createConfigObject($config));
+        $this->processor->process($this->context);
+
+        $this->assertConfig(
+            [
+                'exclusion_policy'       => 'all',
+                'max_results'            => 1000,
+                'identifier_description' => self::ID_DESCRIPTION,
+                'documentation'          => 'Test documentation'
+                    . '<p><strong>Note:</strong>'
+                    . ' The maximum number of records this endpoint can delete at a time is 1000.</p>'
+            ],
+            $this->context->getResult()
+        );
+    }
+
     public function testRequestDependedContentForEntityDocumentation()
     {
         $config = [
@@ -2614,5 +2736,359 @@ class CompleteDescriptionsTest extends ConfigProcessorTestCase
                 '<p>pre</p><p>some</p><b>injection</b><p>text</p><p>post</p>'
             ]
         ];
+    }
+
+    /**
+     * @dataProvider upsertTargetActionDataProvider
+     */
+    public function testPrimaryResourceDocumentationWhenUpsertOperationIsAllowedById(string $targetAction)
+    {
+        /** @var EntityDefinitionConfig $configObject */
+        $configObject = $this->createConfigObject([
+            'exclusion_policy' => 'all',
+            'documentation'    => 'test documentation'
+        ]);
+        $configObject->getUpsertConfig()->setAllowedById(true);
+
+        $this->context->setParentClassName(TestEntity::class);
+        $this->context->setTargetAction($targetAction);
+        $this->context->setResult($configObject);
+        $this->processor->process($this->context);
+
+        $this->assertConfig(
+            [
+                'exclusion_policy'       => 'all',
+                'identifier_description' => self::ID_DESCRIPTION,
+                'upsert'                 => [['id']],
+                'documentation'          => 'test documentation<p><strong>Note:</strong>'
+                    . ' This resource supports '
+                    . '<a href="https://doc.oroinc.com/api/upsert-operation/" target="_blank">the upsert operation</a>'
+                    . ' by the resource identifier.</p>'
+            ],
+            $this->context->getResult()
+        );
+    }
+
+    /**
+     * @dataProvider upsertTargetActionDataProvider
+     */
+    public function testPrimaryResourceDocumentationWhenUpsertOperationIsDisabled(string $targetAction)
+    {
+        /** @var EntityDefinitionConfig $configObject */
+        $configObject = $this->createConfigObject([
+            'exclusion_policy' => 'all',
+            'documentation'    => 'test documentation'
+        ]);
+        $configObject->getUpsertConfig()->setEnabled(false);
+        $configObject->getUpsertConfig()->setAllowedById(true);
+        $configObject->getUpsertConfig()->addFields(['field1']);
+
+        $this->context->setParentClassName(TestEntity::class);
+        $this->context->setTargetAction($targetAction);
+        $this->context->setResult($configObject);
+        $this->processor->process($this->context);
+
+        $this->assertConfig(
+            [
+                'exclusion_policy'       => 'all',
+                'identifier_description' => self::ID_DESCRIPTION,
+                'documentation'          => 'test documentation'
+            ],
+            $this->context->getResult()
+        );
+    }
+
+    public function upsertTargetActionDataProvider(): array
+    {
+        return [['create'], ['update']];
+    }
+
+    public function testPrimaryResourceDocumentationWhenUpsertOperationIsAllowedByIdAndGroupsOfFieldsForCreate()
+    {
+        /** @var EntityDefinitionConfig $configObject */
+        $configObject = $this->createConfigObject([
+            'exclusion_policy' => 'all',
+            'documentation'    => 'test documentation'
+        ]);
+        $configObject->getUpsertConfig()->setAllowedById(true);
+        $configObject->getUpsertConfig()->addFields(['field1']);
+        $configObject->getUpsertConfig()->addFields(['field2', 'field3']);
+
+        $this->context->setParentClassName(TestEntity::class);
+        $this->context->setTargetAction('create');
+        $this->context->setResult($configObject);
+        $this->processor->process($this->context);
+
+        $this->assertConfig(
+            [
+                'exclusion_policy'       => 'all',
+                'identifier_description' => self::ID_DESCRIPTION,
+                'upsert'                 => [['id'], ['field1'], ['field2', 'field3']],
+                'documentation'          => 'test documentation<p><strong>Note:</strong>'
+                    . ' This resource supports '
+                    . '<a href="https://doc.oroinc.com/api/upsert-operation/" target="_blank">the upsert operation</a>'
+                    . ' by the resource identifier'
+                    . ' and by the following groups of fields:</p>'
+                    . "\n<ul>"
+                    . "\n  <li>\"field1\"</li>"
+                    . "\n  <li>\"field2\", \"field3\"</li>"
+                    . "\n</ul>"
+            ],
+            $this->context->getResult()
+        );
+    }
+
+    public function testPrimaryResourceDocumentationWhenUpsertOperationIsAllowedByIdAndGroupsOfFieldsForUpdate()
+    {
+        /** @var EntityDefinitionConfig $configObject */
+        $configObject = $this->createConfigObject([
+            'exclusion_policy' => 'all',
+            'documentation'    => 'test documentation'
+        ]);
+        $configObject->getUpsertConfig()->setAllowedById(true);
+        $configObject->getUpsertConfig()->addFields(['field1']);
+        $configObject->getUpsertConfig()->addFields(['field2', 'field3']);
+
+        $this->context->setParentClassName(TestEntity::class);
+        $this->context->setTargetAction('update');
+        $this->context->setResult($configObject);
+        $this->processor->process($this->context);
+
+        $this->assertConfig(
+            [
+                'exclusion_policy'       => 'all',
+                'identifier_description' => self::ID_DESCRIPTION,
+                'upsert'                 => [['id'], ['field1'], ['field2', 'field3']],
+                'documentation'          => 'test documentation<p><strong>Note:</strong>'
+                    . ' This resource supports '
+                    . '<a href="https://doc.oroinc.com/api/upsert-operation/" target="_blank">the upsert operation</a>'
+                    . ' by the resource identifier.</p>'
+            ],
+            $this->context->getResult()
+        );
+    }
+
+    public function testPrimaryResourceDocumentationWhenUpsertOperationIsAllowedByGroupsOfFieldsForCreate()
+    {
+        /** @var EntityDefinitionConfig $configObject */
+        $configObject = $this->createConfigObject([
+            'exclusion_policy' => 'all',
+            'documentation'    => 'test documentation'
+        ]);
+        $configObject->getUpsertConfig()->addFields(['field1']);
+        $configObject->getUpsertConfig()->addFields(['field2', 'field3']);
+
+        $this->context->setParentClassName(TestEntity::class);
+        $this->context->setTargetAction('create');
+        $this->context->setResult($configObject);
+        $this->processor->process($this->context);
+
+        $this->assertConfig(
+            [
+                'exclusion_policy'       => 'all',
+                'identifier_description' => self::ID_DESCRIPTION,
+                'upsert'                 => [['field1'], ['field2', 'field3']],
+                'documentation'          => 'test documentation<p><strong>Note:</strong>'
+                    . ' This resource supports '
+                    . '<a href="https://doc.oroinc.com/api/upsert-operation/" target="_blank">the upsert operation</a>'
+                    . ' by the following groups of fields:</p>'
+                    . "\n<ul>"
+                    . "\n  <li>\"field1\"</li>"
+                    . "\n  <li>\"field2\", \"field3\"</li>"
+                    . "\n</ul>"
+            ],
+            $this->context->getResult()
+        );
+    }
+
+    public function testPrimaryResourceDocumentationWhenUpsertOperationIsAllowedByGroupsOfFieldsForUpdate()
+    {
+        /** @var EntityDefinitionConfig $configObject */
+        $configObject = $this->createConfigObject([
+            'exclusion_policy' => 'all',
+            'documentation'    => 'test documentation'
+        ]);
+        $configObject->getUpsertConfig()->addFields(['field1']);
+        $configObject->getUpsertConfig()->addFields(['field2', 'field3']);
+
+        $this->context->setParentClassName(TestEntity::class);
+        $this->context->setTargetAction('update');
+        $this->context->setResult($configObject);
+        $this->processor->process($this->context);
+
+        $this->assertConfig(
+            [
+                'exclusion_policy'       => 'all',
+                'identifier_description' => self::ID_DESCRIPTION,
+                'upsert'                 => [['field1'], ['field2', 'field3']],
+                'documentation'          => 'test documentation'
+            ],
+            $this->context->getResult()
+        );
+    }
+
+    public function testPrimaryResourceDocumentationWhenUpsertOperationIsAllowedByFieldsForCreate()
+    {
+        /** @var EntityDefinitionConfig $configObject */
+        $configObject = $this->createConfigObject([
+            'exclusion_policy' => 'all',
+            'documentation'    => 'test documentation'
+        ]);
+        $configObject->getUpsertConfig()->addFields(['field1']);
+        $configObject->getUpsertConfig()->addFields(['field2']);
+
+        $this->context->setParentClassName(TestEntity::class);
+        $this->context->setTargetAction('create');
+        $this->context->setResult($configObject);
+        $this->processor->process($this->context);
+
+        $this->assertConfig(
+            [
+                'exclusion_policy'       => 'all',
+                'identifier_description' => self::ID_DESCRIPTION,
+                'upsert'                 => [['field1'], ['field2']],
+                'documentation'          => 'test documentation<p><strong>Note:</strong>'
+                    . ' This resource supports '
+                    . '<a href="https://doc.oroinc.com/api/upsert-operation/" target="_blank">the upsert operation</a>'
+                    . ' by the following fields:</p>'
+                    . "\n<ul>"
+                    . "\n  <li>\"field1\"</li>"
+                    . "\n  <li>\"field2\"</li>"
+                    . "\n</ul>"
+            ],
+            $this->context->getResult()
+        );
+    }
+
+    public function testPrimaryResourceDocumentationWhenUpsertOperationIsAllowedByFieldsForUpdate()
+    {
+        /** @var EntityDefinitionConfig $configObject */
+        $configObject = $this->createConfigObject([
+            'exclusion_policy' => 'all',
+            'documentation'    => 'test documentation'
+        ]);
+        $configObject->getUpsertConfig()->addFields(['field1']);
+        $configObject->getUpsertConfig()->addFields(['field2']);
+
+        $this->context->setParentClassName(TestEntity::class);
+        $this->context->setTargetAction('update');
+        $this->context->setResult($configObject);
+        $this->processor->process($this->context);
+
+        $this->assertConfig(
+            [
+                'exclusion_policy'       => 'all',
+                'identifier_description' => self::ID_DESCRIPTION,
+                'upsert'                 => [['field1'], ['field2']],
+                'documentation'          => 'test documentation'
+            ],
+            $this->context->getResult()
+        );
+    }
+
+    public function testPrimaryResourceDocumentationWhenUpsertOperationIsAllowedByOneGroupOfFieldsForCreate()
+    {
+        /** @var EntityDefinitionConfig $configObject */
+        $configObject = $this->createConfigObject([
+            'exclusion_policy' => 'all',
+            'documentation'    => 'test documentation'
+        ]);
+        $configObject->getUpsertConfig()->addFields(['field1', 'field2']);
+
+        $this->context->setParentClassName(TestEntity::class);
+        $this->context->setTargetAction('create');
+        $this->context->setResult($configObject);
+        $this->processor->process($this->context);
+
+        $this->assertConfig(
+            [
+                'exclusion_policy'       => 'all',
+                'identifier_description' => self::ID_DESCRIPTION,
+                'upsert'                 => [['field1', 'field2']],
+                'documentation'          => 'test documentation<p><strong>Note:</strong>'
+                    . ' This resource supports '
+                    . '<a href="https://doc.oroinc.com/api/upsert-operation/" target="_blank">the upsert operation</a>'
+                    . ' by the combination of "field1" and "field2" fields.</p>'
+            ],
+            $this->context->getResult()
+        );
+    }
+
+    public function testPrimaryResourceDocumentationWhenUpsertOperationIsAllowedByOneGroupOfFieldsForUpdate()
+    {
+        /** @var EntityDefinitionConfig $configObject */
+        $configObject = $this->createConfigObject([
+            'exclusion_policy' => 'all',
+            'documentation'    => 'test documentation'
+        ]);
+        $configObject->getUpsertConfig()->addFields(['field1', 'field2']);
+
+        $this->context->setParentClassName(TestEntity::class);
+        $this->context->setTargetAction('update');
+        $this->context->setResult($configObject);
+        $this->processor->process($this->context);
+
+        $this->assertConfig(
+            [
+                'exclusion_policy'       => 'all',
+                'identifier_description' => self::ID_DESCRIPTION,
+                'upsert'                 => [['field1', 'field2']],
+                'documentation'          => 'test documentation'
+            ],
+            $this->context->getResult()
+        );
+    }
+
+    public function testPrimaryResourceDocumentationWhenUpsertOperationIsAllowedByOneFieldForCreate()
+    {
+        /** @var EntityDefinitionConfig $configObject */
+        $configObject = $this->createConfigObject([
+            'exclusion_policy' => 'all',
+            'documentation'    => 'test documentation'
+        ]);
+        $configObject->getUpsertConfig()->addFields(['field1']);
+
+        $this->context->setParentClassName(TestEntity::class);
+        $this->context->setTargetAction('create');
+        $this->context->setResult($configObject);
+        $this->processor->process($this->context);
+
+        $this->assertConfig(
+            [
+                'exclusion_policy'       => 'all',
+                'identifier_description' => self::ID_DESCRIPTION,
+                'upsert'                 => [['field1']],
+                'documentation'          => 'test documentation<p><strong>Note:</strong>'
+                    . ' This resource supports '
+                    . '<a href="https://doc.oroinc.com/api/upsert-operation/" target="_blank">the upsert operation</a>'
+                    . ' by the "field1" field.</p>'
+            ],
+            $this->context->getResult()
+        );
+    }
+
+    public function testPrimaryResourceDocumentationWhenUpsertOperationIsAllowedByOneFieldForUpdate()
+    {
+        /** @var EntityDefinitionConfig $configObject */
+        $configObject = $this->createConfigObject([
+            'exclusion_policy' => 'all',
+            'documentation'    => 'test documentation'
+        ]);
+        $configObject->getUpsertConfig()->addFields(['field1']);
+
+        $this->context->setParentClassName(TestEntity::class);
+        $this->context->setTargetAction('update');
+        $this->context->setResult($configObject);
+        $this->processor->process($this->context);
+
+        $this->assertConfig(
+            [
+                'exclusion_policy'       => 'all',
+                'identifier_description' => self::ID_DESCRIPTION,
+                'upsert'                 => [['field1']],
+                'documentation'          => 'test documentation'
+            ],
+            $this->context->getResult()
+        );
     }
 }

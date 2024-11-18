@@ -5,13 +5,9 @@ namespace Oro\Bundle\EntityConfigBundle\Migration;
 use Oro\Bundle\EntityConfigBundle\EntityConfig\ConfigurationHandler;
 
 /**
- * ConfigurationHandlerAwareInterface should be implemented by migration queries that use ConfigurationHandler to
- * processing(validation and set defaults) entity config and entity config field.
+ * This interface should be implemented by migration queries that depend on {@see ConfigurationHandler}.
  */
 interface ConfigurationHandlerAwareInterface
 {
-    /**
-     * @param ConfigurationHandler $configurationHandler
-     */
     public function setConfigurationHandler(ConfigurationHandler $configurationHandler): void;
 }

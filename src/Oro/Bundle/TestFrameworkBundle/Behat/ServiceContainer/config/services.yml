@@ -168,9 +168,18 @@ services:
         tags:
             - { name: 'context.initializer' }
 
+    Oro\Bundle\TestFrameworkBundle\Behat\Context\Initializer\ScreenshotInitializer:
+        arguments:
+            - '@oro_test.artifacts.screenshot_generator'
+        tags:
+            - { name: 'context.initializer' }
+
     Oro\Bundle\TestFrameworkBundle\Behat\Client\EmailClient:
         arguments:
             - !service { class: GuzzleHttp\Client }
 
     oro_test.storage.failed_features:
         class: Oro\Bundle\TestFrameworkBundle\Behat\Storage\FailedFeatures
+
+    nelmio_alice.generator.resolver.value.chainable.fixture_reference_resolver:
+        class: Oro\Bundle\TestFrameworkBundle\Test\DataFixtures\Resolver\AliceFixtureReferenceResolver

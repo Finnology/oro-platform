@@ -77,8 +77,7 @@ const SortRowsDragNDropPlugin = BasePlugin.extend({
         cursor: 'move',
         placeholder: 'sorting-placeholder',
         forceHelperSize: false,
-        items: '.grid-row',
-        tolerance: 'pointer'
+        items: '.grid-row'
     },
 
     SEPARATOR_ROW_SELECTOR: '.draggable-separator',
@@ -101,18 +100,6 @@ const SortRowsDragNDropPlugin = BasePlugin.extend({
 
         if (this.$rootEl === void 0) {
             throw new Error('Option "$rootEl" is required');
-        }
-
-        if (!this.options.formName) {
-            throw new Error('Options "formName" is required');
-        }
-
-        if (!this.options.route) {
-            throw new Error('Options "route" is required');
-        }
-
-        if (!this.options.route_parameters) {
-            throw new Error('Options "route_parameters" is required');
         }
 
         this._collectSortOrderData();
@@ -187,7 +174,7 @@ const SortRowsDragNDropPlugin = BasePlugin.extend({
             referenceEl: this.$rootEl,
             collection: this.main.collection
         });
-        this.selectionStateHintView.$el.insertAfter(this.main.$el.find('[role="grid"]'));
+        this.selectionStateHintView.$el.insertAfter(this.main.$('[role="grid"]'));
         this.listenTo(this.selectionStateHintView, 'reset',
             this._unsetModelsAttr.bind(this, '_selected', {ignoreAnimation: true}));
 
@@ -233,8 +220,7 @@ const SortRowsDragNDropPlugin = BasePlugin.extend({
 
         this.main.body.$el.on(`mousedown${this.ownEventNamespace()}`, 'tr', this.onMouseDown.bind(this));
         this.main.body.$el.on(`click${this.ownEventNamespace()}`, 'tr', this.onClick.bind(this));
-        const $rootElement = this.main.body.$el.closest('[role="dialog"]') || $(document.body);
-        $rootElement
+        this.main.$grid
             .bindFirst(`keydown${this.ownEventNamespace()}`, this.onKeyDown.bind(this))
             .on(`keyup${this.ownEventNamespace()}`, this.onKeyUp.bind(this));
     },
@@ -328,6 +314,11 @@ const SortRowsDragNDropPlugin = BasePlugin.extend({
      * @param {Event} e
      */
     onMouseDown(e) {
+        // set focus to table element, in order to properly handle keyDown and keyUp events (e.g. ESC key press)
+        this.main.$grid.focus({
+            preventScroll: true
+        });
+
         const currentItem = $(e.currentTarget);
         if (currentItem.is(this.SEPARATOR_ROW_SELECTOR) || !this.options.allowSelectMultiple) {
             // ignore selection if it's a separator row
@@ -418,7 +409,8 @@ const SortRowsDragNDropPlugin = BasePlugin.extend({
                 order: 30,
                 dropHandler: this.removeSortOrderForSelected.bind(this),
                 enabled: () => {
-                    return this.main.collection.filter(model => {
+                    const sortAll = !this.options.highlightSortedItems && !this.main.collection.get('separator');
+                    return !sortAll && this.main.collection.filter(model => {
                         return model.get('_selected') && model.get('_sortOrder') !== void 0;
                     }).length > 0;
                 }
@@ -441,22 +433,26 @@ const SortRowsDragNDropPlugin = BasePlugin.extend({
                     .updateShiftProp(this._cursorOnRightSide(e.pageX))
                     .show();
             },
-            'sortable:stop': this.dropZoneMenuView.hide.bind(this.dropZoneMenuView)
+            'sortable:stop': () => this.dropZoneMenuView.hide()
         });
-        this.dropZoneMenuView.$el.insertBefore(this.main.$el.find('[role="grid"]'));
+        this.dropZoneMenuView.$el.insertBefore(this.main.$('[role="grid"]'));
 
         // Event "dropout" and "dropover" can be fired in different sequences
         let droppableEl = null;
         this.listenTo(this.dropZoneMenuView, {
             dropout: (e, ui) => {
                 if (e.target.isSameNode(droppableEl)) {
-                    this.main.$el.find(`.${this.SORTABLE_DEFAULTS.placeholder}`).show();
+                    const placeholder = this.main.$(`.${this.SORTABLE_DEFAULTS.placeholder}`);
+                    placeholder.show();
+                    this.updateOverturned({item: ui.draggable, placeholder});
                     this.extendTableHeight();
                 }
             },
             dropover: (e, ui) => {
                 droppableEl = e.target;
-                this.main.$el.find(`.${this.SORTABLE_DEFAULTS.placeholder}`).hide();
+                const placeholder = this.main.$(`.${this.SORTABLE_DEFAULTS.placeholder}`);
+                placeholder.hide();
+                this.updateOverturned({item: ui.draggable, placeholder});
                 this.extendTableHeight();
             },
             drop() {
@@ -489,7 +485,7 @@ const SortRowsDragNDropPlugin = BasePlugin.extend({
         const modelsIds = models.map(model => model.id);
 
         const $rows = this.main.body.$('tr').filter((i, el) => {
-            return modelsIds.includes($(el).data('modelId'));
+            return modelsIds.includes(String($(el).data('modelId')));
         });
         this.main.body.$el.prepend($rows.detach());
     },
@@ -498,9 +494,9 @@ const SortRowsDragNDropPlugin = BasePlugin.extend({
         const models = this.main.collection.filter('_selected');
         const modelsIds = models.map(model => model.id);
         const $rows = this.main.body.$('tr').filter((i, el) => {
-            return modelsIds.includes($(el).data('modelId'));
+            return modelsIds.includes(String($(el).data('modelId')));
         });
-        const $separator = this.main.body.$el.find(this.SEPARATOR_ROW_SELECTOR);
+        const $separator = this.main.body.$(this.SEPARATOR_ROW_SELECTOR);
 
         if ($separator.length) {
             $separator.before($rows.detach());
@@ -591,6 +587,7 @@ const SortRowsDragNDropPlugin = BasePlugin.extend({
         ui.placeholder.toggleClass('row-placeholder', !isSeparator);
         this.main.$el.addClass(this.startDragClass);
         this.main.$el.toggleClass('with-thin-row-placeholder', this.options.thinRowPlaceholder);
+        this.updateOverturned(ui);
         this.trigger('sortable:start', e, ui);
         this.observeMouse();
     },
@@ -613,7 +610,7 @@ const SortRowsDragNDropPlugin = BasePlugin.extend({
      * @param {Object} ui
      */
     onStopSortable(e, ui) {
-        const {_cancelSorting} = $(e.target).sortable('instance');
+        const {_cancelSorting: cancelSorting} = $(e.target).sortable('instance');
 
         this.trigger('sortable:stop', e, ui);
         this.stopObservingMouse();
@@ -625,11 +622,13 @@ const SortRowsDragNDropPlugin = BasePlugin.extend({
             return;
         }
 
-        this._unsetModelsAttr('_overturned');
+        this._unsetModelsAttr('_overturned', {
+            ignoreAnimation: cancelSorting || e.originalEvent.target === null
+        });
         if (e.originalEvent.target === null) {
             // event was canceled during drag action
             this.onStopSortableCancel(e, ui);
-        } else if (_cancelSorting) {
+        } else if (cancelSorting) {
             $(e.target).sortable('cancel');
             this.onStopSortableCancel(e, ui);
         } else {
@@ -650,21 +649,63 @@ const SortRowsDragNDropPlugin = BasePlugin.extend({
      */
     onChangeSortable(e, ui) {
         this.trigger('sortable:change');
-        const isSeparator = ui.item.is(this.SEPARATOR_ROW_SELECTOR);
-        if (!isSeparator) {
+        this.updateOverturned(ui);
+    },
+
+    /**
+     * Update `_overturned` attribute for model
+     *
+     * @param {Object} ui
+     * @param {jQuery.Element} ui.item
+     * @param {jQuery.Element} ui.placeholder
+     */
+    updateOverturned({item, placeholder}) {
+        // sorted elements are not highlighted and there's no separator element
+        if (!this.options.highlightSortedItems && !this.main.collection.get('separator')) {
+            // no need to highlight overturned
             return;
         }
 
-        this.main.body.$('tr').not(ui.item).toArray()
-            .forEach((el, rowIndex) => {
-                if (el === ui.placeholder[0]) {
-                    return;
+        const movedModelId = item.data('modelId');
+        const rows = this.main.body.$(`tr:not([data-model-id="${movedModelId}"])`).toArray();
+
+        const isSeparator = item.is(this.SEPARATOR_ROW_SELECTOR);
+        if (isSeparator) {
+            for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
+                const row = rows[rowIndex];
+                if (row === placeholder[0]) {
+                    continue;
                 }
-                const modelId = $(el).data('modelId');
+                const modelId = $(row).data('modelId');
                 const model = this.main.collection.get(modelId);
                 const modelIndex = this.main.collection.indexOf(model);
                 model.set('_overturned', modelIndex !== rowIndex);
-            });
+            }
+        } else {
+            let overturned = null;
+            for (const row of rows) {
+                const modelId = $(row).data('modelId');
+                const model = this.main.collection.get(modelId);
+                if (row === placeholder[0]) {
+                    // the loop has passed placeholder -- no more marking as overturned
+                    overturned = false;
+                    continue;
+                } else if (
+                    // overturned is defined yet
+                    overturned === null &&
+                    // it's separator or a first model with undefined sort order -- start marking as overturned
+                    (model.isSeparator() || model.get('_sortOrder') === void 0) &&
+                    // placeholder is visible (cursor is not over dropzone menu)
+                    placeholder.is(':visible')
+                ) {
+                    overturned = true;
+                    if (model.isSeparator()) {
+                        continue;
+                    }
+                }
+                model.set('_overturned', Boolean(overturned));
+            }
+        }
     },
 
     /**
@@ -709,7 +750,7 @@ const SortRowsDragNDropPlugin = BasePlugin.extend({
     },
 
     renderCancelHint() {
-        const $continer = this.main.$el.find('.scrollbar-is-visible, [role="grid"]').first();
+        const $continer = this.main.$('.scrollbar-is-visible, [role="grid"]').first();
 
         this._$cancelHint = $(cancelHintTemplate());
         this._$cancelHint.insertBefore($continer);
@@ -745,9 +786,9 @@ const SortRowsDragNDropPlugin = BasePlugin.extend({
     },
 
     /**
-     * Multiple rows were selected.
-     * The last selected row is moved by sortable,
-     * rest of rows have to be relocated beside of `ui.item` manually
+     * Make additional rows relocations once drag action is competed
+     *  - move separator row after current element
+     *  - relocate rest of selected rows in multi rows drag and drop
      *
      * @param ui
      * @protected
@@ -755,10 +796,23 @@ const SortRowsDragNDropPlugin = BasePlugin.extend({
     _completeDOMUpdate(ui) {
         const {body: gridBody, collection} = this.main;
         const movedModelId = ui.item.data('modelId');
-        const selectedModels = collection.filter('_selected');
         const movedModel = collection.get(movedModelId);
 
-        if (!movedModel.isSeparator() && selectedModels.length > 1) {
+        if (movedModel.isSeparator()) {
+            // it is separator row that was dragged, nothing to update additionally here
+            return;
+        }
+
+        // find two rows -- separator and dragged row,
+        // if the separator goes first, relocate it after the element
+        const $rows = this.main.body.$(`${this.SEPARATOR_ROW_SELECTOR}, [data-model-id="${movedModelId}"]`);
+        if ($rows.first().is(this.SEPARATOR_ROW_SELECTOR)) {
+            ui.item.after($rows.first());
+        }
+
+        const selectedModels = collection.filter('_selected');
+        if (selectedModels.length > 1) {
+            // several rows are dragged at once, relocated rest of rows beside `ui.item` element
             const movedModelIndex = selectedModels.indexOf(movedModel);
             const elems = selectedModels.map(model => gridBody.rows.find(row => row.model === model).el);
             ui.item.before(...elems.slice(0, movedModelIndex));
@@ -779,13 +833,29 @@ const SortRowsDragNDropPlugin = BasePlugin.extend({
             return sortOrder > maxValue ? sortOrder : (maxValue ?? sortOrder);
         }, void 0) || 0;
 
+        // sorted elements are not highlighted and there's no separator element
+        const sortAll = !this.options.highlightSortedItems && !this.main.collection.get('separator');
+        const selectedModelsToProcess = collection.filter('_selected');
         const changedModels = this.main.body.$('tr').toArray()
             .map((el, rowIndex) => {
                 const modelId = $(el).data('modelId');
                 const model = collection.get(modelId);
-                const modelIndex = collection.indexOf(model);
-                // separator has to be always within changed models to have reference of sorting edge
-                return modelIndex !== rowIndex || model.isSeparator() ? model : null;
+                const hasSelectedModelsToProcess = Boolean(selectedModelsToProcess.length);
+                const selectedModelIndex = selectedModelsToProcess.indexOf(model);
+                if (selectedModelIndex !== -1) {
+                    // remove model from the list once it is processed
+                    selectedModelsToProcess.splice(selectedModelIndex, 1);
+                }
+
+                return (
+                    sortAll ||
+                    collection.indexOf(model) !== rowIndex ||
+                    // if separator is enabled, it has to be always within changed models
+                    // to have sorting edge reference
+                    model.isSeparator() ||
+                    // consider changed models are all down to last selected one
+                    hasSelectedModelsToProcess
+                ) ? model : null;
             })
             .filter(item => item);
 
@@ -836,6 +906,13 @@ const SortRowsDragNDropPlugin = BasePlugin.extend({
     },
 
     _saveChanges() {
+        const {route, route_parameters: params, formName} = this.options;
+
+        if (!route || !params || !formName) {
+            // instant save changes mode is not enabled
+            return;
+        }
+
         const sortOrderData = this.main.collection
             .filter(model => {
                 const sortOrder = this._sortOrderData[model.get('id')];
@@ -857,7 +934,6 @@ const SortRowsDragNDropPlugin = BasePlugin.extend({
             this._activeAjaxActions = 0;
         }
 
-        const {route, route_parameters: params, formName} = this.options;
         const xhr = $.ajax({
             url: routing.generate(route, params),
             type: 'PUT',
@@ -920,6 +996,13 @@ const SortRowsDragNDropPlugin = BasePlugin.extend({
 
         if (this.options.renderDropZonesMenu && !isMobile() && !isSeparator) {
             $helper.css('width', currentItem.width() / 2);
+        }
+
+        const forcePlaceholderSize = this.main.body.$el.sortable('option', 'forcePlaceholderSize');
+        if (!forcePlaceholderSize) {
+            // height value has to be defined in style attribute in advance,
+            // to prevent height from been defined in jQuery-UI sortable
+            $helper.css('height', 'var(--sorting-helper-height)');
         }
 
         return $helper;

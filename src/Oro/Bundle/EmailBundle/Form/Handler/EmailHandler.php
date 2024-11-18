@@ -40,7 +40,7 @@ class EmailHandler
     /**
      * Process form
      *
-     * @param  Email $model
+     * @param Email $emailModel
      * @return bool True on successful processing, false otherwise
      */
     public function process(Email $emailModel)
@@ -53,6 +53,7 @@ class EmailHandler
             $this->submitPostPutRequest($this->form, $request);
 
             if ($this->form->isValid()) {
+                $emailModel->setAllowToUpdateEmptyContexts(false);
                 try {
                     $this->emailModelSender->send($emailModel, $emailModel->getOrigin());
 

@@ -266,10 +266,33 @@ class GridContext extends OroFeatureContext implements OroPageObjectAware
                 self::assertEquals(
                     $value,
                     $cellValue,
-                    sprintf('Unexpected value at %d row "%s" column in grid', $rowNumber, $columnTitle)
+                    sprintf(
+                        'Unexpected value "%s" at %d row "%s" column in grid. Actual value: "%s".',
+                        $this->normalizeValue($value),
+                        $rowNumber,
+                        $columnTitle,
+                        $this->normalizeValue($cellValue),
+                    )
                 );
             }
         }
+    }
+
+    private function normalizeValue(mixed $value): string
+    {
+        if ($value instanceof \DateTimeInterface) {
+            return $value->format('c');
+        }
+
+        if (is_array($value)) {
+            return implode(', ', $value);
+        }
+
+        if (is_object($value)) {
+            return serialize($value);
+        }
+
+        return (string) $value;
     }
 
     /**
@@ -406,7 +429,6 @@ class GridContext extends OroFeatureContext implements OroPageObjectAware
         self::assertGreaterThan(0, $this->getGridPaginator($grid)->getTotalRecordsCount());
     }
 
-
     /**
      * Example: Then number of pages should be 3
      * Example: Then number of pages should be 15
@@ -450,9 +472,6 @@ class GridContext extends OroFeatureContext implements OroPageObjectAware
      * @When /^(?:|I )check records in grid:$/
      * @When /^(?:|I )check records in "(?P<gridName>[^"]+)":$/
      * @When /^(?:|I )check records in "(?P<gridName>[^"]+)" grid:$/
-     *
-     * @param TableNode $table
-     * @param string $gridName
      */
     public function iCheckRecordsInGrid(TableNode $table, ?string $gridName = null)
     {
@@ -694,9 +713,10 @@ class GridContext extends OroFeatureContext implements OroPageObjectAware
     public function sortGridBy($field, $gridName = null)
     {
         $grid = $this->getGrid($gridName);
-        $grid->getElement($grid->getMappedChildElementName('GridHeader'))
-            ->findElementContains($grid->getMappedChildElementName('GridHeaderLink'), $field)
-            ->click();
+        $element = $grid->getElement($grid->getMappedChildElementName('GridHeader'))
+            ->findElementContains($grid->getMappedChildElementName('GridHeaderLink'), $field);
+        $element->focus();
+        $element->click();
     }
 
     //@codingStandardsIgnoreStart
@@ -1624,6 +1644,7 @@ class GridContext extends OroFeatureContext implements OroPageObjectAware
 
     /**
      * Click on row action. Row will founded by it's content
+     * The search string should match the contents of the string as closely as possible
      * Example: And click view Charlie in grid
      * Example: When I click edit Call to Jennyfer in grid
      * Example: And I click delete Sign a contract with Charlie in grid
@@ -2075,7 +2096,7 @@ TEXT;
     }
 
     /**
-     * Check filter is not present in grid
+     * Check filter is present in grid
      * Example: Then I should see Example filter in grid
      *
      * @Then /^(?:|I )should see "(?P<filterName>(?:[^"]|\\")*)" filter in grid$/
@@ -2083,17 +2104,20 @@ TEXT;
      * @param string $filterName
      * @param null|string $gridName
      */
-    public function iShouldSeeFilterInGrid($filterName, $gridName = 'Grid')
+    public function iShouldSeeFilterInGrid($filterName, $gridName = 'Grid'): void
     {
-        self::assertTrue(
-            $this->getGridFilters($gridName)
-                ->hasFilterItem($gridName . 'FilterItem', $filterName),
-            sprintf('"%s" filter is in grid', $filterName)
-        );
+        $msg = sprintf('"%s" filter is not present in grid', $filterName);
+        $filters = $this->getGridFilters($gridName);
+        if ($filters->hasFilterItem($gridName . 'FilterItem', $filterName)) {
+            $filter = $filters->getFilterItem($gridName . 'FilterItem', $filterName);
+            self::assertTrue($filter->isVisible(), $msg);
+        } else {
+            self::fail($msg);
+        }
     }
 
     /**
-     * Check filter is present in grid
+     * Check filter is not present in grid
      * Example: Then I should not see Example filter in grid
      *
      * @Then /^(?:|I )should not see "(?P<filterName>(?:[^"]|\\")*)" filter in grid$/
@@ -2101,13 +2125,14 @@ TEXT;
      * @param string $filterName
      * @param null|string $gridName
      */
-    public function iShouldNotSeeFilterInGrid($filterName, $gridName = 'Grid')
+    public function iShouldNotSeeFilterInGrid($filterName, $gridName = 'Grid'): void
     {
-        self::assertFalse(
-            $this->getGridFilters($gridName)
-                ->hasFilterItem($gridName . 'FilterItem', $filterName),
-            sprintf('"%s" filter is in grid', $filterName)
-        );
+        $msg = sprintf('"%s" filter is present in grid', $filterName);
+        $filters = $this->getGridFilters($gridName);
+        if ($filters->hasFilterItem($gridName . 'FilterItem', $filterName)) {
+            $filter = $filters->getFilterItem($gridName . 'FilterItem', $filterName);
+            self::assertFalse($filter->isVisible(), $msg);
+        }
     }
 
     /**
@@ -2810,7 +2835,13 @@ TEXT;
             $columnTitle = trim(substr($columnTitle, 0, $metadataPos));
         }
 
-        $cellValue = $grid->getRowByNumber($rowNumber)->getCellValue($columnTitle);
+        $gridRow = $grid->getRowByNumber($rowNumber);
+        if (!$gridRow->hasCellByHeader($columnTitle)) {
+            // Prevents failures caused by missing cells due to cell colspan.
+            return ['', '', $columnTitle];
+        }
+
+        $cellValue = $gridRow->getCellValue($columnTitle);
         if ($metadata && array_key_exists('type', $metadata) && $metadata['type'] === 'array') {
             $separator = $metadata['separator'] ?? ',';
             $value = explode($separator, $value);

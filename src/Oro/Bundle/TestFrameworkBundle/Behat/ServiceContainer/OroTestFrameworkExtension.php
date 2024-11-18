@@ -236,9 +236,8 @@ class OroTestFrameworkExtension implements TestworkExtension
     private function processArtifactHandlers(ContainerBuilder $container): void
     {
         $handlerConfigurations = $container->getParameter('oro_test.artifacts.handler_configs');
-        $prettySubscriberDefinition = $container->getDefinition('oro_test.artifacts.pretty_artifacts_subscriber');
-        $progressSubscriberDefinition = $container->getDefinition('oro_test.artifacts.progress_artifacts_subscriber');
-
+        $screenshotGenerator = $container->getDefinition('oro_test.artifacts.screenshot_generator');
+        $artifactHandlers = [];
         foreach ($container->findTaggedServiceIds('artifacts_handler') as $id => $attributes) {
             $handlerClass = $container->getDefinition($id)->getClass();
 
@@ -262,9 +261,10 @@ class OroTestFrameworkExtension implements TestworkExtension
             }
 
             $container->getDefinition($id)->replaceArgument(0, $handlerConfigurations[$handlerClass::getConfigKey()]);
-            $prettySubscriberDefinition->addMethodCall('addArtifactHandler', [new Reference($id)]);
-            $progressSubscriberDefinition->addMethodCall('addArtifactHandler', [new Reference($id)]);
+            $artifactHandlers[] = new Reference($id);
         }
+
+        $screenshotGenerator->setArgument(1, $artifactHandlers);
     }
 
     private function processHealthCheckers(ContainerBuilder $container): void
@@ -454,11 +454,6 @@ class OroTestFrameworkExtension implements TestworkExtension
         return array_merge($suiteContexts, $commonContexts);
     }
 
-    /**
-     * @param SymfonyBundleSuite $bundleSuite
-     *
-     * @return bool
-     */
     protected function hasValidPaths(SymfonyBundleSuite $bundleSuite): bool
     {
         if (!$bundleSuite->hasSetting('paths')) {

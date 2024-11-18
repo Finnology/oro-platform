@@ -35,7 +35,7 @@ class AclHelperTest extends \PHPUnit\Framework\TestCase
     /** @var OwnershipMetadataInterface|\PHPUnit\Framework\MockObject\MockObject */
     private $ownershipMetadata;
 
-    /** @var SearchAclHelperConditionProvider|\PHPUnit\Framework\MockObject\MockObject  */
+    /** @var SearchAclHelperConditionProvider|\PHPUnit\Framework\MockObject\MockObject */
     private $searchAclHelperConditionProvider;
 
     /** @var array */
@@ -202,7 +202,6 @@ class AclHelperTest extends \PHPUnit\Framework\TestCase
         $query = new Query();
         $query->from(['testProduct', 'businessUnit']);
         $query->getCriteria()->andWhere(new Comparison('all_text', Comparison::EQ, new Value('some_value')));
-
 
         $this->searchAclHelperConditionProvider->expects(self::exactly(2))
             ->method('isApplicable')

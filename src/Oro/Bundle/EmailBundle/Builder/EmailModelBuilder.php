@@ -101,7 +101,7 @@ class EmailModelBuilder
     }
 
     /**
-     * @param EmailModel $emailModel
+     * @param EmailModel|null $emailModel
      *
      * @return EmailModel
      */
@@ -115,16 +115,11 @@ class EmailModelBuilder
         $request = $this->request ?? $this->requestStack->getCurrentRequest();
         if ($request) {
             $this->applyRequest($emailModel);
-            if (!count($emailModel->getContexts())) {
+            if (!$request->get('emptyContexts', false) && \count($emailModel->getContexts()) === 0) {
                 $entityClass = $request->get('entityClass');
                 $entityId = $request->get('entityId');
                 if ($entityClass && $entityId) {
-                    $emailModel->setContexts([
-                        $this->helper->getTargetEntity(
-                            $entityClass,
-                            $entityId
-                        )
-                    ]);
+                    $emailModel->setContexts([$this->helper->getTargetEntity($entityClass, $entityId)]);
                 }
             }
         }
@@ -235,9 +230,6 @@ class EmailModelBuilder
         return $this->createEmailModel($emailModel);
     }
 
-    /**
-     * @param Request $request
-     */
     public function setRequest(Request $request = null)
     {
         $this->request = $request;

@@ -358,7 +358,7 @@ class ImapEmailSynchronizationProcessor extends AbstractEmailSynchronizationProc
             } catch (EmailAddressParseException $e) {
                 $errorContext = $this->getFailedEmailHeaders($email);
 
-                $this->emailErrorsLogger->error($e->getMessage(), ['headers' => json_encode($errorContext)]);
+                $this->emailErrorsLogger->warning($e->getMessage(), ['headers' => json_encode($errorContext)]);
                 $notificationBag->addNotification(
                     EmailSyncNotificationAlert::createForConvertFailed(
                         'Cannot convert message. Exception:' . $e->getMessage(),
@@ -643,7 +643,7 @@ class ImapEmailSynchronizationProcessor extends AbstractEmailSynchronizationProc
         EmailSyncNotificationBag $notificationBag
     ): void {
         $folderName = $folder->getFullName();
-        $folder->setFailedCount((integer)$folder->getFailedCount() + 1);
+        $folder->setFailedCount((int)$folder->getFailedCount() + 1);
         $message = sprintf('The folder "%s" cannot be selected and was skipped.', $folderName);
         $this->logger->info($message);
 

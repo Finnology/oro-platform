@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\WsseAuthenticationBundle\Command;
@@ -75,8 +76,7 @@ class GenerateWsseHeaderCommand extends Command
         $created = date('c');
 
         // http://stackoverflow.com/questions/18117695/how-to-calculate-wsse-nonce
-        $prefix = gethostname();
-        $nonce = base64_encode(substr(md5(uniqid($prefix . '_', true)), 0, 16));
+        $nonce = base64_encode(openssl_random_pseudo_bytes(16));
         $salt = ''; // do not use real salt here, because API key already encrypted enough
 
         $passwordDigest = $this->getPasswordEncoder($input->getOption('firewall'))->encodePassword(

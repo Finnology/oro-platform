@@ -3,8 +3,10 @@
 namespace Oro\Bundle\ApiBundle\Processor\Shared;
 
 use Oro\Bundle\ApiBundle\Processor\ActionProcessorBagInterface;
+use Oro\Bundle\ApiBundle\Processor\Create\CreateContext;
 use Oro\Bundle\ApiBundle\Processor\Get\GetContext;
 use Oro\Bundle\ApiBundle\Processor\SingleItemContext;
+use Oro\Bundle\ApiBundle\Processor\Update\UpdateContext;
 use Oro\Bundle\ApiBundle\Request\ApiAction;
 use Oro\Bundle\ApiBundle\Request\ApiActionGroup;
 use Oro\Component\ChainProcessor\ActionProcessorInterface;
@@ -36,11 +38,11 @@ class LoadNormalizedEntity implements ProcessorInterface
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function process(ContextInterface $context): void
     {
-        /** @var SingleItemContext $context */
+        /** @var CreateContext|UpdateContext $context */
 
         if ($context->isProcessed(self::OPERATION_NAME)) {
             // the normalized entity was already loaded
@@ -72,6 +74,7 @@ class LoadNormalizedEntity implements ProcessorInterface
         $getContext->setRequestHeaders($context->getRequestHeaders());
         $getContext->setSharedData($context->getSharedData());
         $getContext->setHateoas($context->isHateoasEnabled());
+        $getContext->setParentAction($context->getAction());
         $getContext->setClassName($context->getClassName());
         $getContext->setId($context->getId());
         if ($this->reuseExistingEntity && $context->hasResult()) {
@@ -81,6 +84,9 @@ class LoadNormalizedEntity implements ProcessorInterface
         $getContext->skipGroup(ApiActionGroup::DATA_SECURITY_CHECK);
         $getContext->skipGroup(ApiActionGroup::NORMALIZE_RESULT);
         $getContext->setSoftErrorsHandling(true);
+        foreach ($context->getNormalizedEntityConfigExtras() as $extra) {
+            $getContext->addConfigExtra($extra);
+        }
 
         return $getContext;
     }

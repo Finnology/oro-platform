@@ -5,6 +5,7 @@ namespace Oro\Bundle\QueryDesignerBundle\QueryDesigner;
 use Oro\Component\Config\Cache\PhpArrayConfigProvider;
 use Oro\Component\Config\Loader\CumulativeConfigLoader;
 use Oro\Component\Config\Loader\CumulativeConfigProcessorUtil;
+use Oro\Component\Config\Loader\FolderYamlCumulativeFileLoader;
 use Oro\Component\Config\Loader\YamlCumulativeFileLoader;
 use Oro\Component\Config\ResourcesContainerInterface;
 
@@ -47,7 +48,7 @@ class ConfigurationProvider extends PhpArrayConfigProvider
             'oro_query_designer',
             [
                 new YamlCumulativeFileLoader(self::CONFIG_FILE),
-                new YamlCumulativeFileLoader(self::APP_CONFIG_PATH),
+                new FolderYamlCumulativeFileLoader($this->getAppConfigPath()),
             ]
         );
         $resources = $configLoader->load($resourcesContainer);
@@ -113,5 +114,10 @@ class ConfigurationProvider extends PhpArrayConfigProvider
             // this function should use a label of overridden function
             $func[$labelName] = '';
         }
+    }
+
+    protected function getAppConfigPath(): string
+    {
+        return self::APP_CONFIG_PATH;
     }
 }

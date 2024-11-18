@@ -86,7 +86,6 @@ class UserType extends AbstractType
                     'multiple'      => true,
                     'expanded'      => true,
                     'required'      => !$this->isMyProfilePage,
-                    'disabled'      => $this->isMyProfilePage,
                     'translatable_options' => false,
                     'attr' => $attr
                 ]
@@ -103,7 +102,6 @@ class UserType extends AbstractType
                     'multiple'  => true,
                     'expanded'  => true,
                     'required'  => false,
-                    'disabled'  => $this->isMyProfilePage,
                     'translatable_options' => false,
                     'attr' => $attr
                 ]
@@ -190,7 +188,7 @@ class UserType extends AbstractType
         $resolver->setDefaults([
             'data_class'         => User::class,
             'csrf_token_id'      => 'user',
-            'validation_groups'  => ['Roles', 'Default'],
+            'validation_groups'  => ['Roles', 'UserForm', 'Default'],
             'ownership_disabled' => $this->isMyProfilePage
         ]);
     }

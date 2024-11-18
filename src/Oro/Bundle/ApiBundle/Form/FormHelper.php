@@ -105,8 +105,6 @@ class FormHelper
 
     /**
      * Adds a field to the given form.
-     *
-     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
     public function addFormField(
         FormBuilderInterface $formBuilder,
@@ -118,20 +116,20 @@ class FormHelper
     ): FormBuilderInterface {
         $formType = $fieldConfig->getFormType();
         /**
-         * Ignore configured form options for associations that are represented as fields
-         * to avoid collisions between configured and guessed form options.
+         * Ignore configured form options (except "data_class", "property_path" and "mapped" options) for associations
+         * that are represented as fields to avoid collisions between configured and guessed form options.
          * For these associations the options merging is performed by form type guessers.
          * @see \Oro\Bundle\ApiBundle\Form\Guesser\MetadataTypeGuesser::getTypeGuessForArrayAssociation
          * @see \Oro\Bundle\ApiBundle\Form\Guesser\MetadataTypeGuesser::getTypeGuessForCollapsedArrayAssociation
          */
         $configuredOptions = $this->getFormFieldOptions($fieldMetadata, $fieldConfig);
-        if ($configuredOptions
-            && (
-                null !== $formType
-                || !DataType::isAssociationAsField($fieldConfig->getDataType())
-                || false === ($configuredOptions['mapped'] ?? true)
-            )) {
-            $options = array_replace($options, $configuredOptions);
+        if ($configuredOptions) {
+            if (null !== $formType || !DataType::isAssociationAsField($fieldConfig->getDataType())) {
+                $options = array_replace($options, $configuredOptions);
+            }
+            $this->setConfiguredFormFieldOption($options, $configuredOptions, 'data_class');
+            $this->setConfiguredFormFieldOption($options, $configuredOptions, 'property_path');
+            $this->setConfiguredFormFieldOption($options, $configuredOptions, 'mapped');
         }
         if (null === $formType && $allowGuessType) {
             $dataType = $fieldMetadata->getDataType();
@@ -182,6 +180,13 @@ class FormHelper
         }
 
         return $options;
+    }
+
+    private function setConfiguredFormFieldOption(array &$options, array $configuredOptions, string $name): void
+    {
+        if (!\array_key_exists($name, $options) && \array_key_exists($name, $configuredOptions)) {
+            $options[$name] = $configuredOptions[$name];
+        }
     }
 
     private function addFormEventSubscribers(FormBuilderInterface $formBuilder, array $eventSubscribers): void

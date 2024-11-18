@@ -50,6 +50,8 @@ services:
 
     oro_api.processor_iterator_factory.ungrouped:
         class: Oro\Component\ChainProcessor\ProcessorIteratorFactory
+        calls:
+            - [setActionsWithApplicableCache, [['customize_loaded_data.identifier_only', 'customize_loaded_data.item', 'customize_loaded_data.collection']]]
 
     oro_api.processor_applicable_checker_factory:
         class: Oro\Bundle\ApiBundle\Processor\ProcessorApplicableCheckerFactory
@@ -118,13 +120,25 @@ services:
     oro_api.entity_loader:
         class: Oro\Bundle\ApiBundle\Util\EntityLoader
         arguments:
-            - '@doctrine'
+            - '@oro_api.doctrine_helper'
+
+    oro_api.acl_protected_entity_loader:
+        class: Oro\Bundle\ApiBundle\Util\AclProtectedEntityLoader
+        arguments:
+            - '@oro_api.doctrine_helper'
+            - '@oro_api.entity_id_helper'
+            - '@oro_api.query_acl_helper'
 
     oro_api.entity_accessor:
         class: Oro\Bundle\ApiBundle\Util\EntityDataAccessor
 
     oro_api.entity_id_helper:
         class: Oro\Bundle\ApiBundle\Util\EntityIdHelper
+
+    oro_api.upsert_criteria_builder:
+        class: Oro\Bundle\ApiBundle\Util\UpsertCriteriaBuilder
+        arguments:
+            - '@oro_api.value_normalizer'
 
     oro_api.entity_metadata_factory:
         class: Oro\Bundle\ApiBundle\Metadata\EntityMetadataFactory
@@ -202,6 +216,14 @@ services:
             - '@oro_api.data_transformer_registry'
         tags:
             - { name: oro.api.object_normalizer, class: DateTimeInterface }
+
+    oro_api.system.cache_warmer:
+        class: Oro\Component\Config\Cache\ConfigCacheWarmer
+        arguments:
+            - '@oro_api.config_cache_warmer'
+            - false
+        tags:
+            - { name: kernel.cache_warmer }
 
     oro_api.entity_alias.cache_warmer:
         class: Oro\Component\Config\Cache\ConfigCacheWarmer
@@ -646,11 +668,11 @@ services:
     oro_api.rest.cors_settings:
         class: Oro\Bundle\ApiBundle\Request\Rest\CorsSettings
         arguments:
-            - 0 # preflightMaxAge. It is set by Oro\Bundle\FrontendBundle\DependencyInjection\OroFrontendExtension
-            - [] # allowedOrigins. They are set by Oro\Bundle\FrontendBundle\DependencyInjection\OroFrontendExtension
-            - false # isCredentialsAllowed. It is set by Oro\Bundle\FrontendBundle\DependencyInjection\OroFrontendExtension
-            - [] # allowedHeaders. They are set by Oro\Bundle\FrontendBundle\DependencyInjection\OroFrontendExtension
-            - [] # exposableHeaders. They are set by Oro\Bundle\FrontendBundle\DependencyInjection\OroFrontendExtension
+            - 0 # preflightMaxAge. It is set by Oro\Bundle\ApiBundle\DependencyInjection\OroApiExtension
+            - [] # allowedOrigins. They are set by Oro\Bundle\ApiBundle\DependencyInjection\OroApiExtension
+            - false # isCredentialsAllowed. It is set by Oro\Bundle\ApiBundle\DependencyInjection\OroApiExtension
+            - [] # allowedHeaders. They are set by Oro\Bundle\ApiBundle\DependencyInjection\OroApiExtension
+            - [] # exposableHeaders. They are set by Oro\Bundle\ApiBundle\DependencyInjection\OroApiExtension
 
     oro_api.rest.routes_registry:
         class: Oro\Bundle\ApiBundle\Request\Rest\RestRoutesRegistry

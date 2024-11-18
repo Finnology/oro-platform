@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\EntityExtendBundle\Command;
@@ -80,9 +81,6 @@ HELP
             ->addUsage('--skip-enum-sync');
     }
 
-    /**
-     * @param LoggerInterface $logger
-     */
     public function setLogger(LoggerInterface $logger): void
     {
         $this->logger = $logger;

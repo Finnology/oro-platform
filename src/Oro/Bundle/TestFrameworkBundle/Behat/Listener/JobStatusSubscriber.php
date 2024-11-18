@@ -25,9 +25,11 @@ class JobStatusSubscriber implements EventSubscriberInterface
 {
     private const ACTIVE_JOB_STATUSES = [Job::STATUS_NEW, Job::STATUS_RUNNING, Job::STATUS_FAILED_REDELIVERED];
     private \DateTime $startDateTime;
-    private ?Process  $process = null;
     private string $phpExecutablePath;
     private bool   $shouldNotRunConsumer = false;
+    /** @var array|Process[] */
+    private array $processes = [];
+    private int $countConsumers;
 
     public function __construct(private KernelInterface $kernel)
     {
@@ -84,13 +86,13 @@ class JobStatusSubscriber implements EventSubscriberInterface
         while (true) {
             $this->startConsumerIfNotRunning();
 
-            $activeJobs = $connection->fetchFirstColumn(
-                'SELECT j.name FROM oro_message_queue_job j WHERE j.status IN (?) AND j.created_at > ?',
+            $activeJobs = $connection->fetchOne(
+                'SELECT j.id FROM oro_message_queue_job j WHERE j.status IN (?) AND j.created_at > ? LIMIT 1',
                 [self::ACTIVE_JOB_STATUSES, $this->startDateTime],
                 [Connection::PARAM_STR_ARRAY, Types::DATETIME_MUTABLE]
             );
 
-            if (0 == count($activeJobs)) {
+            if (!$activeJobs) {
                 return;
             }
 
@@ -106,9 +108,14 @@ class JobStatusSubscriber implements EventSubscriberInterface
             sprintf(
                 'The application has not been able to finish processing jobs within the last 900 seconds. ' .
                 'Unprocessed jobs: %s',
-                implode(', ', $activeJobs)
+                implode(', ', (array)$activeJobs)
             )
         );
+    }
+
+    public function setCountConsumersFromOption(int $countConsumers)
+    {
+        $this->countConsumers = $countConsumers;
     }
 
     private function startConsumerIfNotRunning(): void
@@ -117,9 +124,8 @@ class JobStatusSubscriber implements EventSubscriberInterface
             return;
         }
 
-        if ($this->process && $this->process->isRunning()) {
-            return;
-        }
+        $this->processes = array_filter($this->processes, fn ($process) => $process->isRunning());
+
         /** @var Filesystem $filesystem */
         $filesystem = $this->kernel->getContainer()->get('filesystem');
         $logDir = realpath($this->kernel->getLogDir());
@@ -132,15 +138,18 @@ class JobStatusSubscriber implements EventSubscriberInterface
             sprintf('--env=%s', $this->kernel->getEnvironment()),
         ];
 
-        $process = new Process($command);
+        for ($i=0; $i < ($this->countConsumers - count($this->processes)); $i++) {
+            $process = new Process($command);
 
-        $process->start(function ($type, $buffer) use ($filesystem, $logDir) {
-            if (Process::ERR === $type) {
-                $this->getLogger()->error($buffer);
-            }
-            $filesystem->appendToFile(sprintf('%s/mq.log', $logDir), $buffer);
-        });
-        $this->process = $process;
+            $process->start(function ($type, $buffer) use ($filesystem, $logDir) {
+                if (Process::ERR === $type) {
+                    $this->getLogger()->error($buffer);
+                }
+                $filesystem->appendToFile(sprintf('%s/mq.log', $logDir), $buffer);
+            });
+
+            $this->processes[$process->getPid()] = $process;
+        }
     }
 
     private function getLogger(): LoggerInterface

@@ -2,6 +2,7 @@
 
 namespace Oro\Bundle\ApiBundle\Tests\Unit\Processor\CustomizeFormData;
 
+use Oro\Bundle\ApiBundle\Collection\AdditionalEntityCollection;
 use Oro\Bundle\ApiBundle\Collection\IncludedEntityCollection;
 use Oro\Bundle\ApiBundle\Collection\IncludedEntityData;
 use Oro\Bundle\ApiBundle\Config\EntityDefinitionConfig;
@@ -134,6 +135,16 @@ class CustomizeFormDataContextTest extends \PHPUnit\Framework\TestCase
         self::assertSame($version, $normalizationContext['version']);
         self::assertSame($requestType, $normalizationContext['requestType']);
         self::assertSame($sharedData, $normalizationContext['sharedData']);
+
+        $parentAction = 'test_parent_action';
+        $this->context->setParentAction($parentAction);
+        $normalizationContext = $this->context->getNormalizationContext();
+        self::assertCount(5, $normalizationContext);
+        self::assertSame($action, $normalizationContext['action']);
+        self::assertSame($version, $normalizationContext['version']);
+        self::assertSame($requestType, $normalizationContext['requestType']);
+        self::assertSame($sharedData, $normalizationContext['sharedData']);
+        self::assertSame($parentAction, $normalizationContext['parentAction']);
     }
 
     public function testIncludedEntities()
@@ -143,6 +154,14 @@ class CustomizeFormDataContextTest extends \PHPUnit\Framework\TestCase
         $includedEntities = $this->createMock(IncludedEntityCollection::class);
         $this->context->setIncludedEntities($includedEntities);
         self::assertSame($includedEntities, $this->context->getIncludedEntities());
+    }
+
+    public function testSetIncludedEntitiesWhenIncludedEntityCollectionWasAlreadyInitialized()
+    {
+        $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage('The collection of included entities was already initialized.');
+        $this->context->setIncludedEntities($this->createMock(IncludedEntityCollection::class));
+        $this->context->setIncludedEntities($this->createMock(IncludedEntityCollection::class));
     }
 
     public function testIsPrimaryEntityRequestForPrimaryEntityRequest()
@@ -286,6 +305,40 @@ class CustomizeFormDataContextTest extends \PHPUnit\Framework\TestCase
         self::assertSame([$includedEntity], $this->context->getAllEntities(true));
     }
 
+    public function testAdditionalEntities()
+    {
+        $additionalEntityCollection = new AdditionalEntityCollection();
+        $this->context->setAdditionalEntityCollection($additionalEntityCollection);
+
+        self::assertSame([], $this->context->getAdditionalEntities());
+
+        $entity1 = new \stdClass();
+        $entity2 = new \stdClass();
+
+        $this->context->addAdditionalEntity($entity1);
+        $this->context->addAdditionalEntityToRemove($entity2);
+
+        self::assertSame([$entity1, $entity2], $this->context->getAdditionalEntities());
+
+        self::assertFalse($additionalEntityCollection->shouldEntityBeRemoved($entity1));
+        self::assertTrue($additionalEntityCollection->shouldEntityBeRemoved($entity2));
+    }
+
+    public function testAdditionalEntitiesWhenAdditionalEntityCollectionWasNotInitialized()
+    {
+        $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage('The collection of additional entities was not initialized.');
+        $this->context->getAdditionalEntities();
+    }
+
+    public function testSetAdditionalEntityCollectionWhenItWasAlreadyInitialized()
+    {
+        $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage('The collection of additional entities was already initialized.');
+        $this->context->setAdditionalEntityCollection($this->createMock(AdditionalEntityCollection::class));
+        $this->context->setAdditionalEntityCollection($this->createMock(AdditionalEntityCollection::class));
+    }
+
     public function testEvent()
     {
         self::assertNull($this->context->getPropertyPath());
@@ -299,14 +352,20 @@ class CustomizeFormDataContextTest extends \PHPUnit\Framework\TestCase
 
     public function testParentAction()
     {
-        self::assertNull($this->context->getPropertyPath());
+        self::assertNull($this->context->getParentAction());
+        self::assertTrue($this->context->has('parentAction'));
+        self::assertSame('', $this->context->get('parentAction'));
 
         $actionName = 'test_action';
         $this->context->setParentAction($actionName);
         self::assertEquals($actionName, $this->context->getParentAction());
+        self::assertTrue($this->context->has('parentAction'));
+        self::assertEquals($actionName, $this->context->get('parentAction'));
 
         $this->context->setParentAction(null);
-        self::assertNull($this->context->getPropertyPath());
+        self::assertNull($this->context->getParentAction());
+        self::assertTrue($this->context->has('parentAction'));
+        self::assertSame('', $this->context->get('parentAction'));
     }
 
     public function testForm()

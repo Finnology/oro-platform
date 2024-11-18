@@ -244,13 +244,14 @@ services:
             - [setManagerRegistry, ["@doctrine"]]
             - [setConfigurableName, ['default']]
             - [setConfigurableFilter, ["@oro_security.filter.configurable_permission_filter"]]
+            - [setQueryCacheProvider, ['@oro_security.acl_query.cache_provider']]
 
     oro_user.form.handler.acl_role:
         parent: oro_user.form.handler.abstract.acl_role
         public: true
         shared: false
         calls:
-            - [setRequest, ["@=service('request_stack').getCurrentRequest()"]]
+            - [setRequestStack, ['@request_stack']]
             - [addExtensionFilter, ['action', '']]    # only default group actions are allowed
 
     Oro\Bundle\UserBundle\Form\Handler\SetPasswordHandler:

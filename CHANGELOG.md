@@ -23,6 +23,32 @@ The current file describes significant changes in the code that may affect the u
 - [2.1.0](#210-2017-03-30)
 
 
+## UNRELEASED
+
+### Added
+
+#### ApiBundle
+* Added the ability to specify `\Symfony\Component\Validator\Constraints\GroupSequence` in validation groups of API config via nested arrays.
+
+#### FormBundle
+* Added the chain of constraint converters to `\Oro\Bundle\FormBundle\Form\Extension\JsValidation\ConstraintConverter` with basic implementation in `\Oro\Bundle\FormBundle\Form\Extension\JsValidation\GenericConstraintConverter`.
+* Added `\Oro\Bundle\FormBundle\Form\Extension\JsValidation\RangeConstraintConverter` for `Range` constraint with the ability to handle `minPropertyPath` and `maxPropertyPath`.
+* Added `\Oro\Bundle\FormBundle\Validator\Constraints\AdaptivelyValidCollection` validation constraint for validating a collection of entities with different validation groups for the new, updated and unchanged elements.
+
+#### PlatformBundle
+* Added `\Oro\Bundle\PlatformBundle\Validator\Constraints\ValidEmbeddable` that allows to apply `Valid` constraint with explicit validation groups specified in `embeddedGroups` option.
+
+#### DataGridBundle
+* Added postponed delete entities logic to `\Oro\Bundle\DataGridBundle\Extension\MassAction\DeleteMassActionHandler`.
+
+### Deprecated
+
+#### UIBundle
+* Deprecated `\Oro\Bundle\UIBundle\ContentProvider\TwigContentProviderManager` since 5.1, use `\Oro\Bundle\UIBundle\ContentProvider\ContentProviderManager` instead.
+
+#### SearchBundle
+* Added `\Oro\Bundle\SearchBundle\Event\BeforeIndexEntitiesEvent` that is dispatched in `\Oro\Bundle\SearchBundle\EventListener\IndexListener` in postFlush method after changing or updating indexing entities.
+
 ## 5.1.0 (2023-03-31)
 
 [Show detailed list of changes](incompatibilities-5-1.md)
@@ -357,6 +383,30 @@ use ExtendEntityTrait;
   `Oro\Bundle\AttachmentBundle\ImportExport\FileManipulator $fileManipulator`
   instead of `$fileManager`, also the `$authorizationChecker` argument is removed.
 
+### CacheBundle
+
+* The `oro.cache.abstract` abstract service is removed, use `oro.data.cache` instead, with the `cache.pool` tag 
+and the namespace in a tag attribute.
+
+  Before: 
+  ```yaml
+  services:
+      oro_catalog.layout.data_provider.category.cache:
+          parent: oro.cache.abstract
+          public: false
+          calls:
+              - [ setNamespace, [ 'oro_catalog_category' ] ]
+  ```
+  After:
+  ```yaml
+  services:
+      oro_catalog.layout.data_provider.category.cache:
+          parent: oro.data.cache
+          public: false
+          tags:
+              - { name: 'cache.pool', namespace: 'oro_catalog_category' }
+  ```
+
 #### DataGridBundle
 * The `iconHideText` option for `action-launcher` and `dropdown-select-choice-launcher` views was removed, use the `launcherMode` option instead.
   The `launcherMode` option can have three different values:
@@ -483,6 +533,13 @@ The widgets `collapse-widget`, `collapse-group-widget`, `rows-collapse-widget` w
 #### NavigationBundle
 * Changed the sorting mechanism in `\Oro\Bundle\NavigationBundle\Provider\BuilderChainProvider`: menu items are sorted as a single list instead of separate - sorted and unsorted parts. 
 
+#### MessageQueueBundle
+* Every custom MQ topic needs a `topic` class now; see more in the [Message Queue Topics](https://doc.oroinc.com/backend/mq/message-queue-topics/) topic.
+
+#### WorkflowBundle
+* To unify the WorkflowBundle and ActionBundle syntax, the `pre_conditions` and `post_actions` options of the workflow process definition configuration were renamed to `preconditions` and `actions` respectively.
+
+
 ### Removed
 
 #### CronBundle
@@ -530,9 +587,6 @@ The widgets `collapse-widget`, `collapse-group-widget`, `rows-collapse-widget` w
 * The deprecated method `tools.loadModuleAndReplace()` from `'oroui/js/tools'` module, use `loadModules.fromObjectProp` from `'oroui/js/app/services/load-modules'` instead.
 * `vertical_container` layout block type has been removed, as redundant. Use conventional `container` layout block type instead, with additions custom CSS class that implements required alignment.
 
-#### WorkflowBundle
-* The deprecated `pre_conditions` option was removed for the configuration of workflow process definitions.
-* The deprecated `pre_conditions` and `post_actions` options were removed for the configuration of workflows.
 
 #### LayoutBundle
 * Removed `Oro\Bundle\LayoutBundle\Layout\LayoutContextHolder`, use `Oro\Component\Layout\LayoutContextStack` instead.

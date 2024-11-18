@@ -124,6 +124,25 @@ services:
             - { name: doctrine.event_listener, event: postFlush, priority: 1 }
             - { name: container.service_subscriber, id: oro_email.email_websocket.processor }
 
+    oro_email.delete_handler.email_user:
+        class: Oro\Bundle\EmailBundle\Handler\EmailUserDeleteHandler
+        parent: oro_entity.delete_handler
+        tags:
+            - { name: oro_entity.delete_handler, entity: Oro\Bundle\EmailBundle\Entity\EmailUser }
+
+    oro_email.delete_handler_extension.email_user:
+        class: Oro\Bundle\EmailBundle\Handler\EmailUserDeleteHandlerExtension
+        parent: oro_entity.delete_handler_extension
+        tags:
+            - { name: oro_entity.delete_handler_extension, entity: Oro\Bundle\EmailBundle\Entity\EmailUser }
+
+    oro_email.delete_handler.email_thread:
+        class: Oro\Bundle\EmailBundle\Handler\EmailThreadActivityEntityDeleteHandler
+        public: true
+        arguments:
+            - '@oro_entity.doctrine_helper'
+            - '@oro_activity.activity_entity_delete_handler'
+
     oro_email.email.entity.batch_processor:
         class: Oro\Bundle\EmailBundle\Builder\EmailEntityBatchProcessor
         shared: false
@@ -345,6 +364,8 @@ services:
             - '@oro_email.sender.email_factory'
             - '@oro_email.builder.email_user_from_email_model_builder'
             - '@event_dispatcher'
+        calls:
+            - [setEmailEntityListener, ['@oro_email.listener.entity_listener']]
 
     oro_email.builder.email_user_from_email_model_builder:
         class: Oro\Bundle\EmailBundle\Builder\EmailUserFromEmailModelBuilder
@@ -1010,6 +1031,20 @@ services:
             - '@oro_search.index'
             - '@oro_entity.entity_name_resolver'
 
+    oro_email.manager.email_thread_activity_context.api:
+        class: Oro\Bundle\EmailBundle\Entity\Manager\EmailThreadActivityContextApiEntityManager
+        public: true
+        parent: oro_soap.manager.entity_manager.abstract
+        arguments:
+            - '@doctrine.orm.entity_manager'
+            - '@oro_entity_config.config_manager'
+            - '@router'
+            - '@oro_entity.entity_alias_resolver'
+            - '@oro_entity.entity_name_resolver'
+            - '@oro_featuretoggle.checker.feature_checker'
+            - '@security.authorization_checker'
+            - '@oro_activity.manager'
+
     oro_email.manager.email_activity_suggestion.api:
         class: Oro\Bundle\EmailBundle\Entity\Manager\EmailActivitySuggestionApiEntityManager
         public: true
@@ -1089,19 +1124,19 @@ services:
     oro_email.mailbox.entity_name_provider:
         class: Oro\Bundle\EmailBundle\Provider\MailboxEntityNameProvider
         arguments:
-            - '@translator.default'
+            - '@translator'
         tags:
-            - { name: oro_entity.name_provider, priority: 0}
+            - { name: oro_entity.name_provider, priority: 100}
 
     oro_email.email_user.provider.email_user_entity_name_provider:
         class: Oro\Bundle\EmailBundle\Provider\EmailUserEntityNameProvider
         tags:
-            - { name: oro_entity.name_provider, priority: 0 }
+            - { name: oro_entity.name_provider, priority: 100 }
 
     oro_email.email_body_entity_name_provider:
         class: Oro\Bundle\EmailBundle\Provider\EmailBodyEntityNameProvider
         tags:
-            - { name: oro_entity.name_provider, priority: 0 }
+            - { name: oro_entity.name_provider, priority: 100 }
 
     oro_email.listener.mailbox_process_trigger_listener:
         class: Oro\Bundle\EmailBundle\EventListener\MailboxProcessTriggerListener

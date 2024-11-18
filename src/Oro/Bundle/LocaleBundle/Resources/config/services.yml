@@ -415,6 +415,13 @@ services:
         tags:
             - { name: kernel.event_listener, event: oro_config.update_after, method: onConfigUpdate }
 
+    oro_locale.event_listener.cache:
+        class: Oro\Bundle\LocaleBundle\EventListener\DoctrineEventListener
+        arguments:
+            - '@oro_locale.manager.localization'
+        tags:
+            - { name: doctrine.event_listener, event: onClear }
+
     oro_locale.event_listener.strategy_validation_event_listener:
         class: Oro\Bundle\LocaleBundle\EventListener\StrategyValidationEventListener
         arguments:
@@ -456,7 +463,7 @@ services:
         arguments:
             - '@translator'
         tags:
-            - { name: oro_entity.name_provider, priority: 100 }
+            - { name: oro_entity.name_provider, priority: 10 }
 
     oro_locale.strategy_processor.localized_fallback_value_audit_strategy:
         class: 'Oro\Bundle\LocaleBundle\Strategy\Processor\LocalizedFallbackValueAuditStrategyProcessor'

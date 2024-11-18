@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\InstallerBundle\Command;
@@ -84,10 +85,6 @@ HELP
         parent::configure();
     }
 
-    /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     */
     protected function initialize(InputInterface $input, OutputInterface $output)
     {
         if ($this->getContainer()->getParameter('kernel.environment') === 'test') {
@@ -276,10 +273,6 @@ HELP
         return $this->getContainer()->get('event_dispatcher');
     }
 
-    /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     */
     private function presetTestEnvironmentOptions(InputInterface $input, OutputInterface $output): void
     {
         $testEnvDefaultOptionValuesMap = [

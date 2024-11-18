@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\ApiBundle\Command;
@@ -97,6 +98,7 @@ HELP
         // warm up API caches
         if (!$noWarmup) {
             $io->comment('Warming up API cache...');
+            $this->cacheManager->warmUpConfigCache();
             $this->cacheManager->warmUpCaches();
         }
 

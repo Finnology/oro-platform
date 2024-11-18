@@ -30,7 +30,7 @@ class LoadNormalizedIncludedEntities implements ProcessorInterface
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function process(ContextInterface $context): void
     {
@@ -63,7 +63,7 @@ class LoadNormalizedIncludedEntities implements ProcessorInterface
         FormContext $context,
         object $entity,
         string $entityClass,
-        string $entityIncludeId,
+        mixed $entityIncludeId,
         IncludedEntityData $entityData
     ): void {
         $getProcessor = $this->processorBag->getProcessor(ApiAction::GET);
@@ -75,6 +75,7 @@ class LoadNormalizedIncludedEntities implements ProcessorInterface
         $getContext->setRequestHeaders($context->getRequestHeaders());
         $getContext->setSharedData($context->getSharedData());
         $getContext->setHateoas($context->isHateoasEnabled());
+        $getContext->setParentAction($context->getAction());
         $getContext->setClassName($entityClass);
         $getContext->setId($entityData->getMetadata()->getIdentifierValue($entity));
         if (!$entityData->isExisting()) {
@@ -95,7 +96,7 @@ class LoadNormalizedIncludedEntities implements ProcessorInterface
             $normalizedData = $getContext->getResult();
             $metadata = $getContext->getMetadata();
 
-            $normalizedData[self::INCLUDE_ID_PROPERTY] = (string)$entityIncludeId;
+            $normalizedData[self::INCLUDE_ID_PROPERTY] = $entityIncludeId;
             $metadata->addMetaProperty(new MetaPropertyMetadata(self::INCLUDE_ID_PROPERTY))
                 ->setResultName(self::INCLUDE_ID_META);
 

@@ -13,6 +13,7 @@ use Doctrine\ORM\Query\QueryException;
 use Doctrine\ORM\QueryBuilder;
 use Oro\Bundle\ApiBundle\Collection\QueryVisitorExpression\ComparisonExpressionInterface;
 use Oro\Bundle\ApiBundle\Collection\QueryVisitorExpression\CompositeExpressionInterface;
+use Oro\Bundle\ApiBundle\Collection\QueryVisitorExpression\ExpressionValue;
 use Oro\Bundle\EntityBundle\ORM\EntityClassResolver;
 use Oro\Component\DoctrineUtils\ORM\QueryBuilderUtil;
 
@@ -98,6 +99,30 @@ class QueryExpressionVisitor extends ExpressionVisitor
      */
     public function addParameter(Parameter|string $parameter, mixed $value = null, mixed $type = null): void
     {
+        if (null !== $value && $parameter instanceof Parameter) {
+            throw new \InvalidArgumentException(sprintf(
+                'The parameter "%s" must be a string.',
+                $parameter->getName()
+            ));
+        }
+
+        if ($value instanceof ExpressionValue) {
+            $value = $value->getValue();
+            if (\is_array($value)) {
+                $i = 0;
+                foreach ($value as $val) {
+                    $i++;
+                    $this->parameters[] = $this->createParameter(
+                        $this->buildNestedParameterName($parameter, $i),
+                        $val,
+                        $type
+                    );
+                }
+
+                return;
+            }
+        }
+
         if (!$parameter instanceof Parameter) {
             $parameter = $this->createParameter($parameter, $value, $type);
         }
@@ -113,7 +138,33 @@ class QueryExpressionVisitor extends ExpressionVisitor
     }
 
     /**
-     * Builds placeholder string for given parameter name.
+     * Builds an expression for for the given parameter name and parameter value.
+     */
+    public function buildParameterExpression(string $parameterName, mixed $parameterValue): mixed
+    {
+        if (!$parameterValue instanceof ExpressionValue) {
+            return $this->buildPlaceholder($parameterName);
+        }
+
+        $value = $parameterValue->getValue();
+        if (!\is_array($value)) {
+            return $parameterValue->buildExpression($this->buildPlaceholder($parameterName));
+        }
+
+        $parameterExpressions = [];
+        $parameterPlaceholder = $this->buildPlaceholder($parameterName);
+        $numberOfParameter = \count($value);
+        for ($i = 1; $i <= $numberOfParameter; $i++) {
+            $parameterExpressions[] = $parameterValue->buildExpression(
+                $this->buildNestedParameterName($parameterPlaceholder, $i)
+            );
+        }
+
+        return implode(', ', $parameterExpressions);
+    }
+
+    /**
+     * Builds placeholder string for the given parameter name.
      */
     public function buildPlaceholder(string $parameterName): string
     {
@@ -265,8 +316,10 @@ class QueryExpressionVisitor extends ExpressionVisitor
         QueryBuilderUtil::checkPath($field);
 
         $expression = $field;
+        $value = $this->walkValue($comparison->getValue());
         if ('i' === $modifier) {
             $expression = sprintf('LOWER(%s)', $expression);
+            $value = new ExpressionValue($value, 'LOWER(%s)');
         } elseif (str_starts_with($modifier, ':')) {
             $this->fieldDataType = substr($modifier, 1);
         } elseif ($modifier) {
@@ -282,8 +335,8 @@ class QueryExpressionVisitor extends ExpressionVisitor
                 $this,
                 $field,
                 $expression,
-                $this->getParameterName($comparison->getField()),
-                $this->walkValue($comparison->getValue())
+                $this->getParameterName($field),
+                $value
             );
         $this->fieldDataType = null;
 
@@ -300,14 +353,22 @@ class QueryExpressionVisitor extends ExpressionVisitor
 
     private function getField(string $field): string
     {
-        foreach ($this->queryAliases as $alias) {
-            if ($field !== $alias && str_starts_with($field . '.', $alias . '.')) {
-                return $field;
-            }
-        }
-
         if ($field) {
-            $field = $this->getRootAlias() . '.' . $field;
+            if (str_contains($field, '.')) {
+                foreach ($this->queryAliases as $alias) {
+                    if ($field !== $alias && str_starts_with($field . '.', $alias . '.')) {
+                        return $field;
+                    }
+                }
+            }
+            if (str_starts_with($field, Criteria::PLACEHOLDER_START)
+                && str_ends_with($field, Criteria::PLACEHOLDER_END)
+            ) {
+                // it is a computed field that does not related to any join or a root entity
+                $field = substr($field, 1, -1);
+            } else {
+                $field = $this->getRootAlias() . '.' . $field;
+            }
         }
 
         return $field;
@@ -326,6 +387,11 @@ class QueryExpressionVisitor extends ExpressionVisitor
         }
 
         return $result;
+    }
+
+    private function buildNestedParameterName(string $parameterName, int $parameterNumber): string
+    {
+        return sprintf('%s__%d', $parameterName, $parameterNumber);
     }
 
     private function getSubqueryPath(string $field): ?string

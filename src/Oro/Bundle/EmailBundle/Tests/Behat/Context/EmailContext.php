@@ -3,6 +3,7 @@
 namespace Oro\Bundle\EmailBundle\Tests\Behat\Context;
 
 use Behat\Gherkin\Node\TableNode;
+use GuzzleHttp\Exception\ConnectException;
 use Oro\Bundle\EmailBundle\Manager\EmailTemplateManager;
 use Oro\Bundle\EmailBundle\Model\EmailTemplateCriteria;
 use Oro\Bundle\EmailBundle\Model\From;
@@ -33,7 +34,10 @@ class EmailContext extends OroFeatureContext
      */
     public function clear()
     {
-        $this->emailClient->purge();
+        try {
+            $this->emailClient->purge();
+        } catch (ConnectException $e) {
+        }
     }
 
     /**
@@ -130,8 +134,8 @@ class EmailContext extends OroFeatureContext
             return $found;
         });
 
-        self::assertNotFalse(
-            $found,
+        self::assertTrue(
+            $found !== null && $found !== false,
             sprintf(
                 'Sent emails bodies don\'t contain "%s" in "%s". The following messages have been sent: %s',
                 $expectedContent['pattern'],
@@ -240,6 +244,29 @@ class EmailContext extends OroFeatureContext
         }
 
         self::assertNotFalse($found, 'Sent emails don\'t contain expected data.');
+    }
+
+    /**
+     * This method makes non-strict comparison of data from the file downloaded from email.
+     * Checks whether the listed rows (in any order) with given columns and corresponding data is present.
+     *
+     * @Given /^Downloaded export file should contain following rows in any order:$/
+     */
+    public function downloadedExportFileContainsFollowingRowsInAnyOrder(TableNode $expectedEntities): void
+    {
+        self::assertNotEmpty($this->downloadedFile, 'File from email not loaded.');
+        self::assertFileExists($this->downloadedFile, 'File does not exist');
+
+        $exportedFile = new \SplFileObject($this->downloadedFile, 'rb');
+        $exportedFile->setFlags(\SplFileObject::READ_CSV
+            | \SplFileObject::READ_AHEAD
+            | \SplFileObject::SKIP_EMPTY
+            | \SplFileObject::DROP_NEW_LINE);
+
+        $expectedRows = $expectedEntities->getRows();
+
+        static::assertCount(iterator_count($exportedFile), $expectedEntities->getRows());
+        static::assertEqualsCanonicalizing(iterator_to_array($exportedFile), $expectedRows);
     }
 
     /**

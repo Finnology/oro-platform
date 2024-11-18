@@ -2,6 +2,7 @@
 
 namespace Oro\Bundle\ApiBundle\Batch\Handler;
 
+use Doctrine\Common\Util\ClassUtils;
 use Doctrine\ORM\EntityManagerInterface;
 use Oro\Bundle\ApiBundle\Processor\CustomizeFormData\FlushDataHandlerContext;
 use Oro\Bundle\ApiBundle\Processor\CustomizeFormData\FlushDataHandlerInterface;
@@ -44,6 +45,7 @@ class BatchFlushDataHandler implements BatchFlushDataHandlerInterface
 
     /**
      * {@inheritDoc}
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
     public function flushData(array $items): void
     {
@@ -52,7 +54,7 @@ class BatchFlushDataHandler implements BatchFlushDataHandlerInterface
         }
 
         $itemTargetContexts = [];
-        $staredData = null;
+        $sharedData = null;
         foreach ($items as $item) {
             $itemContext = $item->getContext();
             if ($itemContext->hasErrors()) {
@@ -66,20 +68,22 @@ class BatchFlushDataHandler implements BatchFlushDataHandlerInterface
             if (!\is_object($itemEntity)) {
                 continue;
             }
+            $isNewEntity = $itemContext->getTargetAction() === ApiAction::CREATE;
             if ($itemTargetContext instanceof FormContext) {
+                $isNewEntity = !$itemTargetContext->isExisting();
                 $itemTargetContexts[] = $itemTargetContext;
-                if (null === $staredData) {
-                    $staredData = $itemTargetContext->getSharedData();
+                if (null === $sharedData) {
+                    $sharedData = $itemTargetContext->getSharedData();
                 }
             }
-            if ($itemContext->getTargetAction() === ApiAction::CREATE) {
+            if ($isNewEntity && $this->isManageableEntity($this->entityManager, $itemEntity)) {
                 $this->entityManager->persist($itemEntity);
             }
         }
 
         $this->flushDataHandler->flushData(
             $this->entityManager,
-            new FlushDataHandlerContext($itemTargetContexts, $staredData ?? new ParameterBag())
+            new FlushDataHandlerContext($itemTargetContexts, $sharedData ?? new ParameterBag())
         );
     }
 
@@ -99,5 +103,10 @@ class BatchFlushDataHandler implements BatchFlushDataHandlerInterface
             $this->entityManager->clear();
             $this->entityManager = null;
         }
+    }
+
+    public function isManageableEntity(EntityManagerInterface $entityManager, object $entity): bool
+    {
+        return !$entityManager->getMetadataFactory()->isTransient(ClassUtils::getClass($entity));
     }
 }

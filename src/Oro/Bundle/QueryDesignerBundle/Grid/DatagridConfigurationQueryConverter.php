@@ -9,6 +9,7 @@ use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
 use Oro\Bundle\EntityBundle\Provider\EntityNameResolver;
 use Oro\Bundle\EntityBundle\Provider\VirtualFieldProviderInterface;
 use Oro\Bundle\EntityBundle\Provider\VirtualRelationProviderInterface;
+use Oro\Bundle\EntityExtendBundle\PropertyAccess;
 use Oro\Bundle\FilterBundle\Filter\FilterUtility;
 use Oro\Bundle\QueryDesignerBundle\Model\AbstractQueryDesigner;
 use Oro\Bundle\QueryDesignerBundle\QueryDesigner\FunctionProviderInterface;
@@ -44,6 +45,7 @@ class DatagridConfigurationQueryConverter extends GroupingOrmQueryConverter
     public function convert(string $gridName, AbstractQueryDesigner $source): DatagridConfiguration
     {
         $config = DatagridConfiguration::createNamed($gridName, []);
+        $config->setPropertyAccessor(PropertyAccess::createPropertyAccessorWithDotSyntax());
         $config->setDatasourceType(OrmDatasource::TYPE);
 
         $this->context()->setConfig($config);
@@ -158,7 +160,8 @@ class DatagridConfigurationQueryConverter extends GroupingOrmQueryConverter
                 'translatable' => false
             ],
         ];
-        if (null !== $functionExpr) {
+        $groupingColumns = $this->context()->getDefinition()['grouping_columns'] ?? null;
+        if (null !== $functionExpr && $groupingColumns) {
             $columnOptions[DatagridGuesser::FILTER][FilterUtility::BY_HAVING_KEY] = true;
         }
         $this->datagridGuesser->applyColumnGuesses($entityClass, $fieldName, $fieldType, $columnOptions);

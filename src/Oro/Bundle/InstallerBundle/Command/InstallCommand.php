@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Oro\Bundle\InstallerBundle\Command;
@@ -21,6 +22,7 @@ use Oro\Bundle\MigrationBundle\Command\LoadDataFixturesCommand;
 use Oro\Bundle\SecurityBundle\Command\LoadPermissionConfigurationCommand;
 use Oro\Bundle\TranslationBundle\Command\OroTranslationUpdateCommand;
 use Oro\Bundle\UserBundle\Migrations\Data\ORM\LoadAdminUserData;
+use Symfony\Component\Console\Event\ConsoleEvent;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -176,15 +178,10 @@ HELP
         parent::configure();
     }
 
-    /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     */
     protected function initialize(InputInterface $input, OutputInterface $output)
     {
-        if ($this->isTestEnvironment()) {
-            $this->presetTestEnvironmentOptions($input, $output);
-        }
+        $event = new ConsoleEvent($this, $input, $output);
+        $this->eventDispatcher->dispatch($event, InstallerEvents::INITIALIZE);
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
@@ -588,6 +585,7 @@ HELP
             $cacheClearOptions['--env'] = $input->getOption('env');
         }
         $commandExecutor->runCommand('cache:clear', $cacheClearOptions);
+        $commandExecutor->runCommand('router:cache:clear', ['--process-isolation' => true]);
     }
 
     protected function processInstallerScripts(OutputInterface $output, CommandExecutor $commandExecutor): void
@@ -653,38 +651,6 @@ HELP
         throw new \InvalidArgumentException(
             'The value of the "application-url" parameter is invalid. ' . $violations->get(0)->getMessage()
         );
-    }
-
-    /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     */
-    private function presetTestEnvironmentOptions(InputInterface $input, OutputInterface $output): void
-    {
-        $testEnvDefaultOptionValuesMap = [
-            'user-name'         => 'admin',
-            'user-email'        => 'admin@example.com',
-            'user-firstname'    => 'John',
-            'user-lastname'     => 'Doe',
-            'user-password'     => 'admin',
-            'sample-data'       => 'n',
-            'organization-name' => 'OroInc',
-            'application-url'   => 'http://localhost/',
-            'skip-translations' => true,
-            'timeout'           => '600',
-            'language'          => 'en',
-            'formatting-code'   => 'en_US'
-        ];
-
-        foreach ($testEnvDefaultOptionValuesMap as $optionName => $optionValue) {
-            if ($input->hasParameterOption('--' . $optionName)) {
-                continue;
-            }
-
-            $input->setOption($optionName, $optionValue);
-        }
-
-        $input->setInteractive(false);
     }
 
     protected function isTestEnvironment(): bool
