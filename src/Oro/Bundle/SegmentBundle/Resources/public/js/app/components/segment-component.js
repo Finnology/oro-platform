@@ -7,6 +7,8 @@ define(function(require) {
     const loadModules = require('oroui/js/app/services/load-modules');
     const BaseComponent = require('oroui/js/app/components/base/component');
     const EntityFieldsCollection = require('oroquerydesigner/js/app/models/entity-fields-collection');
+    const GroupingEntityFieldsCollection = require('oroquerydesigner/js/app/models/grouping-entity-fields-collection').default;
+    const DynamicEntityFieldsCollection = require('oroquerydesigner/js/app/models/dynamic-entity-fields-collection').default;
     const GroupingModel = require('oroquerydesigner/js/app/models/grouping-model');
     const ColumnModel = require('oroquerydesigner/js/app/models/column-model');
     const DeleteConfirmation = require('oroui/js/delete-confirmation');
@@ -221,14 +223,41 @@ define(function(require) {
          *
          * @param {string} value
          * @param {Function} template
+         * @param {object} opts
          * @returns {string}
          */
-        formatChoice: function(value, template) {
+        formatChoice: function(value, template, opts = {}) {
             let data;
             if (value) {
-                data = this.dataProvider.pathToEntityChainSafely(value);
+                data = this.dataProvider.pathToEntityChainSafely(
+                    this.getResolvedValueForFormatChoice(value)
+                );
+
+                if (opts.func) {
+                    const [last] = data.slice(-1);
+
+                    last.field.label = this.groupingDynamicEntityFieldsCollection.resolveFunctionNameByData({
+                        label: last.field.label,
+                        funcName: opts.func.name
+                    });
+                }
             }
+
             return data ? template(data) : value;
+        },
+
+        /**
+         * Get resolved column value by conditions
+         *
+         * @param {string} value
+         * @returns {string}
+         */
+        getResolvedValueForFormatChoice(value) {
+            if (this.groupingDynamicEntityFieldsCollection) {
+                return this.groupingDynamicEntityFieldsCollection.extractName(value);
+            }
+
+            return value;
         },
 
         /**
@@ -305,15 +334,18 @@ define(function(require) {
                 return;
             }
 
+            this.groupingDynamicEntityFieldsCollection = new DynamicEntityFieldsCollection();
+            this.groupingFieldChoiceComponent.view.setDynamicCollection(this.groupingDynamicEntityFieldsCollection);
             this.groupingFieldChoiceComponent.view.setEntity(this.entityClassName);
             this.on('entityChange', function(entityClassName) {
                 this.groupingFieldChoiceComponent.view.setEntity(entityClassName);
             });
 
             // prepare collection for Items Manager
-            const collection = new EntityFieldsCollection(this.load('grouping_columns'), {
+            const collection = new GroupingEntityFieldsCollection(this.load('grouping_columns'), {
                 model: GroupingModel,
-                dataProvider: this.dataProvider
+                dataProvider: this.dataProvider,
+                groupingDynamicEntityFieldsCollection: this.groupingDynamicEntityFieldsCollection
             });
             this.listenTo(collection, 'add remove sort change', function() {
                 this.save(collection.toJSON(), 'grouping_columns');
@@ -330,7 +362,13 @@ define(function(require) {
 
             // setup Items Manager's editor
             $editor.itemsManagerEditor($.extend(options.editor, {
-                collection: collection
+                collection: collection,
+                setter: ($el, name, value, attrs) => {
+                    if (attrs.func) {
+                        value = this.groupingDynamicEntityFieldsCollection.generateBindId(attrs);
+                    }
+                    return value;
+                }
             }));
 
             this.on('validate-data', function(issues) {
@@ -360,7 +398,11 @@ define(function(require) {
                 itemTemplate: $(options.itemTemplate).html(),
                 itemRender: function(tmpl, data) {
                     try {
-                        data.name = this.formatChoice(data.name, template);
+                        data.name = this.formatChoice(
+                            this.groupingDynamicEntityFieldsCollection.generateBindId(data),
+                            template,
+                            data
+                        );
                     } catch (e) {
                         data.name = __('oro.querydesigner.field_not_found');
                         data.deleted = true;
@@ -438,7 +480,12 @@ define(function(require) {
                 model: ColumnModel,
                 dataProvider: this.dataProvider
             });
-            this.listenTo(collection, 'add remove sort change', function() {
+
+            if (this.groupingDynamicEntityFieldsCollection) {
+                this.groupingDynamicEntityFieldsCollection.setColumnsSource(collection);
+            }
+
+            this.listenTo(collection, 'add remove sort change', function(...args) {
                 this.save(collection.toJSON(), 'columns');
             });
 
