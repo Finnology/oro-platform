@@ -148,21 +148,39 @@ class OwnerTreeProvider extends AbstractOwnerTreeProvider
         $rsm->addScalarResult('organization_id', 'orgId', Types::INTEGER);
         $rsm->addScalarResult('business_unit_owner_id', 'parentId', Types::INTEGER);
 
-        return $this->getManagerForClass($businessUnitClass)->createNativeQuery('
-            WITH RECURSIVE q AS
-            (
-               SELECT id, business_unit_owner_id, organization_id, 0 as level, ARRAY[id] as path
-               FROM oro_business_unit c
-               WHERE c.business_unit_owner_id is null
-               UNION ALL
-               SELECT sub.id, sub.business_unit_owner_id, sub.organization_id, level + 1, path || sub.id
-               FROM q
-                 JOIN oro_business_unit sub
-                   ON sub.business_unit_owner_id = q.id
+        return $this->getManagerForClass($businessUnitClass)->createNativeQuery("
+            WITH RECURSIVE q AS (
+                SELECT
+                    id,
+                    business_unit_owner_id,
+                    organization_id,
+                    0 AS level,
+                    CAST(id AS CHAR) AS path
+                FROM
+                    oro_business_unit
+                WHERE
+                    business_unit_owner_id IS NULL
+                UNION ALL
+                SELECT
+                    sub.id,
+                    sub.business_unit_owner_id,
+                    sub.organization_id,
+                    q.level + 1,
+                    CONCAT(q.path, ',', sub.id) AS path
+                FROM
+                    q
+                JOIN
+                    oro_business_unit sub
+                ON
+                    sub.business_unit_owner_id = q.id
             )
-            SELECT id, business_unit_owner_id, organization_id
-            FROM q
-            ORDER BY path
-        ', $rsm);
+            SELECT
+                id,
+                business_unit_owner_id,
+                organization_id
+            FROM
+                q
+            ORDER BY path;
+        ", $rsm);
     }
 }
