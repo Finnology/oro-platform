@@ -149,37 +149,46 @@ class OwnerTreeProvider extends AbstractOwnerTreeProvider
         $rsm->addScalarResult('business_unit_owner_id', 'parentId', Types::INTEGER);
 
         return $this->getManagerForClass($businessUnitClass)->createNativeQuery("
-            WITH RECURSIVE q AS (
-                SELECT
-                    id,
-                    business_unit_owner_id,
-                    organization_id,
-                    0 AS level,
-                    CAST(id AS CHAR) AS path
-                FROM
-                    oro_business_unit
-                WHERE
-                    business_unit_owner_id IS NULL
-                UNION ALL
-                SELECT
-                    sub.id,
-                    sub.business_unit_owner_id,
-                    sub.organization_id,
-                    q.level + 1,
-                    CONCAT(q.path, ',', sub.id) AS path
-                FROM
-                    q
-                JOIN
-                    oro_business_unit sub
-                ON
-                    sub.business_unit_owner_id = q.id
-            )
+            -- Level 0: Root nodes
             SELECT
                 id,
                 business_unit_owner_id,
-                organization_id
-            FROM
-                q
+                organization_id,
+                0 AS level,
+                CAST(id AS CHAR(255)) AS path
+            FROM oro_business_unit
+            WHERE business_unit_owner_id IS NULL
+
+            UNION ALL
+
+            -- Level 1: First-level children
+            SELECT
+                sub1.id,
+                sub1.business_unit_owner_id,
+                sub1.organization_id,
+                1 AS level,
+                CONCAT(root.id, ',', sub1.id) AS path
+            FROM oro_business_unit AS root
+            JOIN oro_business_unit AS sub1
+                ON sub1.business_unit_owner_id = root.id
+            WHERE root.business_unit_owner_id IS NULL
+
+            UNION ALL
+
+            -- Level 2: Second-level children
+            SELECT
+                sub2.id,
+                sub2.business_unit_owner_id,
+                sub2.organization_id,
+                2 AS level,
+                CONCAT(root.id, ',', sub1.id, ',', sub2.id) AS path
+            FROM oro_business_unit AS root
+            JOIN oro_business_unit AS sub1
+                ON sub1.business_unit_owner_id = root.id
+            JOIN oro_business_unit AS sub2
+                ON sub2.business_unit_owner_id = sub1.id
+            WHERE root.business_unit_owner_id IS NULL
+
             ORDER BY path;
         ", $rsm);
     }
