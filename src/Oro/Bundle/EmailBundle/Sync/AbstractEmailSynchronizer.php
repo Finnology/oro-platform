@@ -471,18 +471,8 @@ abstract class AbstractEmailSynchronizer implements EmailSynchronizerInterface, 
         }
     }
 
-    /**
-     * Finds an email origin to be synchronised
-     *
-     * @param int $maxConcurrentTasks   The maximum number of synchronization jobs running in the same time
-     * @param int $minExecIntervalInMin The minimum time interval (in minutes) between two synchronizations
-     *                                  of the same email origin
-     * @return EmailOrigin
-     */
-    protected function findOriginToSync($maxConcurrentTasks, $minExecIntervalInMin)
+    protected function findOriginToSyncQueryBuilder(int $maxConcurrentTasks, int $minExecIntervalInMin): QueryBuilder
     {
-        $this->logger->info('Finding an email origin ...');
-
         $now = $this->getCurrentUtcDateTime();
         $border = clone $now;
         if ($minExecIntervalInMin > 0) {
@@ -523,6 +513,20 @@ abstract class AbstractEmailSynchronizer implements EmailSynchronizerInterface, 
 
         $this->addOwnerFilter($queryBuilder);
 
+        return $queryBuilder;
+    }
+
+    /**
+     * Finds an email origin to be synchronised
+     *
+     * @param int $maxConcurrentTasks   The maximum number of synchronization jobs running in the same time
+     * @param int $minExecIntervalInMin The minimum time interval (in minutes) between two synchronizations
+     *                                  of the same email origin
+     */
+    protected function findOriginToSync($maxConcurrentTasks, $minExecIntervalInMin)
+    {
+        $this->logger->info('Finding an email origin ...');
+        $queryBuilder = $this->findOriginToSyncQueryBuilder($maxConcurrentTasks, $minExecIntervalInMin);
         /** @var EmailOrigin[] $origins */
         $origins = $queryBuilder->getQuery()->getResult();
         $result = null;
@@ -568,27 +572,29 @@ abstract class AbstractEmailSynchronizer implements EmailSynchronizerInterface, 
             ->setParameter('isOwnerEnabled', true);
     }
 
-    /**
-     * Finds active email origin by its id
-     *
-     * @param int $originId
-     * @return EmailOrigin|null
-     */
-    protected function findOrigin($originId)
+    protected function findOriginQueryBuilder(int $originId): QueryBuilder
     {
-        $this->logger->info(sprintf('Finding an email origin (id: %d) ...', $originId));
-
         $repo  = $this->getEntityManager()->getRepository($this->getEmailOriginClass());
         $queryBuilder = $repo->createQueryBuilder('o')
             ->where('o.isActive = :isActive AND o.id = :id')
-            ->andWhere('o.isSyncEnabled != :isSyncEnabled')
+            ->andWhere('(o.isSyncEnabled is NULL or o.isSyncEnabled = :isSyncEnabled)')
             ->setParameter('isActive', true)
-            ->setParameter('isSyncEnabled', false)
+            ->setParameter('isSyncEnabled', true)
             ->setParameter('id', $originId)
             ->setMaxResults(1);
 
         $this->addOwnerFilter($queryBuilder);
 
+        return $queryBuilder;
+    }
+
+    /**
+     * Finds active email origin by its id
+     */
+    protected function findOrigin($originId)
+    {
+        $this->logger->info(sprintf('Finding an email origin (id: %d) ...', $originId));
+        $queryBuilder = $this->findOriginQueryBuilder($originId);
         $origins = $queryBuilder->getQuery()->getResult();
 
         /** @var EmailOrigin $result */

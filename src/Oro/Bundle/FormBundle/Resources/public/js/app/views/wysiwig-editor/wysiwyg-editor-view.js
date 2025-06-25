@@ -36,6 +36,8 @@ define(function(require) {
             elementpath: false,
             branding: false,
             browser_spellcheck: true,
+            convert_unsafe_embeds: true,
+            sandbox_iframes: true,
             file_picker_types: 'image',
             file_picker_callback: function(callback, value, meta) {
                 const input = document.createElement('input');
@@ -143,7 +145,7 @@ define(function(require) {
                     // if content is not modified, return html representation back
                     this.$el.val(this.htmlValue);
                 } else {
-                    this.$el.val(txtHtmlTransformer.text2html(this.$el.val()));
+                    this.$el.val(this.$el.val());
                 }
             }
             this._deferredRender();
@@ -165,7 +167,6 @@ define(function(require) {
             }, this);
 
             tinyMCE.init(_.extend({
-                license_key: 'gpl',
                 target: this.el,
                 setup: function(editor) {
                     editor.on('keydown', function(e) {

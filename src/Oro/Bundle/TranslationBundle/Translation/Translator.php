@@ -9,6 +9,7 @@ use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use Symfony\Bundle\FrameworkBundle\Translation\Translator as BaseTranslator;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Translation\Exception\InvalidArgumentException;
 use Symfony\Component\Translation\Formatter\MessageFormatter;
@@ -34,6 +35,7 @@ class Translator extends BaseTranslator
     private MessageCatalogueSanitizer $catalogueSanitizer;
     private TranslationMessageSanitizationErrorCollection $sanitizationErrorCollection;
     private ?DynamicTranslationProviderInterface $dynamicTranslationProvider = null;
+    private EventDispatcherInterface $eventDispatcher;
     private array $originalOptions;
     private array $resourceFiles;
     private array $cacheVary;
@@ -41,7 +43,7 @@ class Translator extends BaseTranslator
     private ?string $appliedStrategyName = null;
     private ?string $appliedLocale = null;
     private bool $enableDumpCatalogue = false;
-    private bool $disableResetCatalogues = false;
+    private bool $disableResetCatalogues = true;
 
     public function __construct(
         ContainerInterface $container,
@@ -88,6 +90,11 @@ class Translator extends BaseTranslator
     {
         $this->dynamicTranslationProvider = $provider;
         $this->dynamicTranslationProvider->setFallbackLocales($this->getFallbackLocales());
+    }
+
+    public function setEventDispatcher(EventDispatcherInterface $eventDispatcher): void
+    {
+        $this->eventDispatcher = $eventDispatcher;
     }
 
     /**
@@ -335,7 +342,9 @@ class Translator extends BaseTranslator
 
         $locales = $this->strategyProvider->getAllFallbackLocales($strategy);
         foreach ($locales as $locale) {
-            $this->newTranslator($locale, $options)->loadCatalogues();
+            $translator = $this->newTranslator($locale, $options);
+            $translator->addResource('oro_database_translation', 'orm', $locale, 'entities');
+            $translator->loadCatalogues();
         }
         $this->moveCatalogueFiles($options['cache_dir'], $cacheDir);
         $this->dynamicTranslationProvider->warmUp($locales);
@@ -392,6 +401,11 @@ class Translator extends BaseTranslator
             $locale = $this->getLocale();
         }
         $strategyName = $this->strategyProvider->getStrategy()->getName();
+
+        if ($this->appliedStrategyName !== $strategyName) {
+            $this->catalogues = [];
+        }
+
         if ($this->appliedLocale !== $locale || $this->appliedStrategyName !== $strategyName) {
             $this->appliedLocale = $locale;
             $this->appliedStrategyName = $strategyName;

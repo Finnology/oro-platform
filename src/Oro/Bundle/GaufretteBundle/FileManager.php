@@ -511,7 +511,9 @@ class FileManager
         }
 
         $fileName = $this->getFileNameWithSubDirectory($fileName);
-        $srcStream->open(new StreamMode('rb'));
+        if (!$srcStream->cast(1)) {
+            $srcStream->open(new StreamMode('rb'));
+        }
 
         $nonEmptyStream = true;
         $firstChunk = '';
@@ -697,6 +699,12 @@ class FileManager
      */
     private function isDirectoryEmpty(string $realDirName): bool
     {
+        $adapter = $this->filesystem->getAdapter();
+
+        if ($adapter instanceof LocalAdapter) {
+            return $adapter->isDirectoryEmpty($realDirName . self::DIRECTORY_SEPARATOR);
+        }
+
         $listResult = $this->listKeys($realDirName . self::DIRECTORY_SEPARATOR);
 
         return empty($listResult['keys']) && empty($listResult['dirs']);

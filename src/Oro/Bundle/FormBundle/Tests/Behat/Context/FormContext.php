@@ -66,7 +66,11 @@ class FormContext extends OroFeatureContext implements OroPageObjectAware
         /** @var Form $form */
         $this->waitForAjax();
         $form = $this->createElement($formName);
-        $form->fill($table);
+        $this->spin(function () use ($form, $table) {
+            $form->fill($table);
+
+            return true;
+        }, 3);
     }
 
     //@codingStandardsIgnoreStart
@@ -503,7 +507,7 @@ class FormContext extends OroFeatureContext implements OroPageObjectAware
      * Go to System/Configuration and see the fields with default checkboxes
      * Example: And uncheck "Use default" for "Position" field
      *
-     * @Given uncheck :checkbox for :label field
+     * @Given /^(?:|I )uncheck "(?P<checkbox>[^"]*)" for "(?P<label>[^"]*)" field$/
      */
     public function uncheckUseDefaultForField($label, $checkbox)
     {
